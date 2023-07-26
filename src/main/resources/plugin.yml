@@ -5,4 +5,6 @@ author: zManuu
 description: Fantasypixel Rework 2023
 api-version: 1.19
 commands:
-  ping:
+  test1:
+  test2:
+  test3:

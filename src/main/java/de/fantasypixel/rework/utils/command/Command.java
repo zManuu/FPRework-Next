@@ -8,4 +8,5 @@ public @interface Command {
     String name();
     String permission() default "";
     String[] aliases() default {};
+    CommandTarget target() default CommandTarget.PLAYER;
 }
