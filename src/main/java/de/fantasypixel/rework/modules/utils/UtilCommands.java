@@ -1,14 +1,12 @@
 package de.fantasypixel.rework.modules.utils;
 
 import de.fantasypixel.rework.utils.command.Command;
-import de.fantasypixel.rework.utils.command.CommandHandler;
 import de.fantasypixel.rework.utils.command.CommandTarget;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-@CommandHandler
-public class Commands {
+public class UtilCommands {
 
     @Command(name = "test1", target = CommandTarget.BOTH)
     public void test1(CommandSender sender) {

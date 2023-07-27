@@ -1,5 +1,7 @@
 package de.fantasypixel.rework.utils.command;
 
+import de.fantasypixel.rework.utils.PackageUtils;
+import de.fantasypixel.rework.utils.provider.Controller;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -9,13 +11,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-public class CustomCommandManager {
+public class CommandManager {
 
     private final JavaPlugin plugin;
 
-    public CustomCommandManager(JavaPlugin plugin) {
+    public CommandManager(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.loadCommandHandlers();
     }
 
     public void registerCommands(Object commandExecutor) {
@@ -62,23 +63,6 @@ public class CustomCommandManager {
             return true;
 
         return sender instanceof ConsoleCommandSender && target == CommandTarget.CONSOLE;
-    }
-
-    public void loadCommandHandlers() {
-        try {
-            var classes = PackageUtils.getClassesForPackage(plugin.getClass().getClassLoader(), "de.fantasypixel.rework");
-
-            System.out.println(Arrays.toString(classes.toArray()));
-
-            for (var clazz : classes) {
-                if (clazz.isAnnotationPresent(CommandHandler.class)) {
-                    Object instance = clazz.getDeclaredConstructor().newInstance();
-                    this.registerCommands(instance);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }
