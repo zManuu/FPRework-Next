@@ -1,4 +1,4 @@
-package de.fantasypixel.rework.utils.provider.events;
+package de.fantasypixel.rework.utils.events;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

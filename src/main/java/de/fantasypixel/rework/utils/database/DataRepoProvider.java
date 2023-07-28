@@ -38,7 +38,8 @@ public class DataRepoProvider<E> {
      */
     private int getId(E entity) {
         try {
-            var idField = entity.getClass().getField("id");
+            var idField = entity.getClass().getDeclaredField("id");
+            idField.setAccessible(true);
             return idField.getInt(entity);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
@@ -50,8 +51,13 @@ public class DataRepoProvider<E> {
      * Checks the passed object for sql-injections. It is recommended to check before every sql-command is executed.
      */
     private boolean checkIntegrity(Object object) {
+
+        if (String.class.isAssignableFrom(object.getClass()))
+            return !String.valueOf(object).contains(";");
+
         var fields = Arrays.stream(object.getClass()
-                .getFields())
+                .getDeclaredFields())
+                .peek(field -> field.setAccessible(true))
                 .filter(field -> !field.isAnnotationPresent(Ignore.class))
                 .toArray(Field[]::new);
 
@@ -63,9 +69,6 @@ public class DataRepoProvider<E> {
                 this.plugin.getLogger().warning("SQL-integrity check for object of type " + object.getClass().getName() + " failed as a field-value was null.");
                 return false;
             }
-
-            if (String.class.isAssignableFrom(fieldType) && String.valueOf(fieldValue).contains(";"))
-                return false;
 
             if (Object.class.isAssignableFrom(fieldType))
                 return checkIntegrity(fieldValue);
@@ -126,7 +129,8 @@ public class DataRepoProvider<E> {
 
             for (var i=0; i<columnCount; i++) {
                 var columnName = rs.getMetaData().getColumnName(i);
-                var columnField = this.typeParameterClass.getField(columnName);
+                var columnField = this.typeParameterClass.getDeclaredField(columnName);
+                columnField.setAccessible(true);
                 var columnValue = rs.getObject(i);
                 columnField.set(entityInstance, columnValue);
             }
@@ -195,7 +199,8 @@ public class DataRepoProvider<E> {
                     String.format(
                             "UPDATE %s SET %s WHERE `id` = '%d'",
                             this.tableName,
-                            Arrays.stream(this.typeParameterClass.getFields())
+                            Arrays.stream(this.typeParameterClass.getDeclaredFields())
+                                    .peek(e -> e.setAccessible(true))
                                     .filter(e -> !e.isAnnotationPresent(Ignore.class))
                                     .map(e -> String.format("`%s` = '%s'", e.getName(), PackageUtils.getFieldValueSafe(e, entity)))
                                     .collect(Collectors.joining(", ")),
@@ -233,7 +238,8 @@ public class DataRepoProvider<E> {
                     String.format(
                             "INSERT INTO %s VALUES (%s)",
                             this.tableName,
-                            Arrays.stream(this.typeParameterClass.getFields())
+                            Arrays.stream(this.typeParameterClass.getDeclaredFields())
+                                    .peek(e -> e.setAccessible(true))
                                     .filter(e -> !e.isAnnotationPresent(Ignore.class))
                                     .map(e -> String.format("'%s'", PackageUtils.getFieldValueSafe(e, entity)))
                                     .map(String::valueOf)
@@ -251,7 +257,8 @@ public class DataRepoProvider<E> {
             }
 
             var generatedId = generatedKeys.getInt(1);
-            var idField = entity.getClass().getField("id");
+            var idField = entity.getClass().getDeclaredField("id");
+            idField.setAccessible(true);
             idField.setInt(entity, generatedId);
 
             return true;

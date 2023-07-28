@@ -5,8 +5,8 @@ import de.fantasypixel.rework.utils.FPConfig;
 import de.fantasypixel.rework.utils.PackageUtils;
 import de.fantasypixel.rework.utils.database.DataRepo;
 import de.fantasypixel.rework.utils.database.DataRepoProvider;
-import de.fantasypixel.rework.utils.provider.events.OnDisable;
-import de.fantasypixel.rework.utils.provider.events.OnEnable;
+import de.fantasypixel.rework.utils.events.OnDisable;
+import de.fantasypixel.rework.utils.events.OnEnable;
 
 import java.io.File;
 import java.io.FileReader;
@@ -173,6 +173,7 @@ public class ProviderManager {
                 try {
                     onEnableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
+                    this.plugin.getLogger().warning("An onEnable func threw an error. Stacktrace following...");
                     e.printStackTrace();
                 }
             });
@@ -185,6 +186,7 @@ public class ProviderManager {
                 try {
                     onDisableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
+                    this.plugin.getLogger().warning("An onDisable func threw an error. Stacktrace following...");
                     e.printStackTrace();
                 }
             });

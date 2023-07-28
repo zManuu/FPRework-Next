@@ -1,6 +1,5 @@
 package de.fantasypixel.rework.utils;
 
-import de.fantasypixel.rework.utils.provider.events.OnEnable;
 import org.bukkit.Bukkit;
 import org.reflections.Reflections;
 
@@ -8,7 +7,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Ref;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,9 +15,7 @@ public class PackageUtils {
     public static void loadMysqlDriver() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Bukkit.getLogger().info("Successfully loaded mysql-driver.");
         } catch (ClassNotFoundException e) {
-            Bukkit.getLogger().warning("Couldn't load mysql-driver. Stacktrace will follow...");
             e.printStackTrace();
         }
     }
@@ -31,6 +27,7 @@ public class PackageUtils {
 
     public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
         return Arrays.stream(clazz.getFields())
+                .peek(field -> field.setAccessible(true))
                 .filter(field -> field.isAnnotationPresent(annotationClass))
                 .collect(Collectors.toSet());
     }
@@ -76,6 +73,7 @@ public class PackageUtils {
 
     public static Object getFieldValueSafe(Field field, Object object) {
         try {
+            field.setAccessible(true);
             return field.get(object);
         } catch (IllegalAccessException e) {
             e.printStackTrace();

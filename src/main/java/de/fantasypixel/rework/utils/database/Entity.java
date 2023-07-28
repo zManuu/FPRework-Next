@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a class as an entity-class.
- * Entity-classes need to follow the following rules:
- * All properties must be public, an id property must exist.
+ * Entity-classes must have an id field,
+ * the properties need to be declared in the same order as the database columns.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -2,8 +2,8 @@ package de.fantasypixel.rework.modules.test;
 
 import de.fantasypixel.rework.utils.provider.Controller;
 import de.fantasypixel.rework.utils.provider.Service;
-import de.fantasypixel.rework.utils.provider.events.OnDisable;
-import de.fantasypixel.rework.utils.provider.events.OnEnable;
+import de.fantasypixel.rework.utils.events.OnDisable;
+import de.fantasypixel.rework.utils.events.OnEnable;
 import org.bukkit.Bukkit;
 
 @Controller

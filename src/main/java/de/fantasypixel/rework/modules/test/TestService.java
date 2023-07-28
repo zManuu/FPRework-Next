@@ -21,10 +21,10 @@ public class TestService {
         System.out.println("UserRepo: " + userRepo);
 
         var testUser = new TestUser();
-        testUser.name = "nigga";
+        testUser.setName("manu");
 
         this.userRepo.insert(testUser);
-        System.out.println(testUser.id);
+        System.out.println("inserted new user. resulting id: " + testUser.getId());
     }
 
 }
