@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.utils;
 
+import de.fantasypixel.rework.utils.provider.events.OnEnable;
 import org.bukkit.Bukkit;
 import org.reflections.Reflections;
 
@@ -9,27 +10,35 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Ref;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PackageUtils {
+
+    public static void loadMysqlDriver() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Bukkit.getLogger().info("Successfully loaded mysql-driver.");
+        } catch (ClassNotFoundException e) {
+            Bukkit.getLogger().warning("Couldn't load mysql-driver. Stacktrace will follow...");
+            e.printStackTrace();
+        }
+    }
 
     public static Set<Class<?>> getClassesAnnotatedWith(Class<? extends Annotation> annotationClass) {
         var reflections = new Reflections("de.fantasypixel.rework");
         return reflections.getTypesAnnotatedWith(annotationClass);
     }
 
-    public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass) {
-        var reflections = new Reflections("de.fantasypixel.rework");
-        return reflections.getFieldsAnnotatedWith(annotationClass);
+    public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
+        return Arrays.stream(clazz.getFields())
+                .filter(field -> field.isAnnotationPresent(annotationClass))
+                .collect(Collectors.toSet());
     }
 
-    public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
-        var fields = clazz.getFields();
-        var fieldsWithAnnotations = new HashSet<Field>();
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(annotationClass))
-                fieldsWithAnnotations.add(field);
-        }
-        return fieldsWithAnnotations;
+    public static Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
+        return Arrays.stream(clazz.getMethods())
+                .filter(method -> method.isAnnotationPresent(annotationClass))
+                .collect(Collectors.toSet());
     }
 
     public static Object instantiate(Class<?> clazz, Object... args) {
@@ -62,6 +71,15 @@ public class PackageUtils {
                 method.invoke(target, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static Object getFieldValueSafe(Field field, Object object) {
+        try {
+            return field.get(object);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

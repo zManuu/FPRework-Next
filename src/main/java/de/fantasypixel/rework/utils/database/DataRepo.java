@@ -1,4 +1,6 @@
-package de.fantasypixel.rework.utils.provider;
+package de.fantasypixel.rework.utils.database;
+
+import de.fantasypixel.rework.utils.provider.ServiceProvider;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,7 +15,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface DataRepo {
 
-    String name();
+    /**
+     * The entity-type that will be handled.
+     */
     Class<?> type();
 
 }
