@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 public class TestController {
 
     @Service(name = "test-service")
-    public TestService service;
+    private TestService service;
 
     @OnEnable
     public void onEnable() {

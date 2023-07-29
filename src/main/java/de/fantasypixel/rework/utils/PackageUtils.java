@@ -26,7 +26,8 @@ public class PackageUtils {
     }
 
     public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
-        return Arrays.stream(clazz.getFields())
+        return Arrays.stream(clazz.getDeclaredFields())
+                .filter(e -> !e.isSynthetic())
                 .peek(field -> field.setAccessible(true))
                 .filter(field -> field.isAnnotationPresent(annotationClass))
                 .collect(Collectors.toSet());

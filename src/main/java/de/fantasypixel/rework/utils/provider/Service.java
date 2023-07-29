@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
  * Can be applied on a Field, the service-provider will be loaded automatically.
  * Only accessible in a {@link Controller}.
  * Note: Services aren't available in the constructor as they are set after creation.
- * Make sure fields you apply the annotation to are public.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

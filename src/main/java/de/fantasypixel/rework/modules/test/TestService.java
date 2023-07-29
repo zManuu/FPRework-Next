@@ -10,10 +10,10 @@ import de.fantasypixel.rework.utils.provider.ServiceProvider;
 public class TestService {
 
     @Config
-    public FPConfig config;
+    private FPConfig config;
 
     @DataRepo(type = TestUser.class)
-    public DataRepoProvider<TestUser> userRepo;
+    private DataRepoProvider<TestUser> userRepo;
 
     public void test() {
         System.out.println("Testing service...");
