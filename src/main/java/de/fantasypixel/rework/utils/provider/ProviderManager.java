@@ -7,12 +7,12 @@ import de.fantasypixel.rework.utils.database.DataRepo;
 import de.fantasypixel.rework.utils.database.DataRepoProvider;
 import de.fantasypixel.rework.utils.events.OnDisable;
 import de.fantasypixel.rework.utils.events.OnEnable;
+import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class ProviderManager {
 
@@ -31,18 +31,15 @@ public class ProviderManager {
         this.initServiceHooks();
         this.loadConfig();
         this.initConfigHooks();
+        this.initPluginHooks();
         this.createDataRepos();
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available
-        CompletableFuture.runAsync(() -> {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            this.enableControllers();
-        });
+        Bukkit.getScheduler().runTaskLaterAsynchronously(
+                this.plugin,
+                this::enableControllers,
+                100
+        );
     }
 
     private void initServiceProviders() {
@@ -119,6 +116,20 @@ public class ProviderManager {
             configHooks.forEach(configHook -> {
                 try {
                     configHook.set(serviceProvider, this.config);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+    }
+
+    private void initPluginHooks() {
+        this.serviceProviders.values().forEach(serviceProvider -> {
+            this.plugin.getLogger().info("Auto rigging plugin for service " + serviceProvider.getClass().getName());
+            var pluginHooks = PackageUtils.getFieldsAnnotatedWith(Plugin.class, serviceProvider.getClass());
+            pluginHooks.forEach(pluginHook -> {
+                try {
+                    pluginHook.set(serviceProvider, this.plugin);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
