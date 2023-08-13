@@ -7,11 +7,14 @@ import de.fantasypixel.rework.utils.database.DataRepo;
 import de.fantasypixel.rework.utils.database.DataRepoProvider;
 import de.fantasypixel.rework.utils.events.OnDisable;
 import de.fantasypixel.rework.utils.events.OnEnable;
+import de.fantasypixel.rework.utils.spigotevents.SpigotEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Event;
 
 import java.io.File;
 import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class ProviderManager {
@@ -22,6 +25,7 @@ public class ProviderManager {
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
+    private Map<Class<?>, Set<Method>> events;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -32,6 +36,7 @@ public class ProviderManager {
         this.loadConfig();
         this.initConfigHooks();
         this.initPluginHooks();
+        this.initEventHooks();
         this.createDataRepos();
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available
@@ -137,6 +142,22 @@ public class ProviderManager {
         });
     }
 
+    private void initEventHooks() {
+        this.events = new HashMap<>();
+
+        this.controllers.forEach(controller -> {
+            this.plugin.getLogger().info("Setting up event hooks for controller " + controller.getClass().getName());
+            var eventHooks = PackageUtils.getMethodsAnnotatedWith(SpigotEvent.class, controller.getClass());
+            eventHooks.forEach(eventHook -> {
+                var eventType = eventHook.getParameterTypes()[0];
+                if (this.events.containsKey(eventType))
+                    this.events.get(eventType).add(eventHook);
+                else
+                    this.events.put(eventType, Set.of(eventHook));
+            });
+        });
+    }
+
     private void createDataRepos() {
         PackageUtils.loadMysqlDriver();
 
@@ -208,4 +229,17 @@ public class ProviderManager {
         return config;
     }
 
+    public void invokeEvent(Event event) {
+        if (!this.events.containsKey(event.getClass()))
+            return;
+
+        this.events.get(event.getClass()).forEach(handler -> {
+            try {
+                System.out.println(handler);
+                handler.invoke(event);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 }

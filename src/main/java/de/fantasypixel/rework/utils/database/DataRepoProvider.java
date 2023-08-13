@@ -125,7 +125,7 @@ public class DataRepoProvider<E> {
                 return null;
 
             var columnCount = rs.getMetaData().getColumnCount();
-            var entityInstance = (E) PackageUtils.instantiate(this.typeParameterClass);
+            var entityInstance = PackageUtils.instantiate(this.typeParameterClass);
 
             for (var i=0; i<columnCount; i++) {
                 var columnName = rs.getMetaData().getColumnName(i);

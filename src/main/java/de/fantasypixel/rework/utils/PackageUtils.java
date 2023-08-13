@@ -39,7 +39,7 @@ public class PackageUtils {
                 .collect(Collectors.toSet());
     }
 
-    public static Object instantiate(Class<?> clazz, Object... args) {
+    public static <T> T instantiate(Class<T> clazz, Object... args) {
         try {
 
             var argTypes = Arrays.stream(args)
