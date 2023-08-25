@@ -1,7 +1,13 @@
 package de.fantasypixel.rework.modules.account;
 
 import de.fantasypixel.rework.utils.database.Entity;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+@AllArgsConstructor
+@Setter
+@Getter
 @Entity(tableName = "accounts")
 public class Account {
 
@@ -9,23 +15,4 @@ public class Account {
     private String name;
     private String password;
 
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }
