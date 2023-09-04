@@ -28,7 +28,7 @@ public class DataRepoProvider<E> {
         if (entityAnnotation != null)
             this.tableName = entityAnnotation.tableName();
         else {
-            this.tableName = "ERROR";
+            this.tableName = null;
             this.plugin.getLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The data-repo will still be active but error upon requests.");
         }
     }
@@ -42,7 +42,7 @@ public class DataRepoProvider<E> {
             idField.setAccessible(true);
             return idField.getInt(entity);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "getId", e);
             return 0;
         }
     }
@@ -91,7 +91,7 @@ public class DataRepoProvider<E> {
                     config.database_password
             );
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "getConnection", e);
             return null;
         }
     }
@@ -107,7 +107,7 @@ public class DataRepoProvider<E> {
         ) {
             return rs.next();
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "existsWithId", e);
             return false;
         }
     }
@@ -138,7 +138,7 @@ public class DataRepoProvider<E> {
             this.cachedEntities.put(id, entityInstance);
             return entityInstance;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "getById", e);
             return null;
         }
     }
@@ -172,7 +172,7 @@ public class DataRepoProvider<E> {
             statement.execute();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "delete", e);
             return false;
         }
     }
@@ -211,7 +211,7 @@ public class DataRepoProvider<E> {
             statement.execute();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "save", e);
             return false;
         }
     }
@@ -263,7 +263,7 @@ public class DataRepoProvider<E> {
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "insert", e);
             return false;
         }
     }

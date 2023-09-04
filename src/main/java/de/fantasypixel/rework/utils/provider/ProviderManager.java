@@ -8,6 +8,7 @@ import de.fantasypixel.rework.utils.database.DataRepoProvider;
 import de.fantasypixel.rework.utils.events.OnDisable;
 import de.fantasypixel.rework.utils.events.OnEnable;
 import de.fantasypixel.rework.utils.spigotevents.SpigotEvent;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 
@@ -20,6 +21,7 @@ import java.util.*;
 public class ProviderManager {
 
     private final FPRework plugin;
+    @Getter
     private FPConfig config;
     private Set<Class<?>> serviceProviderClasses;
     private Map<String, Object> serviceProviders;
@@ -91,7 +93,7 @@ public class ProviderManager {
                     try {
                         serviceHook.set(controller, serviceProvider);
                     } catch (IllegalAccessException e) {
-                        e.printStackTrace();
+                        this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "initServiceHooks", e);
                     }
                 }
             });
@@ -109,7 +111,7 @@ public class ProviderManager {
         try (var fileReader = new FileReader(configFile)) {
             this.config = this.plugin.getGson().fromJson(fileReader, FPConfig.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "loadConfig", e);
             this.config = null;
         }
     }
@@ -122,7 +124,7 @@ public class ProviderManager {
                 try {
                     configHook.set(serviceProvider, this.config);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "initConfigHooks", e);
                 }
             });
         });
@@ -136,7 +138,7 @@ public class ProviderManager {
                 try {
                     pluginHook.set(serviceProvider, this.plugin);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "initPluginHooks", e);
                 }
             });
         });
@@ -181,7 +183,7 @@ public class ProviderManager {
                 try {
                     dataRepoHook.set(serviceProvider, dataRepo);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "createDataRepos", e);
                 }
 
                 this.plugin.getLogger().info("Auto rigged data-repo " + dataRepoEntityType.getName() + " for service-provider " + serviceProviderClass.getName());
@@ -206,27 +208,23 @@ public class ProviderManager {
                     onEnableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     this.plugin.getLogger().warning("An onEnable func threw an error. Stacktrace following...");
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "enableControllers", e);
                 }
             });
         });
     }
 
-    public void onDisable() {
+    public void disableControllers() {
         this.controllers.forEach(controller -> {
             PackageUtils.getMethodsAnnotatedWith(OnDisable.class, controller.getClass()).forEach(onDisableFunc -> {
                 try {
                     onDisableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     this.plugin.getLogger().warning("An onDisable func threw an error. Stacktrace following...");
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "disableControllers", e);
                 }
             });
         });
-    }
-
-    public FPConfig getConfig() {
-        return config;
     }
 
     public void invokeEvent(Event event) {
@@ -235,10 +233,9 @@ public class ProviderManager {
 
         this.events.get(event.getClass()).forEach(handler -> {
             try {
-                System.out.println(handler);
                 handler.invoke(event);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                this.plugin.getLogger().throwing(this.getClass().getSimpleName(), "invokeEvent", e);
             }
         });
     }

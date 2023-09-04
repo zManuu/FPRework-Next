@@ -37,7 +37,7 @@ public class CommandManager {
             pluginCommand.setExecutor((sender, command, label, args) -> {
 
                 if (!canCommandBeUsed(sender, commandTarget)) {
-                    sender.sendMessage("§3You can't use that command.");
+                    sender.sendMessage("You can't use that command.");
                     return false;
                 }
 

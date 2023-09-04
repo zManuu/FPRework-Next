@@ -16,7 +16,7 @@ public class PackageUtils {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().throwing(PackageUtils.class.getSimpleName(), "loadMysqlDriver", e);
         }
     }
 
@@ -51,7 +51,7 @@ public class PackageUtils {
             return constructor.newInstance(args);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Bukkit.getLogger().throwing(PackageUtils.class.getSimpleName(), "instantiate", e);
             return null;
         }
     }
@@ -68,7 +68,7 @@ public class PackageUtils {
             else
                 method.invoke(target, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().throwing(PackageUtils.class.getSimpleName(), "invoke", e);
         }
     }
 
@@ -77,7 +77,7 @@ public class PackageUtils {
             field.setAccessible(true);
             return field.get(object);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().throwing(PackageUtils.class.getSimpleName(), "getFieldValueSafe", e);
             return null;
         }
     }

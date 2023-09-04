@@ -24,7 +24,7 @@ public class FPRework extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.providerManager.onDisable();
+        this.providerManager.disableControllers();
     }
 
     public CommandManager getCommandManager() {
