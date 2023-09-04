@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import de.fantasypixel.rework.utils.command.CommandManager;
 import de.fantasypixel.rework.utils.provider.ProviderManager;
 import de.fantasypixel.rework.utils.spigotevents.SpigotEventManager;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@Getter
 public class FPRework extends JavaPlugin {
 
     private Gson gson;
@@ -27,17 +29,5 @@ public class FPRework extends JavaPlugin {
         this.providerManager.disableControllers();
     }
 
-    public CommandManager getCommandManager() {
-        return commandManager;
-    }
-
-    public Gson getGson() {
-        return gson;
-    }
-
-
-    public ProviderManager getProviderManager() {
-        return providerManager;
-    }
 
 }

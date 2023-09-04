@@ -1,14 +1,12 @@
 package de.fantasypixel.rework.utils.command;
 
 import de.fantasypixel.rework.utils.PackageUtils;
-import de.fantasypixel.rework.utils.provider.Controller;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 
 public class CommandManager {

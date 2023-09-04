@@ -192,12 +192,6 @@ public class ProviderManager {
         });
     }
 
-    public void reloadConfig() {
-        // hooks can be overridden
-        this.loadConfig();
-        this.initConfigHooks();
-    }
-
     /**
      * Calls onEnable on all Controllers.
      */
