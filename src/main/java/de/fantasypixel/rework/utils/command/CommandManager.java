@@ -2,14 +2,12 @@ package de.fantasypixel.rework.utils.command;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.PackageUtils;
-import de.fantasypixel.rework.utils.provider.Controller;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 
 public class CommandManager {
@@ -38,7 +36,7 @@ public class CommandManager {
             pluginCommand.setExecutor((sender, command, label, args) -> {
 
                 if (!canCommandBeUsed(sender, commandTarget)) {
-                    sender.sendMessage("§3You can't use that command.");
+                    sender.sendMessage("You can't use that command.");
                     return false;
                 }
 
