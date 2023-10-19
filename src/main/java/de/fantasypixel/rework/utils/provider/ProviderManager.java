@@ -8,6 +8,7 @@ import de.fantasypixel.rework.utils.database.DataRepoProvider;
 import de.fantasypixel.rework.utils.events.OnDisable;
 import de.fantasypixel.rework.utils.events.OnEnable;
 import de.fantasypixel.rework.utils.spigotevents.SpigotEvent;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 
@@ -19,13 +20,15 @@ import java.util.*;
 
 public class ProviderManager {
 
+    private final String CLASS_NAME = ProviderManager.class.getSimpleName();
     private final FPRework plugin;
+    @Getter
     private FPConfig config;
     private Set<Class<?>> serviceProviderClasses;
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
-    private Map<Class<?>, Set<Method>> events;
+    private Map<Class<? extends Event>, Set<Method>> events;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -48,23 +51,23 @@ public class ProviderManager {
     }
 
     private void initServiceProviders() {
-        this.serviceProviderClasses = PackageUtils.getClassesAnnotatedWith(ServiceProvider.class);
+        this.serviceProviderClasses = this.plugin.getPackageUtils().getClassesAnnotatedWith(ServiceProvider.class);
         this.serviceProviders = new HashMap<>();
 
         serviceProviderClasses.forEach(serviceProviderClass -> {
             var serviceName = serviceProviderClass.getAnnotation(ServiceProvider.class).name();
-            var serviceProviderInstance = PackageUtils.instantiate(serviceProviderClass);
+            var serviceProviderInstance = this.plugin.getPackageUtils().instantiate(serviceProviderClass);
             this.serviceProviders.put(serviceName, serviceProviderInstance);
             this.plugin.getLogger().info("Created service-provider " + serviceName);
         });
     }
 
     private void initControllers() {
-        Set<Class<?>> controllerClasses = PackageUtils.getClassesAnnotatedWith(Controller.class);
+        Set<Class<?>> controllerClasses = this.plugin.getPackageUtils().getClassesAnnotatedWith(Controller.class);
         this.controllers = new HashSet<>();
 
         controllerClasses.forEach(controllerClass -> {
-            var controllerInstance = PackageUtils.instantiate(controllerClass);
+            var controllerInstance = this.plugin.getPackageUtils().instantiate(controllerClass);
 
             if (controllerInstance != null) {
                 this.controllers.add(controllerInstance);
@@ -79,7 +82,7 @@ public class ProviderManager {
     private void initServiceHooks() {
         this.controllers.forEach(controller -> {
             this.plugin.getLogger().info("Auto rigging service hooks for controller " + controller.getClass().getName());
-            var serviceHooks = PackageUtils.getFieldsAnnotatedWith(Service.class, controller.getClass());
+            var serviceHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
 
             serviceHooks.forEach(serviceHook -> {
                 var serviceName = serviceHook.getAnnotation(Service.class).name();
@@ -91,7 +94,7 @@ public class ProviderManager {
                     try {
                         serviceHook.set(controller, serviceProvider);
                     } catch (IllegalAccessException e) {
-                        e.printStackTrace();
+                        this.plugin.getLogger().throwing(CLASS_NAME, "initServiceHooks", e);
                     }
                 }
             });
@@ -109,7 +112,7 @@ public class ProviderManager {
         try (var fileReader = new FileReader(configFile)) {
             this.config = this.plugin.getGson().fromJson(fileReader, FPConfig.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(CLASS_NAME, "loadConfig", e);
             this.config = null;
         }
     }
@@ -117,12 +120,12 @@ public class ProviderManager {
     private void initConfigHooks() {
         this.serviceProviders.values().forEach(serviceProvider -> {
             this.plugin.getLogger().info("Auto rigging config for service " + serviceProvider.getClass().getName());
-            var configHooks = PackageUtils.getFieldsAnnotatedWith(Config.class, serviceProvider.getClass());
+            var configHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Config.class, serviceProvider.getClass());
             configHooks.forEach(configHook -> {
                 try {
                     configHook.set(serviceProvider, this.config);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(CLASS_NAME, "initConfigHooks", e);
                 }
             });
         });
@@ -131,12 +134,12 @@ public class ProviderManager {
     private void initPluginHooks() {
         this.serviceProviders.values().forEach(serviceProvider -> {
             this.plugin.getLogger().info("Auto rigging plugin for service " + serviceProvider.getClass().getName());
-            var pluginHooks = PackageUtils.getFieldsAnnotatedWith(Plugin.class, serviceProvider.getClass());
+            var pluginHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Plugin.class, serviceProvider.getClass());
             pluginHooks.forEach(pluginHook -> {
                 try {
                     pluginHook.set(serviceProvider, this.plugin);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(CLASS_NAME, "initPluginHooks", e);
                 }
             });
         });
@@ -147,24 +150,30 @@ public class ProviderManager {
 
         this.controllers.forEach(controller -> {
             this.plugin.getLogger().info("Setting up event hooks for controller " + controller.getClass().getName());
-            var eventHooks = PackageUtils.getMethodsAnnotatedWith(SpigotEvent.class, controller.getClass());
+            var eventHooks = this.plugin.getPackageUtils().getMethodsAnnotatedWith(SpigotEvent.class, controller.getClass());
             eventHooks.forEach(eventHook -> {
                 var eventType = eventHook.getParameterTypes()[0];
+
+                if (!Event.class.isAssignableFrom(eventType)) {
+                    this.plugin.getLogger().warning(String.format("Tried to register event-hook %s for controller %s, but the first param is not a spigot event!", eventHook.getName(), controller.getClass().getName()));
+                    return;
+                }
+
                 if (this.events.containsKey(eventType))
                     this.events.get(eventType).add(eventHook);
                 else
-                    this.events.put(eventType, Set.of(eventHook));
+                    this.events.put((Class<? extends Event>) eventType, Set.of(eventHook));
             });
         });
     }
 
     private void createDataRepos() {
-        PackageUtils.loadMysqlDriver();
+        this.plugin.getPackageUtils().loadMysqlDriver();
 
         this.dataProviders = new HashMap<>();
 
         this.serviceProviderClasses.forEach(serviceProviderClass -> {
-            var dataRepoHooks = PackageUtils.getFieldsAnnotatedWith(DataRepo.class, serviceProviderClass);
+            var dataRepoHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(DataRepo.class, serviceProviderClass);
             var serviceProvider = this.serviceProviders.get(serviceProviderClass.getAnnotation(ServiceProvider.class).name());
 
             dataRepoHooks.forEach(dataRepoHook -> {
@@ -172,7 +181,7 @@ public class ProviderManager {
                 var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
-                    var dataRepoInstance = (DataRepoProvider<?>) PackageUtils.instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin);
+                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getPackageUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin);
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
 
@@ -181,7 +190,7 @@ public class ProviderManager {
                 try {
                     dataRepoHook.set(serviceProvider, dataRepo);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(CLASS_NAME, "createDataRepos", e);
                 }
 
                 this.plugin.getLogger().info("Auto rigged data-repo " + dataRepoEntityType.getName() + " for service-provider " + serviceProviderClass.getName());
@@ -201,12 +210,11 @@ public class ProviderManager {
      */
     private void enableControllers() {
         this.controllers.forEach(controller -> {
-            PackageUtils.getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
                 try {
                     onEnableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    this.plugin.getLogger().warning("An onEnable func threw an error. Stacktrace following...");
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(CLASS_NAME, "enableControllers", e);
                 }
             });
         });
@@ -214,19 +222,14 @@ public class ProviderManager {
 
     public void onDisable() {
         this.controllers.forEach(controller -> {
-            PackageUtils.getMethodsAnnotatedWith(OnDisable.class, controller.getClass()).forEach(onDisableFunc -> {
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnDisable.class, controller.getClass()).forEach(onDisableFunc -> {
                 try {
                     onDisableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    this.plugin.getLogger().warning("An onDisable func threw an error. Stacktrace following...");
-                    e.printStackTrace();
+                    this.plugin.getLogger().throwing(CLASS_NAME, "onDisable", e);
                 }
             });
         });
-    }
-
-    public FPConfig getConfig() {
-        return config;
     }
 
     public void invokeEvent(Event event) {
@@ -235,10 +238,10 @@ public class ProviderManager {
 
         this.events.get(event.getClass()).forEach(handler -> {
             try {
-                System.out.println(handler);
+                System.out.println(handler.getName());
                 handler.invoke(event);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                this.plugin.getLogger().throwing(CLASS_NAME, "invokeEvent", e);
             }
         });
     }

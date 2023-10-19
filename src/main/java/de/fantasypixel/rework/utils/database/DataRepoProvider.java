@@ -2,7 +2,9 @@ package de.fantasypixel.rework.utils.database;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.PackageUtils;
+import lombok.NonNull;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,8 +18,8 @@ public class DataRepoProvider<E> {
 
     private final Class<E> typeParameterClass;
     private final Map<Integer, E> cachedEntities;
-    private final String tableName;
     private final FPRework plugin;
+    private final String tableName;
 
     public DataRepoProvider(Class<E> typeParameterClass, FPRework plugin) {
         this.typeParameterClass = typeParameterClass;
@@ -29,9 +31,30 @@ public class DataRepoProvider<E> {
             this.tableName = entityAnnotation.tableName();
         else {
             this.tableName = "ERROR";
-            this.plugin.getLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The data-repo will still be active but error upon requests.");
+            this.plugin.getLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The server will shutdown.");
+            this.plugin.getServer().shutdown();
         }
+
+        //testDatabaseConnection();
     }
+
+    //private void testDatabaseConnection() {
+    //    try (
+    //            var conn = this.getConnection();
+    //            var stmt = conn.prepareStatement("SELECT VERSION()");
+    //            var rs = stmt.executeQuery();
+    //    ) {
+    //        if (!rs.next()) {
+    //            this.plugin.getLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config.json. Server will continue operating as normal.");
+    //            return;
+    //        }
+    //
+    //        this.plugin.getLogger().info("The database connection was established. Database-Version: " + rs.getString(1));
+    //    } catch (Exception e) {
+    //        this.plugin.getLogger().severe("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
+    //        this.plugin.getServer().shutdown();
+    //    }
+    //}
 
     /**
      * @return the entities id or 0 if not set / an error occurred
@@ -40,9 +63,10 @@ public class DataRepoProvider<E> {
         try {
             var idField = entity.getClass().getDeclaredField("id");
             idField.setAccessible(true);
-            return idField.getInt(entity);
+            var idValue = idField.get(entity);
+            return (idValue instanceof Integer) ? (Integer) idValue : 0;
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing("DataRepoProvider", "getId", e);
             return 0;
         }
     }
@@ -63,12 +87,10 @@ public class DataRepoProvider<E> {
 
         for (Field field : fields) {
             var fieldType = field.getType();
-            var fieldValue = PackageUtils.getFieldValueSafe(field, object);
+            var fieldValue = this.plugin.getPackageUtils().getFieldValueSafe(field, object);
 
-            if (fieldValue == null) {
-                this.plugin.getLogger().warning("SQL-integrity check for object of type " + object.getClass().getName() + " failed as a field-value was null.");
-                return false;
-            }
+            if (fieldValue == null)
+                continue;
 
             if (Object.class.isAssignableFrom(fieldType))
                 return checkIntegrity(fieldValue);
@@ -77,22 +99,22 @@ public class DataRepoProvider<E> {
         return true;
     }
 
+    @Nonnull
     private Connection getConnection() {
         try {
             var config = this.plugin.getProviderManager().getConfig();
             return DriverManager.getConnection(
                 String.format(
                         "jdbc:mysql://%s:%s/%s",
-                        config.database_host,
-                        config.database_port,
-                        config.database_name
+                        config.getDatabaseHost(),
+                        config.getDatabasePort(),
+                        config.getDatabaseName()
                 ),
-                    config.database_user,
-                    config.database_password
+                    config.getDatabaseUser(),
+                    config.getDatabasePassword()
             );
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
@@ -100,14 +122,17 @@ public class DataRepoProvider<E> {
         if (this.cachedEntities.containsKey(id))
             return true;
 
+        var statementStr = String.format("SELECT * FROM %s WHERE `id` = '%d'", this.tableName, id);
+        logSqlStatement(statementStr);
+
         try (
                 var conn = this.getConnection();
-                var statement = conn.prepareStatement(String.format("SELECT * FROM %s WHERE `id` = '%d'", this.tableName, id));
+                var statement = conn.prepareStatement(statementStr);
                 var rs = statement.executeQuery()
         ) {
             return rs.next();
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing("DataRepoProvider", "existsWithId", e);
             return false;
         }
     }
@@ -116,16 +141,19 @@ public class DataRepoProvider<E> {
         if (this.cachedEntities.containsKey(id))
             return this.cachedEntities.get(id);
 
+        var statementStr = String.format("SELECT * FROM %s WHERE `id` = '%d'", this.tableName, id);
+        logSqlStatement(statementStr);
+
         try (
                 var conn = this.getConnection();
-                var statement = conn.prepareStatement(String.format("SELECT * FROM %s WHERE `id` = '%d'", this.tableName, id));
+                var statement = conn.prepareStatement(statementStr);
                 var rs = statement.executeQuery()
         ) {
             if (!rs.next())
                 return null;
 
             var columnCount = rs.getMetaData().getColumnCount();
-            var entityInstance = PackageUtils.instantiate(this.typeParameterClass);
+            var entityInstance = this.plugin.getPackageUtils().instantiate(this.typeParameterClass);
 
             for (var i=0; i<columnCount; i++) {
                 var columnName = rs.getMetaData().getColumnName(i);
@@ -138,7 +166,7 @@ public class DataRepoProvider<E> {
             this.cachedEntities.put(id, entityInstance);
             return entityInstance;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing("DataRepoProvider", "getById", e);
             return null;
         }
     }
@@ -165,14 +193,17 @@ public class DataRepoProvider<E> {
 
         this.cachedEntities.remove(entityId);
 
+        var statementStr = String.format("DELETE FROM %s WHERE `id` = '%d'", this.tableName, entityId);
+        logSqlStatement(statementStr);
+
         try (
                 var conn = this.getConnection();
-                var statement = conn.prepareStatement(String.format("DELETE FROM %s WHERE `id` = '%d'", this.tableName, entityId))
+                var statement = conn.prepareStatement(statementStr)
         ) {
             statement.execute();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing("DataRepoProvider", "delete", e);
             return false;
         }
     }
@@ -193,25 +224,27 @@ public class DataRepoProvider<E> {
             return false;
         }
 
+        var statementStr = String.format(
+                "UPDATE %s SET %s WHERE `id` = '%d'",
+                this.tableName,
+                Arrays.stream(this.typeParameterClass.getDeclaredFields())
+                        .peek(e -> e.setAccessible(true))
+                        .filter(e -> !e.isAnnotationPresent(Ignore.class))
+                        .map(e -> String.format("`%s` = '%s'", e.getName(), this.plugin.getPackageUtils().getFieldValueSafe(e, entity)))
+                        .collect(Collectors.joining(", ")),
+                entityId
+        );
+
+        logSqlStatement(statementStr);
+
         try (
             var conn = this.getConnection();
-            var statement = conn.prepareStatement(
-                    String.format(
-                            "UPDATE %s SET %s WHERE `id` = '%d'",
-                            this.tableName,
-                            Arrays.stream(this.typeParameterClass.getDeclaredFields())
-                                    .peek(e -> e.setAccessible(true))
-                                    .filter(e -> !e.isAnnotationPresent(Ignore.class))
-                                    .map(e -> String.format("`%s` = '%s'", e.getName(), PackageUtils.getFieldValueSafe(e, entity)))
-                                    .collect(Collectors.joining(", ")),
-                            entityId
-                    )
-            );
+            var statement = conn.prepareStatement(statementStr)
         ) {
             statement.execute();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing("DataRepoProvider", "save", e);
             return false;
         }
     }
@@ -232,23 +265,27 @@ public class DataRepoProvider<E> {
             return false;
         }
 
+        var statementStr = String.format(
+                "INSERT INTO %s VALUES (%s)",
+                this.tableName,
+                Arrays.stream(this.typeParameterClass.getDeclaredFields())
+                        .peek(e -> e.setAccessible(true))
+                        .filter(e -> !e.isAnnotationPresent(Ignore.class))
+                        .map(e -> {
+                            var val = this.plugin.getPackageUtils().getFieldValueSafe(e, entity);
+                            return val != null ? String.format("'%s'", val) : "null";
+                        })
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(", "))
+        );
+
+        logSqlStatement(statementStr);
+
         try (
                 var conn = this.getConnection();
-                var statement = conn.prepareStatement(
-                    String.format(
-                            "INSERT INTO %s VALUES (%s)",
-                            this.tableName,
-                            Arrays.stream(this.typeParameterClass.getDeclaredFields())
-                                    .peek(e -> e.setAccessible(true))
-                                    .filter(e -> !e.isAnnotationPresent(Ignore.class))
-                                    .map(e -> String.format("'%s'", PackageUtils.getFieldValueSafe(e, entity)))
-                                    .map(String::valueOf)
-                                    .collect(Collectors.joining(", "))
-                    ),
-                    Statement.RETURN_GENERATED_KEYS
-            )
+                var statement = conn.prepareStatement(statementStr, Statement.RETURN_GENERATED_KEYS)
         ) {
-            statement.executeUpdate();
+            statement.execute();
 
             var generatedKeys = statement.getGeneratedKeys();
             if (!generatedKeys.next()) {
@@ -259,12 +296,17 @@ public class DataRepoProvider<E> {
             var generatedId = generatedKeys.getInt(1);
             var idField = entity.getClass().getDeclaredField("id");
             idField.setAccessible(true);
-            idField.setInt(entity, generatedId);
+            idField.set(entity, generatedId);
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing("DataRepoProvider", "insert", e);
             return false;
         }
     }
+
+    private void logSqlStatement(String statementStr) {
+        this.plugin.getLogger().fine(String.format("Executing SQL: \"%s\"", statementStr));
+    }
+
 }

@@ -1,15 +1,18 @@
 package de.fantasypixel.rework.utils;
 
+import lombok.Getter;
+
 /**
  * Holds the configuration, loaded from plugins/FP-Rework/config.json via gson.
  */
+@Getter
 public class FPConfig {
 
-    public String database_host;
-    public String database_user;
-    public String database_password;
-    public String database_port;
-    public String database_name;
-    public String version;
+    private String databaseHost;
+    private String databaseUser;
+    private String databasePassword;
+    private String databasePort;
+    private String databaseName;
+    private String version;
 
 }

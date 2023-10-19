@@ -16,7 +16,11 @@ public class SpigotEventManager implements Listener {
 
         var registeredListener = new RegisteredListener(
                 this,
-                (listener, event) -> this.plugin.getProviderManager().invokeEvent(event),
+                (listener, event) -> {
+//                    System.out.println("listener.getClass().getName() = " + listener.getClass().getName());
+//                    System.out.println("event.getClass().getName() = " + event.getClass().getName());
+                    this.plugin.getProviderManager().invokeEvent(event);
+                },
                 EventPriority.NORMAL, plugin,
                 false
         );

@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.utils;
 
+import de.fantasypixel.rework.FPRework;
 import org.bukkit.Bukkit;
 import org.reflections.Reflections;
 
@@ -12,20 +13,27 @@ import java.util.stream.Collectors;
 
 public class PackageUtils {
 
-    public static void loadMysqlDriver() {
+    private final String CLASS_NAME = PackageUtils.class.getSimpleName();
+    private final FPRework plugin;
+
+    public PackageUtils(FPRework plugin) {
+        this.plugin = plugin;
+    }
+
+    public void loadMysqlDriver() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(CLASS_NAME, "loadMysqlDriver", e);
         }
     }
 
-    public static Set<Class<?>> getClassesAnnotatedWith(Class<? extends Annotation> annotationClass) {
+    public Set<Class<?>> getClassesAnnotatedWith(Class<? extends Annotation> annotationClass) {
         var reflections = new Reflections("de.fantasypixel.rework");
         return reflections.getTypesAnnotatedWith(annotationClass);
     }
 
-    public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
+    public Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(e -> !e.isSynthetic())
                 .peek(field -> field.setAccessible(true))
@@ -33,13 +41,13 @@ public class PackageUtils {
                 .collect(Collectors.toSet());
     }
 
-    public static Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
+    public Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
         return Arrays.stream(clazz.getMethods())
                 .filter(method -> method.isAnnotationPresent(annotationClass))
                 .collect(Collectors.toSet());
     }
 
-    public static <T> T instantiate(Class<T> clazz, Object... args) {
+    public <T> T instantiate(Class<T> clazz, Object... args) {
         try {
 
             var argTypes = Arrays.stream(args)
@@ -51,13 +59,13 @@ public class PackageUtils {
             return constructor.newInstance(args);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(CLASS_NAME, "instantiate", e);
             return null;
         }
     }
 
 
-    public static void invoke(Method method, Object target, Object... args) {
+    public void invoke(Method method, Object target, Object... args) {
         method.setAccessible(true);
         try {
 
@@ -68,16 +76,16 @@ public class PackageUtils {
             else
                 method.invoke(target, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(CLASS_NAME, "invoke", e);
         }
     }
 
-    public static Object getFieldValueSafe(Field field, Object object) {
+    public Object getFieldValueSafe(Field field, Object object) {
         try {
             field.setAccessible(true);
             return field.get(object);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            this.plugin.getLogger().throwing(CLASS_NAME, "getFieldValueSafe", e);
             return null;
         }
     }

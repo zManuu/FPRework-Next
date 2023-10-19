@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.utils.command;
 
+import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.PackageUtils;
 import de.fantasypixel.rework.utils.provider.Controller;
 import org.bukkit.command.CommandSender;
@@ -13,9 +14,9 @@ import java.util.List;
 
 public class CommandManager {
 
-    private final JavaPlugin plugin;
+    private final FPRework plugin;
 
-    public CommandManager(JavaPlugin plugin) {
+    public CommandManager(FPRework plugin) {
         this.plugin = plugin;
     }
 
@@ -41,7 +42,7 @@ public class CommandManager {
                     return false;
                 }
 
-                PackageUtils.invoke(method, commandExecutor, sender, args);
+                this.plugin.getPackageUtils().invoke(method, commandExecutor, sender, args);
                 return true;
             });
 
