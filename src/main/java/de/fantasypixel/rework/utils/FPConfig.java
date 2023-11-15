@@ -14,5 +14,6 @@ public class FPConfig {
     private String databasePort;
     private String databaseName;
     private String version;
+    private int controllerStartupTimeout;
 
 }

@@ -2,21 +2,26 @@ package de.fantasypixel.rework.utils.provider;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.FPConfig;
-import de.fantasypixel.rework.utils.PackageUtils;
 import de.fantasypixel.rework.utils.database.DataRepo;
 import de.fantasypixel.rework.utils.database.DataRepoProvider;
 import de.fantasypixel.rework.utils.events.OnDisable;
 import de.fantasypixel.rework.utils.events.OnEnable;
-import de.fantasypixel.rework.utils.spigotevents.SpigotEvent;
+import de.fantasypixel.rework.utils.provider.autorigging.Config;
+import de.fantasypixel.rework.utils.provider.autorigging.Gson;
+import de.fantasypixel.rework.utils.provider.autorigging.Plugin;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.event.Event;
+import org.bukkit.event.Listener;
 
 import java.io.File;
 import java.io.FileReader;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ProviderManager {
 
@@ -28,7 +33,6 @@ public class ProviderManager {
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
-    private Map<Class<? extends Event>, Set<Method>> events;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -37,19 +41,22 @@ public class ProviderManager {
         this.initControllers();
         this.initServiceHooks();
         this.loadConfig();
-        this.initConfigHooks();
-        this.initPluginHooks();
-        this.initEventHooks();
+        this.initHooks("Plugin", Plugin.class, this.plugin);
+        this.initHooks("Gson", Gson.class, this.plugin.getGson());
+        this.initHooks("Config", Config.class, this.config);
         this.createDataRepos();
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available
         Bukkit.getScheduler().runTaskLaterAsynchronously(
                 this.plugin,
                 this::enableControllers,
-                100
+                this.config.getControllerStartupTimeout()
         );
     }
 
+    /**
+     * Creates instances of all service-providers and populates them into {@link #serviceProviders}.
+     */
     private void initServiceProviders() {
         this.serviceProviderClasses = this.plugin.getPackageUtils().getClassesAnnotatedWith(ServiceProvider.class);
         this.serviceProviders = new HashMap<>();
@@ -58,10 +65,13 @@ public class ProviderManager {
             var serviceName = serviceProviderClass.getAnnotation(ServiceProvider.class).name();
             var serviceProviderInstance = this.plugin.getPackageUtils().instantiate(serviceProviderClass);
             this.serviceProviders.put(serviceName, serviceProviderInstance);
-            this.plugin.getLogger().info("Created service-provider " + serviceName);
+            this.plugin.getFpLogger().info("Created service-provider " + serviceName);
         });
     }
 
+    /**
+     * Creates instances of all controllers and populates them into {@link #controllers}.
+     */
     private void initControllers() {
         Set<Class<?>> controllerClasses = this.plugin.getPackageUtils().getClassesAnnotatedWith(Controller.class);
         this.controllers = new HashSet<>();
@@ -72,16 +82,20 @@ public class ProviderManager {
             if (controllerInstance != null) {
                 this.controllers.add(controllerInstance);
                 this.plugin.getCommandManager().registerCommands(controllerInstance);
-                this.plugin.getLogger().info("Created controller " + controllerClass.getName());
+                this.plugin.getFpLogger().info("Created controller " + controllerClass.getName());
             } else {
-                this.plugin.getLogger().warning("Couldn't instantiate controller " + controllerClass.getName());
+                this.plugin.getFpLogger().warning("Couldn't instantiate controller " + controllerClass.getName());
             }
         });
     }
 
+    /**
+     * Auto riggs the specific service-provider instance from {@link #serviceProviders} to controllers requiring it.
+     * Similar to {@link #initHooks(String, Class, Object)}, but here the {@link #controllers} are iterated.
+     */
     private void initServiceHooks() {
         this.controllers.forEach(controller -> {
-            this.plugin.getLogger().info("Auto rigging service hooks for controller " + controller.getClass().getName());
+            this.plugin.getFpLogger().info("Auto rigging service hooks for controller " + controller.getClass().getName());
             var serviceHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
 
             serviceHooks.forEach(serviceHook -> {
@@ -89,84 +103,68 @@ public class ProviderManager {
                 var serviceProvider = this.serviceProviders.get(serviceName);
 
                 if (serviceProvider == null) {
-                    this.plugin.getLogger().warning("No service provider found for " + serviceName + ".");
+                    this.plugin.getFpLogger().warning("No service provider found for " + serviceName + ".");
                 } else {
                     try {
                         serviceHook.set(controller, serviceProvider);
                     } catch (IllegalAccessException e) {
-                        this.plugin.getLogger().throwing(CLASS_NAME, "initServiceHooks", e);
+                        this.plugin.getFpLogger().error(CLASS_NAME, "initServiceHooks", e);
                     }
                 }
             });
         });
     }
 
+    /**
+     * Loads the configuration from the file and saves it into a local variable.
+     * To reload the configuration, use {@link #reloadConfig()}.
+     */
     private void loadConfig() {
         var configFile = new File(this.plugin.getDataFolder(), "config.json");
 
         if (!configFile.exists()) {
-            this.plugin.getLogger().warning("Couldn't find config.json!");
+            this.plugin.getFpLogger().warning("Couldn't find config.json!");
             return;
         }
 
         try (var fileReader = new FileReader(configFile)) {
             this.config = this.plugin.getGson().fromJson(fileReader, FPConfig.class);
         } catch (Exception e) {
-            this.plugin.getLogger().throwing(CLASS_NAME, "loadConfig", e);
+            this.plugin.getFpLogger().error(CLASS_NAME, "loadConfig", e);
             this.config = null;
         }
     }
 
-    private void initConfigHooks() {
+    /**
+     * Autoriggs a given value into Services.
+     * @param name the name of the rigged value (only used for logging)
+     * @param annotationClass the annotation type of all objects that will be auto rigged
+     * @param value the value of the auto rigging process
+     */
+    private void initHooks(String name, Class<? extends Annotation> annotationClass, Object value) {
         this.serviceProviders.values().forEach(serviceProvider -> {
-            this.plugin.getLogger().info("Auto rigging config for service " + serviceProvider.getClass().getName());
-            var configHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Config.class, serviceProvider.getClass());
-            configHooks.forEach(configHook -> {
+            this.plugin.getFpLogger().info(
+                    MessageFormat.format(
+                            "Auto rigging {0} for service {1}",
+                            name,
+                            serviceProvider.getClass().getName()
+                    )
+            );
+
+            var hooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(annotationClass, serviceProvider.getClass());
+            hooks.forEach(hook -> {
                 try {
-                    configHook.set(serviceProvider, this.config);
+                    hook.set(serviceProvider, value);
                 } catch (IllegalAccessException e) {
-                    this.plugin.getLogger().throwing(CLASS_NAME, "initConfigHooks", e);
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initGsonHooks", e);
                 }
             });
         });
     }
 
-    private void initPluginHooks() {
-        this.serviceProviders.values().forEach(serviceProvider -> {
-            this.plugin.getLogger().info("Auto rigging plugin for service " + serviceProvider.getClass().getName());
-            var pluginHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Plugin.class, serviceProvider.getClass());
-            pluginHooks.forEach(pluginHook -> {
-                try {
-                    pluginHook.set(serviceProvider, this.plugin);
-                } catch (IllegalAccessException e) {
-                    this.plugin.getLogger().throwing(CLASS_NAME, "initPluginHooks", e);
-                }
-            });
-        });
-    }
-
-    private void initEventHooks() {
-        this.events = new HashMap<>();
-
-        this.controllers.forEach(controller -> {
-            this.plugin.getLogger().info("Setting up event hooks for controller " + controller.getClass().getName());
-            var eventHooks = this.plugin.getPackageUtils().getMethodsAnnotatedWith(SpigotEvent.class, controller.getClass());
-            eventHooks.forEach(eventHook -> {
-                var eventType = eventHook.getParameterTypes()[0];
-
-                if (!Event.class.isAssignableFrom(eventType)) {
-                    this.plugin.getLogger().warning(String.format("Tried to register event-hook %s for controller %s, but the first param is not a spigot event!", eventHook.getName(), controller.getClass().getName()));
-                    return;
-                }
-
-                if (this.events.containsKey(eventType))
-                    this.events.get(eventType).add(eventHook);
-                else
-                    this.events.put((Class<? extends Event>) eventType, Set.of(eventHook));
-            });
-        });
-    }
-
+    /**
+     * Creates all data-repository instances and populates them.
+     */
     private void createDataRepos() {
         this.plugin.getPackageUtils().loadMysqlDriver();
 
@@ -180,7 +178,7 @@ public class ProviderManager {
 
                 var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
-                    this.plugin.getLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
+                    this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
                     var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getPackageUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin);
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
@@ -190,59 +188,57 @@ public class ProviderManager {
                 try {
                     dataRepoHook.set(serviceProvider, dataRepo);
                 } catch (IllegalAccessException e) {
-                    this.plugin.getLogger().throwing(CLASS_NAME, "createDataRepos", e);
+                    this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", e);
                 }
 
-                this.plugin.getLogger().info("Auto rigged data-repo " + dataRepoEntityType.getName() + " for service-provider " + serviceProviderClass.getName());
+                this.plugin.getFpLogger().info("Auto rigged data-repo " + dataRepoEntityType.getName() + " for service-provider " + serviceProviderClass.getName());
 
             });
         });
     }
 
+    /**
+     * Reloads the configuration and provides the updated configuration to all Services.
+     */
     public void reloadConfig() {
         // hooks can be overridden
         this.loadConfig();
-        this.initConfigHooks();
+        this.initHooks("Config", Config.class, this.config);
     }
 
     /**
-     * Calls onEnable on all Controllers.
+     * Calls onEnable on all controllers.
      */
     private void enableControllers() {
         this.controllers.forEach(controller -> {
             this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
                 try {
+                    this.plugin.getFpLogger().info(MessageFormat.format("Enabling controller {0}.", controller.getClass().getName()));
                     onEnableFunc.invoke(controller);
+
+                    if (controller instanceof Listener controllerListener) {
+                        this.plugin.getFpLogger().info(MessageFormat.format("Registering controller-listener {0}.", controller.getClass().getName()));
+                        Bukkit.getPluginManager().registerEvents(controllerListener, plugin);
+                    }
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    this.plugin.getLogger().throwing(CLASS_NAME, "enableControllers", e);
+                    this.plugin.getFpLogger().error(CLASS_NAME, "enableControllers", e);
                 }
             });
         });
     }
 
+    /**
+     * Calls onDisable on all controllers.
+     */
     public void onDisable() {
         this.controllers.forEach(controller -> {
             this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnDisable.class, controller.getClass()).forEach(onDisableFunc -> {
                 try {
                     onDisableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    this.plugin.getLogger().throwing(CLASS_NAME, "onDisable", e);
+                    this.plugin.getFpLogger().error(CLASS_NAME, "onDisable", e);
                 }
             });
-        });
-    }
-
-    public void invokeEvent(Event event) {
-        if (!this.events.containsKey(event.getClass()))
-            return;
-
-        this.events.get(event.getClass()).forEach(handler -> {
-            try {
-                System.out.println(handler.getName());
-                handler.invoke(event);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                this.plugin.getLogger().throwing(CLASS_NAME, "invokeEvent", e);
-            }
         });
     }
 }

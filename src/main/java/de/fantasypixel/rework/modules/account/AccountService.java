@@ -4,10 +4,9 @@ import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.FPConfig;
 import de.fantasypixel.rework.utils.database.DataRepo;
 import de.fantasypixel.rework.utils.database.DataRepoProvider;
-import de.fantasypixel.rework.utils.provider.Config;
-import de.fantasypixel.rework.utils.provider.Plugin;
+import de.fantasypixel.rework.utils.provider.autorigging.Config;
+import de.fantasypixel.rework.utils.provider.autorigging.Plugin;
 import de.fantasypixel.rework.utils.provider.ServiceProvider;
-import org.bukkit.event.player.PlayerJoinEvent;
 
 @ServiceProvider(name = "account")
 public class AccountService {
@@ -19,7 +18,7 @@ public class AccountService {
     private DataRepoProvider<Account> accountRepo;
 
     public void sayHello() {
-        this.plugin.getLogger().info("Hello from AccountService!");
+        this.plugin.getFpLogger().info("Hello from AccountService!");
     }
 
     public void testAccountRepo() {
@@ -32,16 +31,17 @@ public class AccountService {
             var accountId = account.getId();
 
             if (accountId == null) {
-                this.plugin.getLogger().warning("Inserted entity into the database, but the entity-id wasn't updated.");
+                this.plugin.getFpLogger().warning("Inserted entity into the database, but the entity-id wasn't updated.");
             } else {
-                this.plugin.getLogger().info("Successfully inserted an entity into the database. New entity-id: " + accountId);
+                this.plugin.getFpLogger().info("Successfully inserted an entity into the database. New entity-id: " + accountId);
             }
         } else {
-            this.plugin.getLogger().warning("Couldn't insert entity into the database.");
+            this.plugin.getFpLogger().warning("Couldn't insert entity into the database.");
         }
     }
 
     public void logPlayerJoin(String playerName) {
-        this.plugin.getLogger().info(playerName + " has joined the server!");
+        System.out.println(this.plugin);
+        this.plugin.getFpLogger().info(playerName + " has joined the server!");
     }
 }

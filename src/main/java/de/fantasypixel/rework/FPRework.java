@@ -1,16 +1,20 @@
 package de.fantasypixel.rework;
 
 import com.google.gson.Gson;
+import de.fantasypixel.rework.utils.FPLogger;
 import de.fantasypixel.rework.utils.PackageUtils;
 import de.fantasypixel.rework.utils.command.CommandManager;
 import de.fantasypixel.rework.utils.provider.ProviderManager;
-import de.fantasypixel.rework.utils.spigotevents.SpigotEventManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
-import java.util.logging.*;
+import java.util.Set;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
 @Getter
 public class FPRework extends JavaPlugin {
@@ -20,13 +24,16 @@ public class FPRework extends JavaPlugin {
     private CommandManager commandManager;
     private ProviderManager providerManager;
 
+    @Getter
+    private FPLogger fpLogger;
+
     @Override
     public void onEnable() {
-        packageUtils = new PackageUtils(this);
-        gson = new Gson();
-        commandManager = new CommandManager(this);
-        providerManager = new ProviderManager(this);
-        Bukkit.getPluginManager().registerEvents(new SpigotEventManager(this), this);
+        this.fpLogger = new FPLogger();
+        this.gson = new Gson();
+        this.packageUtils = new PackageUtils(this);
+        this.commandManager = new CommandManager(this);
+        this.providerManager = new ProviderManager(this);
     }
 
     @Override

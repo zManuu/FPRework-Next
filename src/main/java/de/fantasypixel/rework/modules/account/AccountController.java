@@ -3,11 +3,13 @@ package de.fantasypixel.rework.modules.account;
 import de.fantasypixel.rework.utils.events.OnEnable;
 import de.fantasypixel.rework.utils.provider.Controller;
 import de.fantasypixel.rework.utils.provider.Service;
-import de.fantasypixel.rework.utils.spigotevents.SpigotEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 
 @Controller
-public class AccountController {
+public class AccountController implements Listener {
 
     @Service(name = "account")
     private AccountService accountService;
@@ -18,9 +20,10 @@ public class AccountController {
         this.accountService.testAccountRepo();
     }
 
-    @SpigotEvent
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        this.accountService.logPlayerJoin(event.getPlayer().getName());
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent ev) {
+        this.accountService.logPlayerJoin(ev.getPlayer().getDisplayName());
+        ev.setJoinMessage("HII");
     }
 
 }

@@ -1,4 +1,6 @@
-package de.fantasypixel.rework.utils.provider;
+package de.fantasypixel.rework.utils.provider.autorigging;
+
+import de.fantasypixel.rework.utils.provider.ServiceProvider;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -2,7 +2,7 @@ package de.fantasypixel.rework.modules.playercharacter;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.modules.character.Character;
-import de.fantasypixel.rework.utils.provider.Plugin;
+import de.fantasypixel.rework.utils.provider.autorigging.Plugin;
 import de.fantasypixel.rework.utils.provider.ServiceProvider;
 import lombok.Getter;
 
@@ -10,10 +10,11 @@ import lombok.Getter;
 public class PlayerCharacterService {
 
     @Getter
-    @Plugin private FPRework plugin;
+    @Plugin
+    private FPRework plugin;
 
     public void sayHello() {
-        this.plugin.getLogger().info("Hello from PlayerCharacterService!");
+        this.plugin.getFpLogger().info("Hello from PlayerCharacterService!");
     }
 
     public PlayerCharacter createPlayerCharacter(int accountId, String name, Character characterClass) {

@@ -24,7 +24,7 @@ public class PackageUtils {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            this.plugin.getLogger().throwing(CLASS_NAME, "loadMysqlDriver", e);
+            this.plugin.getFpLogger().error(CLASS_NAME, "loadMysqlDriver", e);
         }
     }
 
@@ -59,7 +59,7 @@ public class PackageUtils {
             return constructor.newInstance(args);
 
         } catch (Exception e) {
-            this.plugin.getLogger().throwing(CLASS_NAME, "instantiate", e);
+            this.plugin.getFpLogger().error(CLASS_NAME, "instantiate", e);
             return null;
         }
     }
@@ -76,7 +76,7 @@ public class PackageUtils {
             else
                 method.invoke(target, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            this.plugin.getLogger().throwing(CLASS_NAME, "invoke", e);
+            this.plugin.getFpLogger().error(CLASS_NAME, "invoke", e);
         }
     }
 
@@ -85,7 +85,7 @@ public class PackageUtils {
             field.setAccessible(true);
             return field.get(object);
         } catch (IllegalAccessException e) {
-            this.plugin.getLogger().throwing(CLASS_NAME, "getFieldValueSafe", e);
+            this.plugin.getFpLogger().error(CLASS_NAME, "getFieldValueSafe", e);
             return null;
         }
     }

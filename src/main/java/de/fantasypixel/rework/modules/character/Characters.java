@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.character;
 
+import de.fantasypixel.rework.modules.character.characters.CharacterWarrior;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 
 import java.util.Optional;

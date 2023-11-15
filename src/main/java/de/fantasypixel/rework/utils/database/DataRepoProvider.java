@@ -31,13 +31,14 @@ public class DataRepoProvider<E> {
             this.tableName = entityAnnotation.tableName();
         else {
             this.tableName = "ERROR";
-            this.plugin.getLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The server will shutdown.");
+            this.plugin.getFpLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The server will shutdown.");
             this.plugin.getServer().shutdown();
         }
 
         //testDatabaseConnection();
     }
 
+    // todo: working implementation
     //private void testDatabaseConnection() {
     //    try (
     //            var conn = this.getConnection();
@@ -66,7 +67,7 @@ public class DataRepoProvider<E> {
             var idValue = idField.get(entity);
             return (idValue instanceof Integer) ? (Integer) idValue : 0;
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            this.plugin.getLogger().throwing("DataRepoProvider", "getId", e);
+            this.plugin.getFpLogger().error("DataRepoProvider", "getId", e);
             return 0;
         }
     }
@@ -132,7 +133,7 @@ public class DataRepoProvider<E> {
         ) {
             return rs.next();
         } catch (Exception e) {
-            this.plugin.getLogger().throwing("DataRepoProvider", "existsWithId", e);
+            this.plugin.getFpLogger().error("DataRepoProvider", "existsWithId", e);
             return false;
         }
     }
@@ -166,7 +167,7 @@ public class DataRepoProvider<E> {
             this.cachedEntities.put(id, entityInstance);
             return entityInstance;
         } catch (Exception e) {
-            this.plugin.getLogger().throwing("DataRepoProvider", "getById", e);
+            this.plugin.getFpLogger().error("DataRepoProvider", "getById", e);
             return null;
         }
     }
@@ -176,18 +177,18 @@ public class DataRepoProvider<E> {
      */
     public boolean delete(E entity) {
         if (!checkIntegrity(entity)) {
-            this.plugin.getLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
+            this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
             return false;
         }
 
         var entityId = this.getId(entity);
         if (entityId == 0) {
-            this.plugin.getLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
+            this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
             return false;
         }
 
         if (!this.existsWithId(entityId)) {
-            this.plugin.getLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as no entity with that id exists.");
+            this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as no entity with that id exists.");
             return false;
         }
 
@@ -203,7 +204,7 @@ public class DataRepoProvider<E> {
             statement.execute();
             return true;
         } catch (Exception e) {
-            this.plugin.getLogger().throwing("DataRepoProvider", "delete", e);
+            this.plugin.getFpLogger().error("DataRepoProvider", "delete", e);
             return false;
         }
     }
@@ -214,13 +215,13 @@ public class DataRepoProvider<E> {
      */
     public boolean save(E entity) {
         if (!checkIntegrity(entity)) {
-            this.plugin.getLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
+            this.plugin.getFpLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
             return false;
         }
 
         var entityId = this.getId(entity);
         if (entityId == 0) {
-            this.plugin.getLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
+            this.plugin.getFpLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
             return false;
         }
 
@@ -244,7 +245,7 @@ public class DataRepoProvider<E> {
             statement.execute();
             return true;
         } catch (Exception e) {
-            this.plugin.getLogger().throwing("DataRepoProvider", "save", e);
+            this.plugin.getFpLogger().error("DataRepoProvider", "save", e);
             return false;
         }
     }
@@ -255,13 +256,13 @@ public class DataRepoProvider<E> {
      */
     public boolean insert(E entity) {
         if (!checkIntegrity(entity)) {
-            this.plugin.getLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
+            this.plugin.getFpLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
             return false;
         }
 
         var entityId = this.getId(entity);
         if (entityId != 0) {
-            this.plugin.getLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the entity has an id-value already.");
+            this.plugin.getFpLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the entity has an id-value already.");
             return false;
         }
 
@@ -289,7 +290,7 @@ public class DataRepoProvider<E> {
 
             var generatedKeys = statement.getGeneratedKeys();
             if (!generatedKeys.next()) {
-                this.plugin.getLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the statement didn't return keys.");
+                this.plugin.getFpLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the statement didn't return keys.");
                 return false;
             }
 
@@ -300,13 +301,13 @@ public class DataRepoProvider<E> {
 
             return true;
         } catch (Exception e) {
-            this.plugin.getLogger().throwing("DataRepoProvider", "insert", e);
+            this.plugin.getFpLogger().error("DataRepoProvider", "insert", e);
             return false;
         }
     }
 
     private void logSqlStatement(String statementStr) {
-        this.plugin.getLogger().fine(String.format("Executing SQL: \"%s\"", statementStr));
+        this.plugin.getFpLogger().debug(String.format("Executing SQL: \"%s\"", statementStr));
     }
 
 }

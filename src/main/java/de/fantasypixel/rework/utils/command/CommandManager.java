@@ -29,7 +29,7 @@ public class CommandManager {
             var pluginCommand = plugin.getCommand(commandName);
 
             if (pluginCommand == null) {
-                plugin.getLogger().warning("Couldn't find command " + commandName + ". You may need to add it to the plugin.yml!");
+                plugin.getFpLogger().warning("Couldn't find command " + commandName + ". You may need to add it to the plugin.yml!");
                 continue;
             }
 
@@ -47,7 +47,7 @@ public class CommandManager {
             pluginCommand.setPermission(commandAnnotation.permission());
             pluginCommand.setAliases(List.of(commandAnnotation.aliases()));
 
-            plugin.getLogger().info("Registered command " + commandName + ".");
+            plugin.getFpLogger().info("Registered command " + commandName + ".");
         }
     }
 

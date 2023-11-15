@@ -9,13 +9,14 @@ import lombok.Setter;
 
 import javax.annotation.Nullable;
 
-@Entity(tableName = "character")
 @Getter
 @Setter
 @Builder
+@Entity(tableName = "character")
 public class PlayerCharacter {
 
-    private @Nullable Integer id;
+    @Nullable
+    private Integer id;
     private int accountId;
     private String name;
 

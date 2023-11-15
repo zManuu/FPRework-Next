@@ -1,4 +1,6 @@
-package de.fantasypixel.rework.modules.character;
+package de.fantasypixel.rework.modules.character.characters;
+
+import de.fantasypixel.rework.modules.character.Character;
 
 public class CharacterWarrior extends Character {
 
