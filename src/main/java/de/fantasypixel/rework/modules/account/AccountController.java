@@ -1,10 +1,12 @@
 package de.fantasypixel.rework.modules.account;
 
+import de.fantasypixel.rework.utils.command.Command;
 import de.fantasypixel.rework.utils.events.OnEnable;
 import de.fantasypixel.rework.utils.provider.Controller;
 import de.fantasypixel.rework.utils.provider.Service;
 import de.fantasypixel.rework.utils.timer.Timer;
 import de.fantasypixel.rework.utils.timer.TimerType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -28,6 +30,11 @@ public class AccountController implements Listener {
     public void onPlayerJoin(PlayerJoinEvent ev) {
         this.accountService.logPlayerJoin(ev.getPlayer().getDisplayName());
         ev.setJoinMessage("HII");
+    }
+
+    @Command(name = "test")
+    public void onTestCommand(Player player, String[] args) {
+        this.accountService.logPlayerTestCommand(args);
     }
 
     @Timer(interval = 50, type = TimerType.ASYNC)

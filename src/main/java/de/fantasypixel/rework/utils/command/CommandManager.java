@@ -47,7 +47,7 @@ public class CommandManager {
             pluginCommand.setPermission(commandAnnotation.permission());
             pluginCommand.setAliases(List.of(commandAnnotation.aliases()));
 
-            plugin.getFpLogger().info("Registered command " + commandName + ".");
+            plugin.getFpLogger().debug("Registered command {0}.", commandAnnotation.name());
         }
     }
 

@@ -2,6 +2,7 @@ package de.fantasypixel.rework.utils.provider;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.FPConfig;
+import de.fantasypixel.rework.utils.command.CommandManager;
 import de.fantasypixel.rework.utils.database.DataRepo;
 import de.fantasypixel.rework.utils.database.DataRepoProvider;
 import de.fantasypixel.rework.utils.events.OnDisable;
@@ -38,17 +39,19 @@ public class ProviderManager {
     private Set<Object> controllers;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
     private TimerManager timerManager;
+    private final CommandManager commandManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
+        this.commandManager = new CommandManager(plugin);
 
         this.initServiceProviders();
         this.initControllers();
         this.initServiceHooks();
         this.loadConfig();
-        this.initHooks("Plugin", Plugin.class, this.plugin);
-        this.initHooks("Gson", Gson.class, this.plugin.getGson());
-        this.initHooks("Config", Config.class, this.config);
+        this.initHooks("Plugin", Plugin.class, plugin);
+        this.initHooks("Gson", Gson.class, plugin.getGson());
+        this.initHooks("Config", Config.class, config);
         this.createDataRepos();
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available
@@ -86,7 +89,7 @@ public class ProviderManager {
 
             if (controllerInstance != null) {
                 this.controllers.add(controllerInstance);
-                this.plugin.getCommandManager().registerCommands(controllerInstance);
+                this.commandManager.registerCommands(controllerInstance);
                 this.plugin.getFpLogger().info("Created controller " + controllerClass.getName());
             } else {
                 this.plugin.getFpLogger().warning("Couldn't instantiate controller " + controllerClass.getName());

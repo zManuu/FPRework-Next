@@ -50,4 +50,11 @@ public class AccountService {
                 runs
         );
     }
+
+    public void logPlayerTestCommand(String[] args) {
+        this.plugin.getFpLogger().info(
+                "A player has executed the test-command. args={0}",
+                String.join(",", args)
+        );
+    }
 }

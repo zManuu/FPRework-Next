@@ -21,7 +21,6 @@ public class FPRework extends JavaPlugin {
 
     private PackageUtils packageUtils;
     private Gson gson;
-    private CommandManager commandManager;
     private ProviderManager providerManager;
 
     @Getter
@@ -32,7 +31,6 @@ public class FPRework extends JavaPlugin {
         this.fpLogger = new FPLogger();
         this.gson = new Gson();
         this.packageUtils = new PackageUtils(this);
-        this.commandManager = new CommandManager(this);
         this.providerManager = new ProviderManager(this);
     }
 
