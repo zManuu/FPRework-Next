@@ -2,6 +2,8 @@ package de.fantasypixel.rework.utils;
 
 import org.bukkit.Bukkit;
 
+import java.text.MessageFormat;
+
 public class FPLogger {
 
     public enum LogLevel {
@@ -25,6 +27,15 @@ public class FPLogger {
         this.resolve(LogLevel.INFO, message);
     }
 
+    /**
+     * Uses {@link MessageFormat} to format the message.
+     * @param message the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param args the arguments to be passed to the pattern
+     */
+    public void info(String message, Object... args) {
+        this.resolve(LogLevel.INFO, MessageFormat.format(message, args));
+    }
+
     public void error(String fromClass, String fromMethod, Throwable throwable) {
         this.resolve(
                 LogLevel.ERROR,
@@ -39,8 +50,26 @@ public class FPLogger {
         this.resolve(LogLevel.WARNING, message);
     }
 
+    /**
+     * Uses {@link MessageFormat} to format the message.
+     * @param message the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param args the arguments to be passed to the pattern
+     */
+    public void warning(String message, Object... args) {
+        this.resolve(LogLevel.WARNING, MessageFormat.format(message, args));
+    }
+
     public void debug(String message) {
         this.resolve(LogLevel.DEBUG, message);
+    }
+
+    /**
+     * Uses {@link MessageFormat} to format the message.
+     * @param message the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param args the arguments to be passed to the pattern
+     */
+    public void debug(String message, Object... args) {
+        this.resolve(LogLevel.DEBUG, MessageFormat.format(message, args));
     }
 
     public void entering(String fromClass, String fromMethod) {

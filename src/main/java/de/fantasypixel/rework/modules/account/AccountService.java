@@ -41,7 +41,13 @@ public class AccountService {
     }
 
     public void logPlayerJoin(String playerName) {
-        System.out.println(this.plugin);
         this.plugin.getFpLogger().info(playerName + " has joined the server!");
+    }
+
+    public void logTimerRuns(int runs) {
+        this.plugin.getFpLogger().info(
+                "The test-timer ran {0} times.",
+                runs
+        );
     }
 }

@@ -9,6 +9,8 @@ import de.fantasypixel.rework.utils.events.OnEnable;
 import de.fantasypixel.rework.utils.provider.autorigging.Config;
 import de.fantasypixel.rework.utils.provider.autorigging.Gson;
 import de.fantasypixel.rework.utils.provider.autorigging.Plugin;
+import de.fantasypixel.rework.utils.timer.Timer;
+import de.fantasypixel.rework.utils.timer.TimerManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -17,6 +19,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +29,7 @@ import java.util.Set;
 public class ProviderManager {
 
     private final String CLASS_NAME = ProviderManager.class.getSimpleName();
+
     private final FPRework plugin;
     @Getter
     private FPConfig config;
@@ -33,6 +37,7 @@ public class ProviderManager {
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
+    private TimerManager timerManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -207,10 +212,13 @@ public class ProviderManager {
     }
 
     /**
-     * Calls onEnable on all controllers.
+     * Calls onEnable on all controllers and starts the timers.
      */
     private void enableControllers() {
+        var timerMap = new HashMap<Method, Object>();
+
         this.controllers.forEach(controller -> {
+            // call onEnable
             this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
                 try {
                     this.plugin.getFpLogger().info(MessageFormat.format("Enabling controller {0}.", controller.getClass().getName()));
@@ -224,11 +232,16 @@ public class ProviderManager {
                     this.plugin.getFpLogger().error(CLASS_NAME, "enableControllers", e);
                 }
             });
+
+            // load timers into map
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(Timer.class, controller.getClass()).forEach((timerFunc) -> timerMap.put(timerFunc, controller));
         });
+
+        this.timerManager = new TimerManager(this.plugin, timerMap);
     }
 
     /**
-     * Calls onDisable on all controllers.
+     * Calls onDisable on all controllers and stops the timers.
      */
     public void onDisable() {
         this.controllers.forEach(controller -> {
@@ -240,5 +253,7 @@ public class ProviderManager {
                 }
             });
         });
+
+        this.timerManager.stopTimers();
     }
 }
