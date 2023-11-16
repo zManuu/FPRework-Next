@@ -26,7 +26,7 @@ public class TimerManager {
         var timerData = method.getAnnotation(Timer.class);
 
         this.plugin.getFpLogger().debug(
-                "Timer {0} is stating. delay={1}ms, interval={2}ms, type={3}",
+                "Timer {0} is starting. delay={1}ms, interval={2}ms, type={3}",
                 method.getDeclaringClass().getSimpleName() + "::" + method.getName(),
                 timerData.delay(),
                 timerData.interval(),
@@ -37,7 +37,7 @@ public class TimerManager {
             try {
                 method.invoke(object);
             } catch (Exception ex) {
-                this.plugin.getFpLogger().error(CLASS_NAME, "startTimer", ex);
+                this.plugin.getFpLogger().error(CLASS_NAME, "startTimer->invoke", ex);
             }
         };
 

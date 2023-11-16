@@ -3,24 +3,18 @@ package de.fantasypixel.rework;
 import com.google.gson.Gson;
 import de.fantasypixel.rework.utils.FPLogger;
 import de.fantasypixel.rework.utils.PackageUtils;
-import de.fantasypixel.rework.utils.command.CommandManager;
 import de.fantasypixel.rework.utils.provider.ProviderManager;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Set;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
 
 @Getter
 public class FPRework extends JavaPlugin {
 
+    // The DI-pattern is broken here because WebResponse needs a static reference to a gson object.
+    @Getter
+    private static Gson gson;
+
     private PackageUtils packageUtils;
-    private Gson gson;
     private ProviderManager providerManager;
 
     @Getter
@@ -28,8 +22,9 @@ public class FPRework extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        gson = new Gson();
+
         this.fpLogger = new FPLogger();
-        this.gson = new Gson();
         this.packageUtils = new PackageUtils(this);
         this.providerManager = new ProviderManager(this);
     }

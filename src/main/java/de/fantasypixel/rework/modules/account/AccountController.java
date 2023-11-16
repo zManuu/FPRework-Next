@@ -6,6 +6,8 @@ import de.fantasypixel.rework.utils.provider.Controller;
 import de.fantasypixel.rework.utils.provider.Service;
 import de.fantasypixel.rework.utils.timer.Timer;
 import de.fantasypixel.rework.utils.timer.TimerType;
+import de.fantasypixel.rework.utils.web.WebGet;
+import de.fantasypixel.rework.utils.web.WebResponse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -40,6 +42,11 @@ public class AccountController implements Listener {
     @Timer(interval = 50, type = TimerType.ASYNC)
     public void testTimer() {
         this.accountService.logTimerRuns(++this.timerRuns);
+    }
+
+    @WebGet(route = "/")
+    public WebResponse getHelloWorld() {
+        return new WebResponse(201, "Hello World!");
     }
 
 }

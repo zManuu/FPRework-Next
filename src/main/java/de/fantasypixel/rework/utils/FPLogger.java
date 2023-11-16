@@ -15,35 +15,28 @@ public class FPLogger {
         DEBUG
     }
 
-    private final String messageFormat;
-    private final String errorFormat;
-
-    public FPLogger() {
-        this.messageFormat = "<LEVEL> | <MESSAGE>";
-        this.errorFormat = "<CLASS>::<METHOD> <ERROR>";
-    }
-
     public void info(String message) {
         this.resolve(LogLevel.INFO, message);
     }
 
     /**
      * Uses {@link MessageFormat} to format the message.
-     * @param message the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
      * @param args the arguments to be passed to the pattern
      */
-    public void info(String message, Object... args) {
-        this.resolve(LogLevel.INFO, MessageFormat.format(message, args));
+    public void info(String pattern, Object... args) {
+        this.resolve(LogLevel.INFO, MessageFormat.format(pattern, args));
     }
 
     public void error(String fromClass, String fromMethod, Throwable throwable) {
         this.resolve(
                 LogLevel.ERROR,
-                this.errorFormat
-                        .replaceAll("<CLASS>", fromClass)
-                        .replaceAll("<METHOD>", fromMethod)
-                        .replaceAll("<ERROR>", throwable.getMessage())
+                "CLASS::METHOD ERROR"
+                        .replace("CLASS", fromClass)
+                        .replace("METHOD", fromMethod)
+                        .replace("ERROR", throwable.getMessage())
         );
+        throwable.printStackTrace();
     }
 
     public void warning(String message) {
@@ -52,11 +45,11 @@ public class FPLogger {
 
     /**
      * Uses {@link MessageFormat} to format the message.
-     * @param message the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
      * @param args the arguments to be passed to the pattern
      */
-    public void warning(String message, Object... args) {
-        this.resolve(LogLevel.WARNING, MessageFormat.format(message, args));
+    public void warning(String pattern, Object... args) {
+        this.resolve(LogLevel.WARNING, MessageFormat.format(pattern, args));
     }
 
     public void debug(String message) {
@@ -65,11 +58,11 @@ public class FPLogger {
 
     /**
      * Uses {@link MessageFormat} to format the message.
-     * @param message the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
      * @param args the arguments to be passed to the pattern
      */
-    public void debug(String message, Object... args) {
-        this.resolve(LogLevel.DEBUG, MessageFormat.format(message, args));
+    public void debug(String pattern, Object... args) {
+        this.resolve(LogLevel.DEBUG, MessageFormat.format(pattern, args));
     }
 
     public void entering(String fromClass, String fromMethod) {
@@ -88,9 +81,9 @@ public class FPLogger {
 
     private void resolve(LogLevel level, String message) {
         Bukkit.getLogger().info(
-                this.messageFormat
-                    .replaceAll("<LEVEL>", level.name())
-                    .replaceAll("<MESSAGE>", message)
+                "LEVEL | MESSAGE"
+                    .replace("LEVEL", level.name())
+                    .replace("MESSAGE", message)
         );
     }
 

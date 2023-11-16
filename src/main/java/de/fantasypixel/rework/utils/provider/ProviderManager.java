@@ -12,6 +12,7 @@ import de.fantasypixel.rework.utils.provider.autorigging.Gson;
 import de.fantasypixel.rework.utils.provider.autorigging.Plugin;
 import de.fantasypixel.rework.utils.timer.Timer;
 import de.fantasypixel.rework.utils.timer.TimerManager;
+import de.fantasypixel.rework.utils.web.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -40,15 +41,18 @@ public class ProviderManager {
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
     private TimerManager timerManager;
     private final CommandManager commandManager;
+    private final WebManager webManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
         this.commandManager = new CommandManager(plugin);
+        this.webManager = new WebManager(plugin);
 
         this.initServiceProviders();
         this.initControllers();
         this.initServiceHooks();
         this.loadConfig();
+        this.initWebHandlers();
         this.initHooks("Plugin", Plugin.class, plugin);
         this.initHooks("Gson", Gson.class, plugin.getGson());
         this.initHooks("Config", Config.class, config);
@@ -141,6 +145,19 @@ public class ProviderManager {
             this.plugin.getFpLogger().error(CLASS_NAME, "loadConfig", e);
             this.config = null;
         }
+    }
+
+    /**
+     * Registers all the web annotations.
+     */
+    private void initWebHandlers() {
+        this.controllers.forEach(controller -> {
+            // todo: less repetitive code
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebGet.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebGet.class).route()));
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPost.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebPost.class).route()));
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPut.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebPut.class).route()));
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebDelete.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebDelete.class).route()));
+        });
     }
 
     /**
@@ -244,7 +261,7 @@ public class ProviderManager {
     }
 
     /**
-     * Calls onDisable on all controllers and stops the timers.
+     * Calls onDisable on all controllers, stops the timers and the webserver.
      */
     public void onDisable() {
         this.controllers.forEach(controller -> {
@@ -258,5 +275,6 @@ public class ProviderManager {
         });
 
         this.timerManager.stopTimers();
+        this.webManager.stop();
     }
 }

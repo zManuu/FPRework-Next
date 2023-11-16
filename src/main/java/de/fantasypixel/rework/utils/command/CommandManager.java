@@ -2,6 +2,8 @@ package de.fantasypixel.rework.utils.command;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.utils.PackageUtils;
+import de.fantasypixel.rework.utils.provider.Controller;
+import de.fantasypixel.rework.utils.provider.ProviderManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -10,6 +12,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * Manages commands for {@link Controller} classes.
+ * Is managed by the {@link ProviderManager}.
+ */
 public class CommandManager {
 
     private final FPRework plugin;
