@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "databaseHost": "localhost",
+  "databaseUser": "root",
+  "databasePassword": "",
+  "databasePort": 3306,
+  "databaseName": "fp-next",
+  "controllerStartupTimeout": 100
+}
