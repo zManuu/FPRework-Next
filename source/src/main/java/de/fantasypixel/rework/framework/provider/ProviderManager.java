@@ -153,10 +153,15 @@ public class ProviderManager {
     private void initWebHandlers() {
         this.controllers.forEach(controller -> {
             // todo: less repetitive code
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebGet.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebGet.class).route()));
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPost.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebPost.class).route()));
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPut.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebPut.class).route()));
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebDelete.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebDelete.class).route()));
+
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebGet.class, controller.getClass()).forEach(getHandler -> {
+                var data = getHandler.getAnnotation(WebGet.class);
+                this.webManager.registerRoute(data.name(), data.route(), WebManager.HttpMethod.GET, getHandler, controller);
+            });
+
+            // this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPost.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebPost.class).route()));
+            // this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPut.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebPut.class).route()));
+            // this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebDelete.class, controller.getClass()).forEach(getHandler -> this.webManager.registerWebHandler(getHandler, controller, getHandler.getAnnotation(WebDelete.class).route()));
         });
     }
 

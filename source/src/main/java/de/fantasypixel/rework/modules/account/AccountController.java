@@ -43,9 +43,22 @@ public class AccountController implements Listener {
         this.accountService.logTimerRuns(++this.timerRuns);
     }
 
-    @WebGet(route = "/")
+    @WebGet(name = "get-index", route = "/")
     public WebResponse getHelloWorld() {
         return new WebResponse(201, "Hello World!");
+    }
+
+    record ServerStatus(String motd, int playerCount) {}
+
+    @WebGet(name = "get-server-status", route = "/api/v1/server-status")
+    public WebResponse getServerStatus() {
+        return new WebResponse(
+                201,
+                new ServerStatus(
+                        "Hello, I'm the MOTD!",
+                        100
+                )
+        );
     }
 
 }

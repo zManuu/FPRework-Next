@@ -15,6 +15,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface WebGet {
 
+    public String name();
     public String route();
 
 }
