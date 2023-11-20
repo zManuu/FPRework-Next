@@ -46,16 +46,18 @@ public class ProviderManager {
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
         this.commandManager = new CommandManager(plugin);
-        this.webManager = new WebManager(plugin);
+
+        this.loadConfig();
+
+        this.webManager = new WebManager(plugin, this.config);
 
         this.initServiceProviders();
         this.initControllers();
         this.initServiceHooks();
-        this.loadConfig();
         this.initWebHandlers();
         this.initHooks("Plugin", Plugin.class, plugin);
         this.initHooks("Gson", Gson.class, plugin.getGson());
-        this.initHooks("Config", Config.class, config);
+        this.initHooks("Config", Config.class, this.config);
         this.createDataRepos();
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available

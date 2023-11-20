@@ -9,8 +9,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>18</source>
-          <target>18</target>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.source}</target>
         </configuration>
       </plugin>
       <plugin>
@@ -56,9 +56,10 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>19</maven.compiler.target>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <build.path>../server/plugins</build.path>
-    <maven.compiler.source>19</maven.compiler.source>
+    <java.version>17</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
     <build.name>FP-Next</build.name>
   </properties>
 </project>

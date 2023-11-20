@@ -3,6 +3,7 @@ package de.fantasypixel.rework.framework.web;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPConfig;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
 
@@ -40,16 +41,19 @@ public class WebManager {
 
     private final FPRework plugin;
     private final WebRouteMatcher routeMatcher;
+    private final WebRouteValidator routeValidator;
     private HttpHandler handler;
     private HttpServer server;
 
-    public WebManager(FPRework plugin) {
+    public WebManager(FPRework plugin, FPConfig config) {
         this.plugin = plugin;
         this.routeMatcher = new WebRouteMatcher(plugin);
+        this.routeValidator = new WebRouteValidator(plugin, this.routeMatcher);
 
         try {
             this.setupHandler();
-            server = HttpServer.create(new InetSocketAddress(8080), 0);
+            this.plugin.getFpLogger().info("The web-server is starting on port " + config.getWebServerPort());
+            server = HttpServer.create(new InetSocketAddress(config.getWebServerPort()), 0);
             server.setExecutor(null);
             server.createContext("/", this.handler);
             server.start();
@@ -75,7 +79,7 @@ public class WebManager {
                 var route = matchingRoute.get();
 
                 this.plugin.getFpLogger().debug(
-                        "The route \"{0}\" was requested, will be handled by the route \"{1}\".",
+                        "The route \"{0}\" was requested, will be handled by \"{1}\".",
                         requestedRoute,
                         route.name()
                 );
@@ -107,13 +111,12 @@ public class WebManager {
                 method.getName()
         );
 
-        // check if the method returns a WebResponse
-        if (!WebResponse.class.isAssignableFrom(method.getReturnType())) {
-            this.plugin.getFpLogger().warning(
-                    "Web handler {0}::{1} (for route \"{2}\") couldn't be registered as it doesn't return a WebResponse!",
+        if (!this.routeValidator.validate(name, route, httpMethod, method)) {
+            this.plugin.getFpLogger().debug(
+                    "Route {0}::{1} couldn't be registered as it is not valid.",
+                    route,
                     object.getClass().getSimpleName(),
-                    method.getName(),
-                    route
+                    method.getName()
             );
             return;
         }

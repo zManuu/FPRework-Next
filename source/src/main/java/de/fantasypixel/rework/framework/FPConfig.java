@@ -15,5 +15,6 @@ public class FPConfig {
     private String databaseName;
     private String version;
     private int controllerStartupTimeout;
+    private int webServerPort;
 
 }

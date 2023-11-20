@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * A utility class used by the {@link WebManager} to match routes.
+ * <pre>
  * Notes:
  * Currently you can only use one route argument. This argument is always placed at the end of the route. You must also not specify two routes with the same base property.
  * For example, "api/v1/user/{id}" would work fine. However, when using "api/v1/user/{id}/..." or "api/v1/{user}/{...}", the route will not be accepted.
@@ -20,6 +22,16 @@ public class WebRouteMatcher {
     public WebRouteMatcher(FPRework plugin) {
         this.plugin = plugin;
         this.routes = new HashSet<>();
+    }
+
+    public boolean existsRoute(String route) {
+        return this.routes.stream()
+                .anyMatch(e -> e.route().equalsIgnoreCase(route));
+    }
+
+    public boolean existsRouteWithName(String routeName) {
+        return this.routes.stream()
+                .anyMatch(e -> e.name().equalsIgnoreCase(routeName));
     }
 
     public void registerRoute(@Nonnull WebManager.WebRoute route) {
