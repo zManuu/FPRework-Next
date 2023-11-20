@@ -20,13 +20,13 @@ public @interface Timer {
     /**
      * The amount of TICKS to wait before the timer is started.
      */
-    public long delay() default 0;
+    long delay() default 0;
 
     /**
      * The amount of TICKS to wait after each execution.
      */
-    public long interval();
+    long interval();
 
-    public TimerType type() default TimerType.ASYNC;
+    TimerManager.TimerType type() default TimerManager.TimerType.ASYNC;
 
 }

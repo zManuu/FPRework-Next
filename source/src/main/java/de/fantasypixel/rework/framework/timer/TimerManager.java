@@ -13,6 +13,8 @@ import java.util.Map;
  */
 public class TimerManager {
 
+    public enum TimerType { ASYNC, SYNC }
+
     private final static String CLASS_NAME = TimerManager.class.getSimpleName();
 
     private final FPRework plugin;

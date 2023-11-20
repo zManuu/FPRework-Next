@@ -5,6 +5,11 @@ import org.bukkit.Bukkit;
 
 import java.text.MessageFormat;
 
+/**
+ * A logger that supports more log levels than the spigot logger.
+ * Under the hood, everything is logged to the INFO level.
+ * The formats are hardcoded because the config also relies on the logger.
+ */
 public class FPLogger {
 
     public enum LogLevel {
@@ -48,7 +53,9 @@ public class FPLogger {
                         .replace("METHOD", fromMethod)
                         .replace("ERROR", throwable.getMessage())
         );
+        this.plugin.getLogger().info("-------------------------[ Start of Stack-Trace]-------------------------");
         throwable.printStackTrace();
+        this.plugin.getLogger().info("--------------------------[ End of Stack-Trace]--------------------------");
     }
 
     public void warning(String message) {

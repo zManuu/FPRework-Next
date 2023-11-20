@@ -49,6 +49,28 @@ public class WebRouteValidator {
             return false;
         }
 
+        // check if the argument types are supported
+        if (method.getParameterCount() > 0) {
+            if (!method.getParameterTypes()[0].equals(String.class)) {
+                this.plugin.getFpLogger().warning(
+                        "Web handler {0}::{1} (for route \"{2}\") couldn't be registered as the first parameter isn't of type String as required!",
+                        className,
+                        methodName,
+                        route
+                );
+                return false;
+            }
+            if (method.getParameterCount() > 2) {
+                this.plugin.getFpLogger().warning(
+                        "Web handler {0}::{1} (for route \"{2}\") couldn't be registered as there are more than 2 parameters!",
+                        className,
+                        methodName,
+                        route
+                );
+                return false;
+            }
+        }
+
         // check for get with body
         if (httpMethod == WebManager.HttpMethod.GET && method.getParameterCount() == 2) {
             this.plugin.getFpLogger().warning(

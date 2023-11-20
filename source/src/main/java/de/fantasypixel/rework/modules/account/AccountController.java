@@ -5,7 +5,7 @@ import de.fantasypixel.rework.framework.events.OnEnable;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.timer.Timer;
-import de.fantasypixel.rework.framework.timer.TimerType;
+import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.WebGet;
 import de.fantasypixel.rework.framework.web.WebResponse;
 import org.bukkit.entity.Player;
@@ -38,7 +38,7 @@ public class AccountController implements Listener {
         this.accountService.logPlayerTestCommand(args);
     }
 
-    @Timer(interval = 500, type = TimerType.ASYNC)
+    @Timer(interval = 500, type = TimerManager.TimerType.ASYNC)
     public void testTimer() {
         this.accountService.logTimerRuns(++this.timerRuns);
     }
