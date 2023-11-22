@@ -8,6 +8,7 @@ import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.WebGet;
 import de.fantasypixel.rework.framework.web.WebPost;
+import de.fantasypixel.rework.framework.web.WebPut;
 import de.fantasypixel.rework.framework.web.WebResponse;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -73,6 +74,20 @@ public class AccountController implements Listener {
         return new WebResponse(
                 201,
                 new Player(player.id(), player.name(), 0)
+        );
+    }
+
+    public record PlayerPutRequestBody (String playerId, int level) {}
+
+    @WebPut(name = "put-player-level", route = "/api/v1/player/put-level")
+    public WebResponse putPlayerLevel(String _1, PlayerPutRequestBody body) {
+        return new WebResponse(
+                WebResponse.Codes.ACCEPTED,
+                new Player(
+                        body.playerId(),
+                        "zManuu",
+                        body.level()
+                )
         );
     }
 

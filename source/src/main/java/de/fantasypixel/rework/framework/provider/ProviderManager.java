@@ -163,6 +163,11 @@ public class ProviderManager {
                 var data = postHandler.getAnnotation(WebPost.class);
                 this.webManager.registerRoute(data.name(), data.route(), WebManager.HttpMethod.POST, postHandler, controller);
             });
+
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPut.class, controller.getClass()).forEach(putHandler -> {
+                var data = putHandler.getAnnotation(WebPut.class);
+                this.webManager.registerRoute(data.name(), data.route(), WebManager.HttpMethod.PUT, putHandler, controller);
+            });
         });
     }
 
