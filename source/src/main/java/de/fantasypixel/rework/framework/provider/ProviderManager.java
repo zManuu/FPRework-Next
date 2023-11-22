@@ -45,6 +45,9 @@ public class ProviderManager {
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
+
+        // required managers
+        this.timerManager = new TimerManager(plugin);
         this.commandManager = new CommandManager(plugin);
 
         // config
@@ -263,8 +266,6 @@ public class ProviderManager {
      * Calls onEnable on all controllers and starts the timers.
      */
     private void enableControllers() {
-        var timerMap = new HashMap<Method, Object>();
-
         this.controllers.forEach(controller -> {
             // call onEnable
             this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
@@ -281,11 +282,9 @@ public class ProviderManager {
                 }
             });
 
-            // load timers into map
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(Timer.class, controller.getClass()).forEach((timerFunc) -> timerMap.put(timerFunc, controller));
+            // start timers in controller
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(Timer.class, controller.getClass()).forEach((timerFunc) -> this.timerManager.startTimer(timerFunc, controller));
         });
-
-        this.timerManager = new TimerManager(this.plugin, timerMap);
     }
 
     /**

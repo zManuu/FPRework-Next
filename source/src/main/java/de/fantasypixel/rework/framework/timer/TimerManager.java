@@ -19,12 +19,11 @@ public class TimerManager {
 
     private final FPRework plugin;
 
-    public TimerManager(FPRework plugin, Map<Method, Object> timerMethods) {
+    public TimerManager(FPRework plugin) {
         this.plugin = plugin;
-        timerMethods.forEach(this::startTimer);
     }
 
-    private void startTimer(Method method, Object object) {
+    public void startTimer(Method method, Object object) {
         var timerData = method.getAnnotation(Timer.class);
 
         this.plugin.getFpLogger().debug(
