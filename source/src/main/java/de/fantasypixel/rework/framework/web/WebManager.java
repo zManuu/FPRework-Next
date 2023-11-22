@@ -93,7 +93,7 @@ public class WebManager {
                 );
 
                 try {
-                    var routeParameter = requestedRoute.substring(route.route().length());
+                    var routeParameter = this.routeMatcher.prettifyRoute(requestedRoute.substring(route.route().length()));
                     var bodyStream = exchange.getRequestBody();
                     var bodyJson = new String(bodyStream.readAllBytes());
                     var body = this.plugin.getGson().fromJson(bodyJson, route.bodyClass());

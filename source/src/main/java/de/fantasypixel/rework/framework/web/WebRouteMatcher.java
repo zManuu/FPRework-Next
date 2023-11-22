@@ -84,7 +84,7 @@ public class WebRouteMatcher {
      * Removes slashes at the beginning and end of the route. Also replaces double slashes and backslashes.
      */
     // todo: unit tests
-    private String prettifyRoute(String route) {
+    public String prettifyRoute(String route) {
         if (route == null || route.isEmpty() || route.isBlank() || route.equals("/"))
             return "/";
 

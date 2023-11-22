@@ -6,10 +6,7 @@ import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
-import de.fantasypixel.rework.framework.web.WebGet;
-import de.fantasypixel.rework.framework.web.WebPost;
-import de.fantasypixel.rework.framework.web.WebPut;
-import de.fantasypixel.rework.framework.web.WebResponse;
+import de.fantasypixel.rework.framework.web.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -88,6 +85,14 @@ public class AccountController implements Listener {
                         "zManuu",
                         body.level()
                 )
+        );
+    }
+
+    @WebDelete(name = "delete-player", route = "/api/v1/player/delete")
+    public WebResponse deletePlayer(String playerId) {
+        return new WebResponse(
+                WebResponse.Codes.ACCEPTED,
+                "The Player " + playerId + " was deleted."
         );
     }
 

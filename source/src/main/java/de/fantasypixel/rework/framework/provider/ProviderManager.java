@@ -47,17 +47,27 @@ public class ProviderManager {
         this.plugin = plugin;
         this.commandManager = new CommandManager(plugin);
 
+        // config
         this.loadConfig();
 
-        this.webManager = new WebManager(plugin, this.config);
-
+        // controllers & services
         this.initServiceProviders();
         this.initControllers();
         this.initServiceHooks();
-        this.initWebHandlers();
+
+        // web
+        this.webManager = new WebManager(plugin, this.config);
+        this.initWebHandlers(WebManager.HttpMethod.GET, WebGet.class);
+        this.initWebHandlers(WebManager.HttpMethod.POST, WebPost.class);
+        this.initWebHandlers(WebManager.HttpMethod.PUT, WebPut.class);
+        this.initWebHandlers(WebManager.HttpMethod.DELETE, WebDelete.class);
+
+        // auto rigging
         this.initHooks("Plugin", Plugin.class, plugin);
         this.initHooks("Gson", Gson.class, plugin.getGson());
         this.initHooks("Config", Config.class, this.config);
+
+        // database
         this.createDataRepos();
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available
@@ -152,21 +162,28 @@ public class ProviderManager {
     /**
      * Registers all the web annotations.
      */
-    private void initWebHandlers() {
+    private void initWebHandlers(WebManager.HttpMethod httpMethod, Class<? extends Annotation> annotationClass) {
         this.controllers.forEach(controller -> {
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebGet.class, controller.getClass()).forEach(getHandler -> {
-                var data = getHandler.getAnnotation(WebGet.class);
-                this.webManager.registerRoute(data.name(), data.route(), WebManager.HttpMethod.GET, getHandler, controller);
-            });
+            this.plugin.getPackageUtils().getMethodsAnnotatedWith(annotationClass, controller.getClass()).forEach(handler -> {
+                var data = handler.getAnnotation(annotationClass);
+                // Unfortunately java doesn't support interface inheritance or dynamics so this repetitive code is needed.
+                var name = "";
+                var route = "";
+                if (data instanceof WebGet getData) {
+                    name = getData.name();
+                    route = getData.route();
+                } else if (data instanceof WebPost postData) {
+                    name = postData.name();
+                    route = postData.route();
+                } else if (data instanceof WebPut putData) {
+                    name = putData.name();
+                    route = putData.route();
+                } else if (data instanceof WebDelete deleteData) {
+                    name = deleteData.name();
+                    route = deleteData.route();
+                }
 
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPost.class, controller.getClass()).forEach(postHandler -> {
-                var data = postHandler.getAnnotation(WebPost.class);
-                this.webManager.registerRoute(data.name(), data.route(), WebManager.HttpMethod.POST, postHandler, controller);
-            });
-
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(WebPut.class, controller.getClass()).forEach(putHandler -> {
-                var data = putHandler.getAnnotation(WebPut.class);
-                this.webManager.registerRoute(data.name(), data.route(), WebManager.HttpMethod.PUT, putHandler, controller);
+                this.webManager.registerRoute(name, route, httpMethod, handler, controller);
             });
         });
     }
