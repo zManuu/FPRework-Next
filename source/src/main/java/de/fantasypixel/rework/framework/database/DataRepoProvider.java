@@ -33,27 +33,26 @@ public class DataRepoProvider<E> {
             this.plugin.getServer().shutdown();
         }
 
-        //testDatabaseConnection();
+        testDatabaseConnection();
     }
 
-    // todo: working implementation
-    //private void testDatabaseConnection() {
-    //    try (
-    //            var conn = this.getConnection();
-    //            var stmt = conn.prepareStatement("SELECT VERSION()");
-    //            var rs = stmt.executeQuery();
-    //    ) {
-    //        if (!rs.next()) {
-    //            this.plugin.getLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config.json. Server will continue operating as normal.");
-    //            return;
-    //        }
-    //
-    //        this.plugin.getLogger().info("The database connection was established. Database-Version: " + rs.getString(1));
-    //    } catch (Exception e) {
-    //        this.plugin.getLogger().severe("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
-    //        this.plugin.getServer().shutdown();
-    //    }
-    //}
+    private void testDatabaseConnection() {
+        try (
+                var conn = this.getConnection();
+                var stmt = conn.prepareStatement("SELECT VERSION()");
+                var rs = stmt.executeQuery();
+        ) {
+            if (!rs.next()) {
+                this.plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config.json. Server will continue operating as normal.");
+                return;
+            }
+
+            this.plugin.getFpLogger().info("The database connection was established. Database-Version: {0}", rs.getString(1));
+        } catch (Exception e) {
+            this.plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
+            this.plugin.getServer().shutdown();
+        }
+    }
 
     /**
      * @return the entities id or 0 if not set / an error occurred

@@ -42,6 +42,7 @@ public class WebRouteMatcher {
      * @return the matching route or null if not found.
      */
     // todo: unit tests
+    // todo: check HTTP-method
     public Optional<WebManager.WebRoute> matchRoute(String route) {
         Optional<WebManager.WebRoute> matchingRoute = Optional.empty();
         route = this.prettifyRoute(route);

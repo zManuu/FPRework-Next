@@ -137,6 +137,8 @@ public class WebManager {
             @Override
             public WebResponse apply(@Nonnull String reqRoute, @Nullable Object reqBody) {
                 try {
+
+                    // todo: support for body arg as only argument
                     Object handlerResponseObj = switch (method.getParameterCount()) {
                         case 2 -> method.invoke(object, reqRoute, reqBody);
                         case 1 -> method.invoke(object, reqRoute);
