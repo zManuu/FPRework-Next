@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.framework.web;
 
 import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPLogger;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -16,9 +17,11 @@ import java.util.Set;
  */
 public class WebRouteMatcher {
 
+    private final FPLogger logger;
     private final Set<WebManager.WebRoute> routes;
 
-    public WebRouteMatcher() {
+    public WebRouteMatcher(FPLogger logger) {
+        this.logger = logger;
         this.routes = new HashSet<>();
     }
 
@@ -43,7 +46,7 @@ public class WebRouteMatcher {
      */
     // todo: unit tests
     // todo: check HTTP-method
-    public Optional<WebManager.WebRoute> matchRoute(String route) {
+    public Optional<WebManager.WebRoute> matchRoute(String route, WebManager.HttpMethod httpMethod) {
         Optional<WebManager.WebRoute> matchingRoute = Optional.empty();
         route = this.prettifyRoute(route);
 
@@ -65,6 +68,12 @@ public class WebRouteMatcher {
                 var registeredRouteBase = this.prettifyRoute(registeredRoute.route());
                 if (registeredRouteBase.equalsIgnoreCase(iteratedRoute.toString())) {
                     matchingRoute = Optional.of(registeredRoute);
+
+                    if (!registeredRoute.httpMethod().equals(httpMethod)) {
+                        this.logger.warning("The route \"{0}\" was matched to the handler {1}, but the HTTP-method differed.", route, registeredRouteBase);
+                        matchingRoute = Optional.empty();
+                    }
+
                     break;
                 }
             }
@@ -84,17 +93,17 @@ public class WebRouteMatcher {
     /**
      * Removes slashes at the beginning and end of the route. Also replaces double slashes and backslashes.
      */
-    // todo: unit tests
     public String prettifyRoute(String route) {
         if (route == null || route.isEmpty() || route.isBlank() || route.equals("/"))
             return "/";
 
-        if (route.startsWith("/"))
-            route = route.substring(1);
-        if (route.endsWith("/"))
-            route = route.substring(0, route.length() - 1);
         route = route.replaceAll("\\\\", "/");
         route = route.replaceAll("//", "/");
+
+        while (route.startsWith("/"))
+            route = route.substring(1);
+        while (route.endsWith("/"))
+            route = route.substring(0, route.length() - 1);
 
         return route;
     }

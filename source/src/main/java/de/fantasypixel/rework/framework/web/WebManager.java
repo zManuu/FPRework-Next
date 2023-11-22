@@ -60,7 +60,7 @@ public class WebManager {
 
         try {
             this.setupHandler();
-            this.plugin.getFpLogger().info("The web-server is starting on port " + config.getWebServerPort());
+            this.plugin.getFpLogger().info("The web-server is starting on port {0}.", config.getWebServerPort());
             server = HttpServer.create(new InetSocketAddress(config.getWebServerPort()), 0);
             server.setExecutor(null);
             server.createContext("/", this.handler);
@@ -73,7 +73,7 @@ public class WebManager {
     private void setupHandler() {
         this.handler = exchange -> {
             var requestedRoute = exchange.getRequestURI().toString();
-            var matchingRoute = routeMatcher.matchRoute(requestedRoute);
+            var matchingRoute = routeMatcher.matchRoute(requestedRoute, HttpMethod.valueOf(exchange.getRequestMethod()));
             var response = WebResponse.INTERNAL_SERVER_ERROR;
 
             if (matchingRoute.isEmpty()) {
@@ -139,6 +139,7 @@ public class WebManager {
                 try {
 
                     // todo: support for body arg as only argument
+                    // note: has to be implemented in the WebRouteValidator as well
                     Object handlerResponseObj = switch (method.getParameterCount()) {
                         case 2 -> method.invoke(object, reqRoute, reqBody);
                         case 1 -> method.invoke(object, reqRoute);
