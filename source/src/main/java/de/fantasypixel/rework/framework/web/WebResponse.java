@@ -37,4 +37,24 @@ public class WebResponse {
     public static WebResponse NOT_IMPLEMENTED = new WebResponse(501, new WebCodeResponse("Not Implemented"));
     public static WebResponse SERVICE_UNAVAILABLE = new WebResponse(503, new WebCodeResponse("Service Unavailable"));
 
+    public static class Codes {
+
+        // Successful responses
+        public static int OK = 200;
+        public static int CREATED = 201;
+        public static int ACCEPTED = 202;
+
+        // Client error responses
+        public static int BAD_REQUEST = 400;
+        public static int UNAUTHORIZED = 401;
+        public static int FORBIDDEN = 403;
+        public static int NOT_FOUND = 404;
+
+        // Server error responses
+        public static int INTERNAL_SERVER_ERROR = 500;
+        public static int NOT_IMPLEMENTED = 501;
+        public static int SERVICE_UNAVAILABLE = 503;
+
+    }
+
 }

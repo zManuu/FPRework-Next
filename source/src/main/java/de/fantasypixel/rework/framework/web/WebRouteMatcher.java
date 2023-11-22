@@ -16,11 +16,9 @@ import java.util.Set;
  */
 public class WebRouteMatcher {
 
-    private final FPRework plugin;
     private final Set<WebManager.WebRoute> routes;
 
-    public WebRouteMatcher(FPRework plugin) {
-        this.plugin = plugin;
+    public WebRouteMatcher() {
         this.routes = new HashSet<>();
     }
 
@@ -35,11 +33,6 @@ public class WebRouteMatcher {
     }
 
     public void registerRoute(@Nonnull WebManager.WebRoute route) {
-        this.plugin.getFpLogger().debug(
-                "Registering route {0}",
-                route.name()
-        );
-
         this.routes.add(route);
     }
 

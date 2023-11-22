@@ -7,8 +7,8 @@ import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.WebGet;
+import de.fantasypixel.rework.framework.web.WebPost;
 import de.fantasypixel.rework.framework.web.WebResponse;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -54,10 +54,25 @@ public class AccountController implements Listener {
     public WebResponse getServerStatus() {
         return new WebResponse(
                 201,
-                new ServerStatus(
-                        "Hello, I'm the MOTD!",
-                        100
-                )
+                new ServerStatus("Hello, I'm the MOTD!", 100)
+        );
+    }
+
+    public record Player(String id, String name, int level) {}
+
+    @WebGet(name = "get-player", route = "/api/v1/player/get")
+    public WebResponse getPlayer(String id) {
+        return new WebResponse(
+                201,
+                new Player(id, "zManuu", 100)
+        );
+    }
+
+    @WebPost(name = "post-player", route = "/api/v1/player/post")
+    public WebResponse postPlayer(String _1, Player player) {
+        return new WebResponse(
+                201,
+                new Player(player.id(), player.name(), 0)
         );
     }
 

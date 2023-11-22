@@ -1,16 +1,23 @@
 package de.fantasypixel.rework.framework.web;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.FPConfig;
+import de.fantasypixel.rework.framework.UtilClasses;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -34,7 +41,8 @@ public class WebManager {
             String name,
             String route,
             HttpMethod httpMethod,
-            Function<String, WebResponse> handler
+            Class<?> bodyClass,
+            BiFunction<String, Object, WebResponse> handler
     ) {}
 
     private final static String CLASS_NAME = WebManager.class.getSimpleName();
@@ -47,7 +55,7 @@ public class WebManager {
 
     public WebManager(FPRework plugin, FPConfig config) {
         this.plugin = plugin;
-        this.routeMatcher = new WebRouteMatcher(plugin);
+        this.routeMatcher = new WebRouteMatcher();
         this.routeValidator = new WebRouteValidator(plugin, this.routeMatcher);
 
         try {
@@ -85,9 +93,13 @@ public class WebManager {
                 );
 
                 try {
-                    response = route.handler().apply(requestedRoute);
+                    var routeParameter = requestedRoute.substring(route.route().length());
+                    var bodyStream = exchange.getRequestBody();
+                    var bodyJson = new String(bodyStream.readAllBytes());
+                    var body = this.plugin.getGson().fromJson(bodyJson, route.bodyClass());
+                    response = route.handler().apply(routeParameter, body);
                 } catch (Exception ex) {
-                    plugin.getFpLogger().error(CLASS_NAME, "registerWebHandler->handle", ex);
+                    plugin.getFpLogger().error(CLASS_NAME, "setupHandler->handle", ex);
                     response = WebResponse.INTERNAL_SERVER_ERROR;
                 }
             }
@@ -121,13 +133,15 @@ public class WebManager {
             return;
         }
 
-        var handler = new Function<String, WebResponse>() {
+        var handler = new BiFunction<String, Object, WebResponse>() {
             @Override
-            public WebResponse apply(String s) {
+            public WebResponse apply(@Nonnull String reqRoute, @Nullable Object reqBody) {
                 try {
-                    Object handlerResponseObj = method.getParameterCount() == 0
-                            ? method.invoke(object)
-                            : method.invoke(object, s);
+                    Object handlerResponseObj = switch (method.getParameterCount()) {
+                        case 2 -> method.invoke(object, reqRoute, reqBody);
+                        case 1 -> method.invoke(object, reqRoute);
+                        default -> method.invoke(object);
+                    };
 
                     if (!(handlerResponseObj instanceof WebResponse handlerResponse)) {
                         plugin.getFpLogger().warning(
@@ -141,17 +155,23 @@ public class WebManager {
                     }
 
                     return handlerResponse;
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    plugin.getFpLogger().error(CLASS_NAME, "registerHandler->handle", ex);
+                    return WebResponse.INTERNAL_SERVER_ERROR;
                 }
             }
         };
+
+        var bodyType = method.getParameterCount() == 2
+                ? method.getParameterTypes()[1]
+                : UtilClasses.None.class;
 
         this.routeMatcher.registerRoute(
                 new WebRoute(
                         name,
                         route,
                         httpMethod,
+                        bodyType,
                         handler
                 )
         );
@@ -165,6 +185,7 @@ public class WebManager {
     }
 
     public void stop() {
+        this.plugin.getFpLogger().info("The web-server is stopping.");
         this.server.stop(0);
     }
 

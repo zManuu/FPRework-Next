@@ -10,12 +10,13 @@ import java.lang.annotation.Target;
 /**
  * Can be applied on methods in {@link Controller} classes to mark the method as an HTTP-GET handler.
  * The method must return a {@link WebResponse}.
+ * If a route-parameter is required, you can use the first argument of the method, make sure it is of type String.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface WebGet {
 
-    public String name();
-    public String route();
+    String name();
+    String route();
 
 }
