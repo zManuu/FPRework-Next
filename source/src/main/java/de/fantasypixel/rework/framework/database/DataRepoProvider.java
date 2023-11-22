@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.framework.database;
 
 import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPConfig;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
@@ -18,11 +19,13 @@ public class DataRepoProvider<E> {
     private final Map<Integer, E> cachedEntities;
     private final FPRework plugin;
     private final String tableName;
+    private final FPConfig config;
 
-    public DataRepoProvider(Class<E> typeParameterClass, FPRework plugin) {
+    public DataRepoProvider(Class<E> typeParameterClass, FPRework plugin, FPConfig config) {
         this.typeParameterClass = typeParameterClass;
         this.cachedEntities = new HashMap<>();
         this.plugin = plugin;
+        this.config = config;
 
         var entityAnnotation = typeParameterClass.getAnnotation(Entity.class);
         if (entityAnnotation != null)
@@ -49,8 +52,9 @@ public class DataRepoProvider<E> {
 
             this.plugin.getFpLogger().info("The database connection was established. Database-Version: {0}", rs.getString(1));
         } catch (Exception e) {
-            this.plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
-            this.plugin.getServer().shutdown();
+            this.plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown, if configured.");
+            if (this.config.isDatabaseRequired())
+                this.plugin.getServer().shutdown();
         }
     }
 
@@ -100,16 +104,15 @@ public class DataRepoProvider<E> {
     @Nonnull
     private Connection getConnection() {
         try {
-            var config = this.plugin.getProviderManager().getConfig();
             return DriverManager.getConnection(
                 String.format(
                         "jdbc:mysql://%s:%s/%s",
-                        config.getDatabaseHost(),
-                        config.getDatabasePort(),
-                        config.getDatabaseName()
+                        this.config.getDatabaseHost(),
+                        this.config.getDatabasePort(),
+                        this.config.getDatabaseName()
                 ),
-                    config.getDatabaseUser(),
-                    config.getDatabasePassword()
+                    this.config.getDatabaseUser(),
+                    this.config.getDatabasePassword()
             );
         } catch (Exception e) {
             throw new RuntimeException(e);

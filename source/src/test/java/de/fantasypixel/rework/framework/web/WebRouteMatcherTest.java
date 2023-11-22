@@ -9,7 +9,7 @@ class WebRouteMatcherTest {
     @Test
     void testPrettifyRoute() {
 
-        var routeMatcher = new WebRouteMatcher();
+        var routeMatcher = new WebRouteMatcher(Constants.logger);
 
         assertEquals(
                 "test",

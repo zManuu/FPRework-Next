@@ -13,6 +13,7 @@ public class FPConfig {
     private String databasePassword;
     private String databasePort;
     private String databaseName;
+    private boolean databaseRequired;
     private String version;
     private int controllerStartupTimeout;
     private int webServerPort;

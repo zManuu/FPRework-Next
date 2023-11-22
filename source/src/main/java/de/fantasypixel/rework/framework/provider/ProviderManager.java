@@ -28,6 +28,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Manages the framework-layer.
+ */
 public class ProviderManager {
 
     private final String CLASS_NAME = ProviderManager.class.getSimpleName();
@@ -39,7 +42,7 @@ public class ProviderManager {
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
-    private TimerManager timerManager;
+    private final TimerManager timerManager;
     private final CommandManager commandManager;
     private final WebManager webManager;
 
@@ -235,7 +238,7 @@ public class ProviderManager {
                 var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
-                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getPackageUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin);
+                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getPackageUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.config);
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
 

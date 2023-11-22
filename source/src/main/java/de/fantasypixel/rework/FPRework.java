@@ -23,12 +23,12 @@ public class FPRework extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        gson = new GsonBuilder()
+        this.gson = new GsonBuilder()
                 .registerTypeAdapterFactory(new RecordTypeAdapterFactory(this))
                 .setPrettyPrinting()
                 .create();
 
-        this.fpLogger = new FPLogger(this);
+        this.fpLogger = new FPLogger(this.gson, System.out);
         this.packageUtils = new PackageUtils(this);
         this.providerManager = new ProviderManager(this);
     }

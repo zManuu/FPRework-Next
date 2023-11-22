@@ -1,8 +1,10 @@
 package de.fantasypixel.rework.framework;
 
+import com.google.gson.Gson;
 import de.fantasypixel.rework.FPRework;
 import org.bukkit.Bukkit;
 
+import java.io.PrintStream;
 import java.text.MessageFormat;
 
 /**
@@ -21,10 +23,12 @@ public class FPLogger {
         DEBUG
     }
 
-    private final FPRework plugin;
+    private final Gson gson;
+    private final PrintStream printStream;
 
-    public FPLogger(FPRework plugin) {
-        this.plugin = plugin;
+    public FPLogger(Gson gson, PrintStream printStream) {
+        this.gson = gson;
+        this.printStream = printStream;
     }
 
     // log methods with more complex arguments
@@ -46,16 +50,20 @@ public class FPLogger {
     }
 
     public void error(String fromClass, String fromMethod, Throwable throwable) {
+        var errorMessage = throwable.getMessage() == null
+                ? throwable.toString()
+                : throwable.getMessage();
+
         this.resolve(
                 LogLevel.ERROR,
                 "CLASS::METHOD ERROR"
                         .replace("CLASS", fromClass)
                         .replace("METHOD", fromMethod)
-                        .replace("ERROR", throwable.getMessage())
+                        .replace("ERROR", errorMessage)
         );
-        this.plugin.getLogger().info("-------------------------[ Start of Stack-Trace]-------------------------");
+        this.printStream.println("-------------------------[ Start of Stack-Trace]-------------------------");
         throwable.printStackTrace();
-        this.plugin.getLogger().info("--------------------------[ End of Stack-Trace]--------------------------");
+        this.printStream.println("--------------------------[ End of Stack-Trace]--------------------------");
     }
 
     public void warning(String message) {
@@ -99,7 +107,7 @@ public class FPLogger {
     }
 
     private String stringifyArgs(Object[] arguments) {
-        var stringified = new StringBuilder(this.plugin.getGson().toJson(arguments[0]));
+        var stringified = new StringBuilder(this.gson.toJson(arguments[0]));
         for (int i = 1; i < arguments.length; i++) {
             stringified.append(", ").append(arguments[i]);
         }
@@ -107,7 +115,7 @@ public class FPLogger {
     }
 
     private void resolve(LogLevel level, String message) {
-        Bukkit.getLogger().info(
+        this.printStream.println(
                 "LEVEL | MESSAGE"
                     .replace("LEVEL", level.name())
                     .replace("MESSAGE", message)

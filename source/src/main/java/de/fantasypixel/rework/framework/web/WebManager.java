@@ -55,7 +55,7 @@ public class WebManager {
 
     public WebManager(FPRework plugin, FPConfig config) {
         this.plugin = plugin;
-        this.routeMatcher = new WebRouteMatcher();
+        this.routeMatcher = new WebRouteMatcher(plugin.getFpLogger());
         this.routeValidator = new WebRouteValidator(plugin, this.routeMatcher);
 
         try {
