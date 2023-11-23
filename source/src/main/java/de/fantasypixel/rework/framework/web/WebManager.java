@@ -117,7 +117,8 @@ public class WebManager {
 
     public void registerRoute(String name, String route, HttpMethod httpMethod, Method method, Object object) {
         this.plugin.getFpLogger().debug(
-                "Registering a web handler for route \"{0}\": {1}::{2}",
+                "Registering a web handler for route \"{0} {1}\": {2}::{3}",
+                httpMethod.toString(),
                 route,
                 object.getClass().getSimpleName(),
                 method.getName()

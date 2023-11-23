@@ -1,11 +1,11 @@
 package de.fantasypixel.rework.framework;
 
 import com.google.gson.Gson;
-import de.fantasypixel.rework.FPRework;
-import org.bukkit.Bukkit;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A logger that supports more log levels than the spigot logger.
@@ -23,6 +23,7 @@ public class FPLogger {
         DEBUG
     }
 
+    private final static int sectionIndentation = 25;
     private final Gson gson;
     private final PrintStream printStream;
 
@@ -61,9 +62,29 @@ public class FPLogger {
                         .replace("METHOD", fromMethod)
                         .replace("ERROR", errorMessage)
         );
-        this.printStream.println("-------------------------[ Start of Stack-Trace]-------------------------");
+        this.sectionStart("Start-Trace");
         throwable.printStackTrace();
-        this.printStream.println("--------------------------[ End of Stack-Trace]--------------------------");
+        this.sectionEnd("Start-Trace");
+    }
+
+    public void sectionStart(String section) {
+        this.printStream.println(
+                MessageFormat.format(
+                        "{0}[ Start of {1} ]{0}",
+                        "-".repeat(sectionIndentation),
+                        section
+                )
+        );
+    }
+
+    public void sectionEnd(String section) {
+        this.printStream.println(
+                MessageFormat.format(
+                        "{0}[ End of {1} ]{0}",
+                        "-".repeat(sectionIndentation + 1),
+                        section
+                )
+        );
     }
 
     public void warning(String message) {

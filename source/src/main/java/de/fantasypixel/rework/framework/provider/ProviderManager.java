@@ -57,24 +57,32 @@ public class ProviderManager {
         this.loadConfig();
 
         // controllers & services
+        this.plugin.getFpLogger().sectionStart("Controllers & Services");
         this.initServiceProviders();
         this.initControllers();
         this.initServiceHooks();
+        this.plugin.getFpLogger().sectionEnd("Controllers & Services");
 
         // web
+        this.plugin.getFpLogger().sectionStart("Web");
         this.webManager = new WebManager(plugin, this.config);
         this.initWebHandlers(WebManager.HttpMethod.GET, WebGet.class);
         this.initWebHandlers(WebManager.HttpMethod.POST, WebPost.class);
         this.initWebHandlers(WebManager.HttpMethod.PUT, WebPut.class);
         this.initWebHandlers(WebManager.HttpMethod.DELETE, WebDelete.class);
+        this.plugin.getFpLogger().sectionEnd("Web");
 
         // auto rigging
+        this.plugin.getFpLogger().sectionStart("Auto-Rigging");
         this.initHooks("Plugin", Plugin.class, plugin);
         this.initHooks("Gson", Gson.class, plugin.getGson());
         this.initHooks("Config", Config.class, this.config);
+        this.plugin.getFpLogger().sectionEnd("Auto-Rigging");
 
         // database
+        this.plugin.getFpLogger().sectionStart("Database");
         this.createDataRepos();
+        this.plugin.getFpLogger().sectionEnd("Database");
 
         // controllers have to be enabled async so this constructor closes and the providerManager instance is available
         Bukkit.getScheduler().runTaskLaterAsynchronously(
