@@ -1,6 +1,5 @@
 package de.fantasypixel.rework.framework.web;
 
-import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.FPLogger;
 
 import javax.annotation.Nonnull;
@@ -27,7 +26,7 @@ public class WebRouteMatcher {
 
     public boolean existsRoute(String route) {
         return this.routes.stream()
-                .anyMatch(e -> e.route().equalsIgnoreCase(route));
+                .anyMatch(e -> this.prettifyRoute(e.route()).equalsIgnoreCase(this.prettifyRoute(route)));
     }
 
     public boolean existsRouteWithName(String routeName) {
@@ -44,7 +43,6 @@ public class WebRouteMatcher {
      * @param route the requested route
      * @return the matching route or null if not found.
      */
-    // todo: unit tests
     public Optional<WebManager.WebRoute> matchRoute(String route, WebManager.HttpMethod httpMethod) {
         Optional<WebManager.WebRoute> matchingRoute = Optional.empty();
         route = this.prettifyRoute(route);
@@ -83,6 +81,7 @@ public class WebRouteMatcher {
             // The / route can't be matched by the default route matching mechanism. Therefore, here is workaround.
             matchingRoute = this.routes.stream()
                     .filter(e -> e.route().equals("/"))
+                    .filter(e -> e.httpMethod().equals(httpMethod))
                     .findAny();
         }
 
