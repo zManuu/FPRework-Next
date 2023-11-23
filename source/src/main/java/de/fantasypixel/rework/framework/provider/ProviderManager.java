@@ -49,7 +49,7 @@ public class ProviderManager {
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
 
-        // required managers
+        // managers with no access to config
         this.timerManager = new TimerManager(plugin);
         this.commandManager = new CommandManager(plugin);
 
@@ -294,7 +294,9 @@ public class ProviderManager {
             });
 
             // start timers in controller
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(Timer.class, controller.getClass()).forEach((timerFunc) -> this.timerManager.startTimer(timerFunc, controller));
+            this.plugin.getPackageUtils()
+                    .getMethodsAnnotatedWith(Timer.class, controller.getClass())
+                    .forEach((timerFunc) -> this.timerManager.startTimer(timerFunc, controller));
         });
     }
 

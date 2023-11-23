@@ -3,9 +3,12 @@ package de.fantasypixel.rework.framework.timer;
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manages timers for {@link Controller} classes.
@@ -18,9 +21,11 @@ public class TimerManager {
     private final static String CLASS_NAME = TimerManager.class.getSimpleName();
 
     private final FPRework plugin;
+    private final Set<Integer> timerIds;
 
     public TimerManager(FPRework plugin) {
         this.plugin = plugin;
+        this.timerIds = new HashSet<>();
     }
 
     public void startTimer(Method method, Object object) {
@@ -42,29 +47,39 @@ public class TimerManager {
             }
         };
 
+        BukkitTask task = null;
+
         if (timerData.type() == TimerType.ASYNC) {
-            this.plugin.getServer().getScheduler().runTaskTimerAsynchronously(
+            task = this.plugin.getServer().getScheduler().runTaskTimerAsynchronously(
                     this.plugin,
                     runnable,
                     timerData.delay(),
                     timerData.interval()
             );
         } else if (timerData.type() == TimerType.SYNC) {
-            this.plugin.getServer().getScheduler().runTaskTimer(
+            task = this.plugin.getServer().getScheduler().runTaskTimer(
                     this.plugin,
                     runnable,
                     timerData.delay(),
                     timerData.interval()
             );
         }
+
+        if (task == null) {
+            this.plugin.getFpLogger().warning(
+                    "Failed to start timer {0}::{1}",
+                    object.getClass().getSimpleName(),
+                    method.getName()
+            );
+            return;
+        }
+
+        this.timerIds.add(task.getTaskId());
     }
 
-    /**
-     * Will stop ALL the plugin's timers.
-     */
     public void stopTimers() {
         this.plugin.getFpLogger().debug("Stopping timers.");
-        this.plugin.getServer().getScheduler().cancelTasks(this.plugin);
+        this.timerIds.forEach(e -> this.plugin.getServer().getScheduler().cancelTask(e));
     }
 
 }
