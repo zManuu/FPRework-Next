@@ -5,9 +5,8 @@ import de.fantasypixel.rework.framework.FPConfig;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.*;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,34 +72,6 @@ public class DataRepoProvider<E> {
         }
     }
 
-    /**
-     * Checks the passed object for sql-injections. It is recommended to check before every sql-command is executed.
-     */
-    private boolean checkIntegrity(Object object) {
-
-        if (String.class.isAssignableFrom(object.getClass()))
-            return !String.valueOf(object).contains(";");
-
-        var fields = Arrays.stream(object.getClass()
-                .getDeclaredFields())
-                .peek(field -> field.setAccessible(true))
-                .filter(field -> !field.isAnnotationPresent(Ignore.class))
-                .toArray(Field[]::new);
-
-        for (Field field : fields) {
-            var fieldType = field.getType();
-            var fieldValue = this.plugin.getPackageUtils().getFieldValueSafe(field, object);
-
-            if (fieldValue == null)
-                continue;
-
-            if (Object.class.isAssignableFrom(fieldType))
-                return checkIntegrity(fieldValue);
-        }
-
-        return true;
-    }
-
     @Nonnull
     private Connection getConnection() {
         try {
@@ -123,14 +94,15 @@ public class DataRepoProvider<E> {
         if (this.cachedEntities.containsKey(id))
             return true;
 
-        var statementStr = String.format("SELECT * FROM %s WHERE `id` = '%d'", this.tableName, id);
+        var statementStr = MessageFormat.format("SELECT * FROM {0} WHERE `id` = ?", this.tableName);
         logSqlStatement(statementStr);
 
         try (
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr);
-                var rs = statement.executeQuery()
         ) {
+            statement.setInt(1, id);
+            var rs = statement.executeQuery();
             return rs.next();
         } catch (Exception e) {
             this.plugin.getFpLogger().error("DataRepoProvider", "existsWithId", e);
@@ -142,14 +114,15 @@ public class DataRepoProvider<E> {
         if (this.cachedEntities.containsKey(id))
             return this.cachedEntities.get(id);
 
-        var statementStr = String.format("SELECT * FROM %s WHERE `id` = '%d'", this.tableName, id);
+        var statementStr = MessageFormat.format("SELECT * FROM {0} WHERE `id` = ?", this.tableName);
         logSqlStatement(statementStr);
 
         try (
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr);
-                var rs = statement.executeQuery()
         ) {
+            statement.setInt(1, id);
+            var rs = statement.executeQuery();
             if (!rs.next())
                 return null;
 
@@ -176,11 +149,6 @@ public class DataRepoProvider<E> {
      * @return whether the operation was successful
      */
     public boolean delete(E entity) {
-        if (!checkIntegrity(entity)) {
-            this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
-            return false;
-        }
-
         var entityId = this.getId(entity);
         if (entityId == 0) {
             this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
@@ -194,13 +162,14 @@ public class DataRepoProvider<E> {
 
         this.cachedEntities.remove(entityId);
 
-        var statementStr = String.format("DELETE FROM %s WHERE `id` = '%d'", this.tableName, entityId);
+        var statementStr = MessageFormat.format("DELETE FROM {0} WHERE `id` = ?", this.tableName);
         logSqlStatement(statementStr);
 
         try (
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr)
         ) {
+            statement.setInt(1, entityId);
             statement.execute();
             return true;
         } catch (Exception e) {
@@ -214,34 +183,37 @@ public class DataRepoProvider<E> {
      * @return whether the operation was successful
      */
     public boolean save(E entity) {
-        if (!checkIntegrity(entity)) {
-            this.plugin.getFpLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
-            return false;
-        }
-
         var entityId = this.getId(entity);
         if (entityId == 0) {
             this.plugin.getFpLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
             return false;
         }
 
-        var statementStr = String.format(
-                "UPDATE %s SET %s WHERE `id` = '%d'",
+        var fields = Arrays.stream(this.typeParameterClass.getDeclaredFields())
+                .peek(e -> e.setAccessible(true))
+                .filter(e -> !e.isAnnotationPresent(Ignore.class))
+                .toList();
+
+        var statementStr = MessageFormat.format(
+                "UPDATE {0} SET {1} WHERE `id` = ?",
                 this.tableName,
-                Arrays.stream(this.typeParameterClass.getDeclaredFields())
-                        .peek(e -> e.setAccessible(true))
-                        .filter(e -> !e.isAnnotationPresent(Ignore.class))
-                        .map(e -> String.format("`%s` = '%s'", e.getName(), this.plugin.getPackageUtils().getFieldValueSafe(e, entity)))
-                        .collect(Collectors.joining(", ")),
-                entityId
+                fields.stream()
+                        .map(Field::getName)
+                        .map(name -> "`" + name + "` = ?")
+                        .collect(Collectors.joining(", "))
         );
 
         logSqlStatement(statementStr);
 
         try (
-            var conn = this.getConnection();
-            var statement = conn.prepareStatement(statementStr)
+                var conn = this.getConnection();
+                var statement = conn.prepareStatement(statementStr)
         ) {
+            int index = 1;
+            for (var field : fields) {
+                statement.setObject(index++, this.plugin.getPackageUtils().getFieldValueSafe(field, entity));
+            }
+            statement.setInt(index, entityId);
             statement.execute();
             return true;
         } catch (Exception e) {
@@ -250,33 +222,28 @@ public class DataRepoProvider<E> {
         }
     }
 
+
     /**
      * Inserts the entity into the database, updates the id of passed entity after completion (if successful).
      * @return whether the operation was successful
      */
     public boolean insert(E entity) {
-        if (!checkIntegrity(entity)) {
-            this.plugin.getFpLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the object didn't pass the integrity test.");
-            return false;
-        }
-
         var entityId = this.getId(entity);
         if (entityId != 0) {
             this.plugin.getFpLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the entity has an id-value already.");
             return false;
         }
 
+        var fields = Arrays.stream(this.typeParameterClass.getDeclaredFields())
+                .peek(e -> e.setAccessible(true))
+                .filter(e -> !e.isAnnotationPresent(Ignore.class))
+                .collect(Collectors.toList());
+
         var statementStr = String.format(
                 "INSERT INTO %s VALUES (%s)",
                 this.tableName,
-                Arrays.stream(this.typeParameterClass.getDeclaredFields())
-                        .peek(e -> e.setAccessible(true))
-                        .filter(e -> !e.isAnnotationPresent(Ignore.class))
-                        .map(e -> {
-                            var val = this.plugin.getPackageUtils().getFieldValueSafe(e, entity);
-                            return val != null ? String.format("'%s'", val) : "null";
-                        })
-                        .map(String::valueOf)
+                fields.stream()
+                        .map(e -> "?")
                         .collect(Collectors.joining(", "))
         );
 
@@ -286,6 +253,16 @@ public class DataRepoProvider<E> {
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr, Statement.RETURN_GENERATED_KEYS)
         ) {
+            int index = 1;
+            for (var field : fields) {
+                var val = this.plugin.getPackageUtils().getFieldValueSafe(field, entity);
+                if (val != null) {
+                    statement.setObject(index++, val);
+                } else {
+                    statement.setNull(index++, Types.NULL);
+                }
+            }
+
             statement.execute();
 
             var generatedKeys = statement.getGeneratedKeys();
@@ -306,8 +283,9 @@ public class DataRepoProvider<E> {
         }
     }
 
+
     private void logSqlStatement(String statementStr) {
-        this.plugin.getFpLogger().debug(String.format("Executing SQL: \"%s\"", statementStr));
+        this.plugin.getFpLogger().debug("Executing SQL: \"{0}\"", statementStr);
     }
 
 }
