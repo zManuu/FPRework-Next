@@ -12,13 +12,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public class FPRework extends JavaPlugin {
 
-    @Getter
     private Gson gson;
-
     private PackageUtils packageUtils;
     private ProviderManager providerManager;
-
-    @Getter
     private FPLogger fpLogger;
 
     @Override
