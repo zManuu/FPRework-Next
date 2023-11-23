@@ -16,6 +16,8 @@ import java.util.List;
  */
 public class CommandManager {
 
+    public enum CommandTarget { PLAYER, CONSOLE, BOTH }
+
     private final FPRework plugin;
 
     public CommandManager(FPRework plugin) {
@@ -33,12 +35,11 @@ public class CommandManager {
             var pluginCommand = plugin.getCommand(commandName);
 
             if (pluginCommand == null) {
-                plugin.getFpLogger().warning("Couldn't find command " + commandName + ". You may need to add it to the plugin.yml!");
+                plugin.getFpLogger().warning("Couldn't find command {0}. You may need to add it to the plugin.yml!", commandName);
                 continue;
             }
 
             pluginCommand.setExecutor((sender, command, label, args) -> {
-
                 if (!canCommandBeUsed(sender, commandTarget)) {
                     sender.sendMessage("You can't use that command.");
                     return false;

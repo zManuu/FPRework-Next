@@ -32,5 +32,5 @@ public @interface Command {
     /**
      * The target of the command (PLAYER, CONSOLE, or BOTH). (Default: PLAYER)
      */
-    CommandTarget target() default CommandTarget.PLAYER;
+    CommandManager.CommandTarget target() default CommandManager.CommandTarget.PLAYER;
 }
