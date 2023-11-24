@@ -35,8 +35,6 @@ public class ProviderManager {
     private final String CLASS_NAME = ProviderManager.class.getSimpleName();
 
     private final FPRework plugin;
-    @Getter
-    private FPConfig config;
     private Set<Class<?>> serviceProviderClasses;
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
@@ -52,9 +50,6 @@ public class ProviderManager {
         this.timerManager = new TimerManager(plugin);
         this.commandManager = new CommandManager(plugin);
 
-        // config
-        this.loadConfig();
-
         // controllers & services
         this.plugin.getFpLogger().sectionStart("Controllers & Services");
         this.initServiceProviders();
@@ -64,7 +59,7 @@ public class ProviderManager {
 
         // web
         this.plugin.getFpLogger().sectionStart("Web");
-        this.webManager = new WebManager(plugin, this.config);
+        this.webManager = new WebManager(plugin, this.plugin.getFpConfig());
         this.initWebHandlers(WebManager.HttpMethod.GET, WebGet.class);
         this.initWebHandlers(WebManager.HttpMethod.POST, WebPost.class);
         this.initWebHandlers(WebManager.HttpMethod.PUT, WebPut.class);
@@ -75,7 +70,7 @@ public class ProviderManager {
         this.plugin.getFpLogger().sectionStart("Auto-Rigging");
         this.initHooks("Plugin", Plugin.class, plugin);
         this.initHooks("Gson", Gson.class, plugin.getGson());
-        this.initHooks("Config", Config.class, this.config);
+        this.initHooks("Config", Config.class, this.plugin.getFpConfig());
         this.plugin.getFpLogger().sectionEnd("Auto-Rigging");
 
         // database
@@ -87,7 +82,7 @@ public class ProviderManager {
         Bukkit.getScheduler().runTaskLaterAsynchronously(
                 this.plugin,
                 this::enableControllers,
-                this.config.getControllerStartupTimeout()
+                this.plugin.getFpConfig().getControllerStartupTimeout()
         );
     }
 
@@ -153,26 +148,6 @@ public class ProviderManager {
     }
 
     /**
-     * Loads the configuration from the file and saves it into a local variable.
-     * To reload the configuration, use {@link #reloadConfig()}.
-     */
-    private void loadConfig() {
-        var configFile = new File(this.plugin.getDataFolder(), "config.json");
-
-        if (!configFile.exists()) {
-            this.plugin.getFpLogger().warning("Couldn't find config.json!");
-            return;
-        }
-
-        try (var fileReader = new FileReader(configFile)) {
-            this.config = this.plugin.getGson().fromJson(fileReader, FPConfig.class);
-        } catch (Exception e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "loadConfig", e);
-            this.config = null;
-        }
-    }
-
-    /**
      * Registers all the web annotations.
      */
     private void initWebHandlers(WebManager.HttpMethod httpMethod, Class<? extends Annotation> annotationClass) {
@@ -202,12 +177,12 @@ public class ProviderManager {
     }
 
     /**
-     * Autoriggs a given value into Services.
+     * Auto riggs a given value into Services.
      * @param name the name of the rigged value (only used for logging)
      * @param annotationClass the annotation type of all objects that will be auto rigged
      * @param value the value of the auto rigging process
      */
-    private void initHooks(String name, Class<? extends Annotation> annotationClass, Object value) {
+    public void initHooks(String name, Class<? extends Annotation> annotationClass, Object value) {
         this.serviceProviders.values().forEach(serviceProvider -> {
             this.plugin.getFpLogger().info(
                     MessageFormat.format(
@@ -245,7 +220,7 @@ public class ProviderManager {
                 var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
-                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.config);
+                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.plugin.getFpConfig());
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
 
@@ -261,15 +236,6 @@ public class ProviderManager {
 
             });
         });
-    }
-
-    /**
-     * Reloads the configuration and provides the updated configuration to all Services.
-     */
-    public void reloadConfig() {
-        // hooks can be overridden
-        this.loadConfig();
-        this.initHooks("Config", Config.class, this.config);
     }
 
     /**
