@@ -45,7 +45,7 @@ public class CommandManager {
                     return false;
                 }
 
-                this.plugin.getPackageUtils().invoke(method, commandExecutor, sender, args);
+                this.plugin.getFpUtils().invoke(method, commandExecutor, sender, args);
                 return true;
             });
 

@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,12 +95,12 @@ public class ProviderManager {
      * Creates instances of all service-providers and populates them into {@link #serviceProviders}.
      */
     private void initServiceProviders() {
-        this.serviceProviderClasses = this.plugin.getPackageUtils().getClassesAnnotatedWith(ServiceProvider.class);
+        this.serviceProviderClasses = this.plugin.getFpUtils().getClassesAnnotatedWith(ServiceProvider.class);
         this.serviceProviders = new HashMap<>();
 
         serviceProviderClasses.forEach(serviceProviderClass -> {
             var serviceName = serviceProviderClass.getAnnotation(ServiceProvider.class).name();
-            var serviceProviderInstance = this.plugin.getPackageUtils().instantiate(serviceProviderClass);
+            var serviceProviderInstance = this.plugin.getFpUtils().instantiate(serviceProviderClass);
             this.serviceProviders.put(serviceName, serviceProviderInstance);
             this.plugin.getFpLogger().info("Created service-provider " + serviceName);
         });
@@ -111,11 +110,11 @@ public class ProviderManager {
      * Creates instances of all controllers and populates them into {@link #controllers}.
      */
     private void initControllers() {
-        Set<Class<?>> controllerClasses = this.plugin.getPackageUtils().getClassesAnnotatedWith(Controller.class);
+        Set<Class<?>> controllerClasses = this.plugin.getFpUtils().getClassesAnnotatedWith(Controller.class);
         this.controllers = new HashSet<>();
 
         controllerClasses.forEach(controllerClass -> {
-            var controllerInstance = this.plugin.getPackageUtils().instantiate(controllerClass);
+            var controllerInstance = this.plugin.getFpUtils().instantiate(controllerClass);
 
             if (controllerInstance != null) {
                 this.controllers.add(controllerInstance);
@@ -134,7 +133,7 @@ public class ProviderManager {
     private void initServiceHooks() {
         this.controllers.forEach(controller -> {
             this.plugin.getFpLogger().info("Auto rigging service hooks for controller " + controller.getClass().getName());
-            var serviceHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
+            var serviceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
 
             serviceHooks.forEach(serviceHook -> {
                 var serviceName = serviceHook.getAnnotation(Service.class).name();
@@ -178,7 +177,7 @@ public class ProviderManager {
      */
     private void initWebHandlers(WebManager.HttpMethod httpMethod, Class<? extends Annotation> annotationClass) {
         this.controllers.forEach(controller -> {
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(annotationClass, controller.getClass()).forEach(handler -> {
+            this.plugin.getFpUtils().getMethodsAnnotatedWith(annotationClass, controller.getClass()).forEach(handler -> {
                 var data = handler.getAnnotation(annotationClass);
                 // Unfortunately java doesn't support interface inheritance or dynamics so this repetitive code is needed.
                 var name = "";
@@ -218,7 +217,7 @@ public class ProviderManager {
                     )
             );
 
-            var hooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(annotationClass, serviceProvider.getClass());
+            var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(annotationClass, serviceProvider.getClass());
             hooks.forEach(hook -> {
                 try {
                     hook.set(serviceProvider, value);
@@ -233,12 +232,12 @@ public class ProviderManager {
      * Creates all data-repository instances and populates them.
      */
     private void createDataRepos() {
-        this.plugin.getPackageUtils().loadMysqlDriver();
+        this.plugin.getFpUtils().loadMysqlDriver();
 
         this.dataProviders = new HashMap<>();
 
         this.serviceProviderClasses.forEach(serviceProviderClass -> {
-            var dataRepoHooks = this.plugin.getPackageUtils().getFieldsAnnotatedWith(DataRepo.class, serviceProviderClass);
+            var dataRepoHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(DataRepo.class, serviceProviderClass);
             var serviceProvider = this.serviceProviders.get(serviceProviderClass.getAnnotation(ServiceProvider.class).name());
 
             dataRepoHooks.forEach(dataRepoHook -> {
@@ -246,7 +245,7 @@ public class ProviderManager {
                 var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
-                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getPackageUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.config);
+                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.config);
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
 
@@ -279,7 +278,7 @@ public class ProviderManager {
     private void enableControllers() {
         this.controllers.forEach(controller -> {
             // call onEnable
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
+            this.plugin.getFpUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
                 try {
                     this.plugin.getFpLogger().info(MessageFormat.format("Enabling controller {0}.", controller.getClass().getName()));
                     onEnableFunc.invoke(controller);
@@ -294,7 +293,7 @@ public class ProviderManager {
             });
 
             // start timers in controller
-            this.plugin.getPackageUtils()
+            this.plugin.getFpUtils()
                     .getMethodsAnnotatedWith(Timer.class, controller.getClass())
                     .forEach((timerFunc) -> this.timerManager.startTimer(timerFunc, controller));
         });
@@ -305,7 +304,7 @@ public class ProviderManager {
      */
     public void onDisable() {
         this.controllers.forEach(controller -> {
-            this.plugin.getPackageUtils().getMethodsAnnotatedWith(OnDisable.class, controller.getClass()).forEach(onDisableFunc -> {
+            this.plugin.getFpUtils().getMethodsAnnotatedWith(OnDisable.class, controller.getClass()).forEach(onDisableFunc -> {
                 try {
                     onDisableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException e) {

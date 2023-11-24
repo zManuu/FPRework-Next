@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 /**
  * Holds utility methods for the framework. Mainly focused on reflections but can also be used for misc purposes.
  */
-public class PackageUtils {
+public class FPUtils {
 
-    private final String CLASS_NAME = PackageUtils.class.getSimpleName();
+    private final String CLASS_NAME = FPUtils.class.getSimpleName();
     private final FPRework plugin;
 
-    public PackageUtils(FPRework plugin) {
+    public FPUtils(FPRework plugin) {
         this.plugin = plugin;
     }
 

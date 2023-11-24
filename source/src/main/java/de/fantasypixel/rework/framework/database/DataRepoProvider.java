@@ -127,7 +127,7 @@ public class DataRepoProvider<E> {
                 return null;
 
             var columnCount = rs.getMetaData().getColumnCount();
-            var entityInstance = this.plugin.getPackageUtils().instantiate(this.typeParameterClass);
+            var entityInstance = this.plugin.getFpUtils().instantiate(this.typeParameterClass);
 
             for (var i=0; i<columnCount; i++) {
                 var columnName = rs.getMetaData().getColumnName(i);
@@ -211,7 +211,7 @@ public class DataRepoProvider<E> {
         ) {
             int index = 1;
             for (var field : fields) {
-                statement.setObject(index++, this.plugin.getPackageUtils().getFieldValueSafe(field, entity));
+                statement.setObject(index++, this.plugin.getFpUtils().getFieldValueSafe(field, entity));
             }
             statement.setInt(index, entityId);
             statement.execute();
@@ -255,7 +255,7 @@ public class DataRepoProvider<E> {
         ) {
             int index = 1;
             for (var field : fields) {
-                var val = this.plugin.getPackageUtils().getFieldValueSafe(field, entity);
+                var val = this.plugin.getFpUtils().getFieldValueSafe(field, entity);
                 if (val != null) {
                     statement.setObject(index++, val);
                 } else {
