@@ -62,7 +62,7 @@ public class WebManager {
 
         try {
             this.setupHandler();
-            this.plugin.getFpLogger().info("The web-server is starting on port {0}.", config.getWebServerPort());
+            this.plugin.getFpLogger().info("The web-server is starting on port {0}.", String.valueOf(config.getWebServerPort()));
             server = HttpServer.create(new InetSocketAddress(config.getWebServerPort()), 0);
             server.setExecutor(null);
             server.createContext("/", this.handler);
@@ -182,13 +182,6 @@ public class WebManager {
                         timeout,
                         handler
                 )
-        );
-
-        this.plugin.getFpLogger().debug(
-                "Successfully registered a web handler for route \"{0}\": {1}::{2}",
-                route,
-                object.getClass().getSimpleName(),
-                method.getName()
         );
     }
 
