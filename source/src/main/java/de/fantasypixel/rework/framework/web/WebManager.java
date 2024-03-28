@@ -142,13 +142,26 @@ public class WebManager {
             public WebResponse apply(@Nonnull String reqRoute, @Nullable Object reqBody) {
                 try {
 
-                    // todo: support for body arg as only argument
-                    // note: has to be implemented in the WebRouteValidator as well
-                    Object handlerResponseObj = switch (method.getParameterCount()) {
-                        case 2 -> method.invoke(object, reqRoute, reqBody);
-                        case 1 -> method.invoke(object, reqRoute);
-                        default -> method.invoke(object);
-                    };
+                    // invoke the handler with matching parameters
+                    Object handlerResponseObj;
+                    if (method.getParameterCount() == 2 && method.getParameterTypes()[0] == String.class) {
+                        handlerResponseObj = method.invoke(object, reqRoute, reqBody);
+                    } else if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == String.class) {
+                        handlerResponseObj = method.invoke(object, reqRoute);
+                    } else if (method.getParameterCount() == 1) {
+                        handlerResponseObj = method.invoke(object, reqBody);
+                    } else if (method.getParameterCount() == 0) {
+                        handlerResponseObj = method.invoke(object);
+                    } else {
+                        plugin.getFpLogger().warning(
+                                "Web handler {0}::{1} (for route \"{2}\") couldn't be handled as the handler types aren't matching!",
+                                object.getClass().getSimpleName(),
+                                method.getName(),
+                                route
+                        );
+
+                        return WebResponse.INTERNAL_SERVER_ERROR;
+                    }
 
                     if (!(handlerResponseObj instanceof WebResponse handlerResponse)) {
                         plugin.getFpLogger().warning(
@@ -169,9 +182,26 @@ public class WebManager {
             }
         };
 
-        var bodyType = method.getParameterCount() == 2
-                ? method.getParameterTypes()[1]
-                : UtilClasses.None.class;
+        // determine the body type
+        Class<?> bodyType;
+        if (method.getParameterCount() == 2 && method.getParameterTypes()[0] == String.class) {
+            bodyType = method.getParameterTypes()[1];
+        } else if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == String.class) {
+            bodyType = UtilClasses.None.class;
+        } else if (method.getParameterCount() == 1) {
+            bodyType = method.getParameterTypes()[0];
+        } else if (method.getParameterCount() == 0) {
+            bodyType = UtilClasses.None.class;
+        } else {
+            plugin.getFpLogger().warning(
+                    "Web handler {0}::{1} (for route \"{2}\") couldn't be handled as the body type couldn't be determined!",
+                    object.getClass().getSimpleName(),
+                    method.getName(),
+                    route
+            );
+
+            return;
+        }
 
         this.routeMatcher.registerRoute(
                 new WebRoute(

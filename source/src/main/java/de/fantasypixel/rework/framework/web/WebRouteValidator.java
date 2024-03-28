@@ -51,7 +51,7 @@ public class WebRouteValidator {
 
         // check if the argument types are supported
         if (method.getParameterCount() > 0) {
-            if (!method.getParameterTypes()[0].equals(String.class)) {
+            if (method.getParameterCount() == 2 && !method.getParameterTypes()[0].equals(String.class)) {
                 this.logger.warning(
                         "Web handler {0}::{1} (for route \"{2}\") couldn't be registered as the first parameter isn't of type String as required!",
                         className,
@@ -71,7 +71,8 @@ public class WebRouteValidator {
             }
         }
 
-        // check for get with body
+        // check for incompatible combinations
+        // get with body
         if (httpMethod == WebManager.HttpMethod.GET && method.getParameterCount() == 2) {
             this.logger.warning(
                     "Web handler {0}::{1} (for route \"{2}\") couldn't be registered as it is a GET endpoint but tried to use the body (unsupported)!",

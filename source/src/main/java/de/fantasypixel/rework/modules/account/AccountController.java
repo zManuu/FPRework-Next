@@ -67,7 +67,7 @@ public class AccountController implements Listener {
     }
 
     @WebPost(name = "post-player", route = "/api/v1/player/post")
-    public WebResponse postPlayer(String _1, Player player) {
+    public WebResponse postPlayer(Player player) {
         return new WebResponse(
                 201,
                 new Player(player.id(), player.name(), 0)
@@ -77,7 +77,7 @@ public class AccountController implements Listener {
     public record PlayerPutRequestBody (String playerId, int level) {}
 
     @WebPut(name = "put-player-level", route = "/api/v1/player/put-level")
-    public WebResponse putPlayerLevel(String _1, PlayerPutRequestBody body) {
+    public WebResponse putPlayerLevel(PlayerPutRequestBody body) {
         return new WebResponse(
                 WebResponse.Codes.ACCEPTED,
                 new Player(

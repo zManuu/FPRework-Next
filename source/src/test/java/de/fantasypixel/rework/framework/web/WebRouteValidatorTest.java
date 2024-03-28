@@ -18,7 +18,6 @@ class WebRouteValidatorTest {
 
     WebResponse methodWithNoParams() { return WebResponse.OK; }
     WebResponse methodWithOneParam(String s) { return WebResponse.OK; }
-    WebResponse methodWithOneWrongParam(int i) { return WebResponse.OK; }
     WebResponse methodWithTwoParams(String s, Object o) { return WebResponse.OK; }
     WebResponse methodWithTwoWrongParams(int i, Object o) { return WebResponse.OK; }
     WebResponse methodWithTwoWrongParams2(String s, int i) { return WebResponse.OK; }
@@ -54,14 +53,6 @@ class WebRouteValidatorTest {
                         "/",
                         WebManager.HttpMethod.POST, // POST is used here because GET doesn't support body access (is tested below)
                         clazz.getDeclaredMethod("methodWithTwoParams", String.class, Object.class)
-                )
-        );
-        assertFalse(
-                validator.validate(
-                        "test-invalid-one-param",
-                        "/",
-                        WebManager.HttpMethod.GET,
-                        clazz.getDeclaredMethod("methodWithOneWrongParam", int.class)
                 )
         );
         assertFalse(
