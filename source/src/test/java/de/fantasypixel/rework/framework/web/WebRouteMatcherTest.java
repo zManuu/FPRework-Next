@@ -1,6 +1,8 @@
 package de.fantasypixel.rework.framework.web;
 
 import de.fantasypixel.rework.framework.UtilClasses;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -12,6 +14,10 @@ class WebRouteMatcherTest {
 
     WebRouteMatcher routeMatcher = new WebRouteMatcher(Constants.logger);
     BiFunction<String, Object, WebResponse> voidHandler = (s, o) -> WebResponse.OK;
+
+    // before-once
+    @BeforeEach
+    void beforeEach() { Constants.beforeOnce(); }
 
     @Test
     void testPrettifyRoute() {

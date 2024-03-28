@@ -1,12 +1,10 @@
 package de.fantasypixel.rework.framework.web;
 
 import de.fantasypixel.rework.framework.UtilClasses;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,6 +15,9 @@ public class WebLoadBalancerTest {
     private final static String TEST_ROUTE = "TEST";
     private final static int TEST_TIMEOUT = 100;
     private final static BiFunction<String, Object, WebResponse> VOID_HANDLER = (s, o) -> WebResponse.OK;
+
+    // before-once
+    @BeforeEach void beforeEach() { Constants.beforeOnce(); }
 
     @Test
     public void testLoadBalancing() {

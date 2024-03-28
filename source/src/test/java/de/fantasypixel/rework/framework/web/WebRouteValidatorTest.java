@@ -1,6 +1,8 @@
 package de.fantasypixel.rework.framework.web;
 
 import de.fantasypixel.rework.framework.UtilClasses;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.BiFunction;
@@ -23,9 +25,12 @@ class WebRouteValidatorTest {
     WebResponse methodWithThreeParams(String s, Object o, int i) { return WebResponse.OK; }
     String methodWithWrongReturnType() { return "Nope"; }
 
+    // before-once
+    @BeforeEach
+    void beforeEach() { Constants.beforeOnce(); }
+
     @Test
     void testValidation() throws NoSuchMethodException {
-
         // check for wrong return / parameter types
         assertTrue(
                 validator.validate(
