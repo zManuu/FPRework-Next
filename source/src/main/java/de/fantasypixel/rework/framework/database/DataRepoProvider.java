@@ -237,7 +237,7 @@ public class DataRepoProvider<E> {
         var fields = Arrays.stream(this.typeParameterClass.getDeclaredFields())
                 .peek(e -> e.setAccessible(true))
                 .filter(e -> !e.isAnnotationPresent(Ignore.class))
-                .collect(Collectors.toList());
+                .toList();
 
         var statementStr = String.format(
                 "INSERT INTO %s VALUES (%s)",

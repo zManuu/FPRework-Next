@@ -19,5 +19,6 @@ public @interface WebGet {
 
     String name();
     String route();
+    int timeout() default 50;
 
 }

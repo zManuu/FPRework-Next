@@ -19,5 +19,6 @@ public @interface WebDelete {
 
     String name();
     String route();
+    int timeout() default 50;
 
 }

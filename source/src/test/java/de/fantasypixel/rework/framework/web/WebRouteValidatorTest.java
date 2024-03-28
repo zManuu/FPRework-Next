@@ -99,6 +99,7 @@ class WebRouteValidatorTest {
                         "/",
                         WebManager.HttpMethod.GET,
                         UtilClasses.None.class,
+                        0,
                         voidHandler
                 )
         );

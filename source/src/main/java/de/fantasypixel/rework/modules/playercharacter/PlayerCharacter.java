@@ -23,17 +23,17 @@ public class PlayerCharacter {
     /**
      * The CHARACTER CLASS's unique identifier
      */
-    private String characterIdentifier;
+    private String characterClassName;
 
     /**
      * @return the CHARACTER CLASS
      */
     public Character getCharacter() {
-        var characterOptional = Characters.getByName(characterIdentifier);
+        var characterOptional = Characters.getByName(characterClassName);
         if (characterOptional.isPresent()) {
             return characterOptional.get();
         } else {
-            throw new IllegalArgumentException("Character " + characterIdentifier + " does not exist");
+            throw new IllegalArgumentException("Character " + characterClassName + " does not exist");
         }
     }
 

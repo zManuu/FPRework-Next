@@ -106,4 +106,17 @@ public class WebRouteMatcher {
         return route;
     }
 
+    /**
+     * @throws IllegalArgumentException if no route with the specified name is found
+     */
+    public int getTimeoutForRoute(String routeName) throws IllegalArgumentException {
+        return this.routes.stream()
+                .filter(e -> e.name().equals(routeName))
+                .findAny()
+                .orElseThrow(IllegalArgumentException::new)
+                .timeout();
+    }
+
+    public int getRoutesCount() {return this.routes.size();}
+
 }

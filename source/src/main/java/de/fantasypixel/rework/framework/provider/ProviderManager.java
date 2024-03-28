@@ -78,7 +78,7 @@ public class ProviderManager {
         this.createDataRepos();
         this.plugin.getFpLogger().sectionEnd("Database");
 
-        // controllers have to be enabled async so this constructor closes and the providerManager instance is available
+        // controllers (delayed)
         Bukkit.getScheduler().runTaskLaterAsynchronously(
                 this.plugin,
                 this::enableControllers,
@@ -157,21 +157,26 @@ public class ProviderManager {
                 // Unfortunately java doesn't support interface inheritance or dynamics so this repetitive code is needed.
                 var name = "";
                 var route = "";
+                var timeout = 0;
                 if (data instanceof WebGet getData) {
                     name = getData.name();
                     route = getData.route();
+                    timeout = getData.timeout();
                 } else if (data instanceof WebPost postData) {
                     name = postData.name();
                     route = postData.route();
+                    timeout = postData.timeout();
                 } else if (data instanceof WebPut putData) {
                     name = putData.name();
                     route = putData.route();
+                    timeout = putData.timeout();
                 } else if (data instanceof WebDelete deleteData) {
                     name = deleteData.name();
                     route = deleteData.route();
+                    timeout = deleteData.timeout();
                 }
 
-                this.webManager.registerRoute(name, route, httpMethod, handler, controller);
+                this.webManager.registerRoute(name, route, httpMethod, timeout, handler, controller);
             });
         });
     }

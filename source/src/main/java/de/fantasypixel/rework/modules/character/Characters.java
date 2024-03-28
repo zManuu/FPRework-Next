@@ -15,8 +15,8 @@ public class Characters {
     /**
      * Returns an optional. For a Nonnull result, use {@link PlayerCharacter#getCharacter()}
      */
-    public static Optional<Character> getByName(String characterIdentifier) {
-        return switch (characterIdentifier) {
+    public static Optional<Character> getByName(String characterClassName) {
+        return switch (characterClassName) {
             case "Warrior" -> Optional.of(CHARACTER_WARRIOR);
             default -> Optional.empty();
         };

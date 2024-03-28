@@ -8,6 +8,6 @@
   "": "When the following property is set to true and the database connection can't be established, the server will shutdown.",
   "databaseRequired": false,
   "": "The timeout for the controllers to start after all the startup-tasks.",
-  "controllerStartupTimeout": 100,
+  "controllerStartupTimeout": 1000,
   "webServerPort": 1887
 }

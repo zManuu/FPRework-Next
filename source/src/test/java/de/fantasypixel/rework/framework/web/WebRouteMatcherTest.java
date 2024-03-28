@@ -42,6 +42,7 @@ class WebRouteMatcherTest {
                         "/",
                         WebManager.HttpMethod.GET,
                         UtilClasses.None.class,
+                        0,
                         voidHandler
                 )
         );
@@ -60,6 +61,7 @@ class WebRouteMatcherTest {
                         "/post",
                         WebManager.HttpMethod.POST,
                         UtilClasses.None.class,
+                        0,
                         voidHandler
                 )
         );

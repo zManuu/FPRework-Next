@@ -21,7 +21,7 @@ public class PlayerCharacterService {
         return PlayerCharacter.builder()
                 .name(name)
                 .accountId(accountId)
-                .characterIdentifier(characterClass.getIdentifier())
+                .characterClassName(characterClass.getIdentifier())
                 .build();
     }
 

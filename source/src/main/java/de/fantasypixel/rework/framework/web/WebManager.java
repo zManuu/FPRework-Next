@@ -43,6 +43,7 @@ public class WebManager {
             String route,
             HttpMethod httpMethod,
             Class<?> bodyClass,
+            int timeout,
             BiFunction<String, Object, WebResponse> handler
     ) {}
 
@@ -74,6 +75,7 @@ public class WebManager {
     private void setupHandler() {
         this.handler = exchange -> {
             var requestedRoute = exchange.getRequestURI().toString();
+            exchange.getRemoteAddress().getAddress().getHostAddress();
             var matchingRoute = routeMatcher.matchRoute(requestedRoute, HttpMethod.valueOf(exchange.getRequestMethod()));
             var response = WebResponse.INTERNAL_SERVER_ERROR;
 
@@ -116,8 +118,8 @@ public class WebManager {
         };
     }
 
-    public void registerRoute(String name, String route, HttpMethod httpMethod, Method method, Object object) {
-        this.plugin.getFpLogger().debug(
+    public void registerRoute(String name, String route, HttpMethod httpMethod, int timeout, Method method, Object object) {
+        this.plugin.getFpLogger().info(
                 "Registering a web handler for route \"{0} {1}\": {2}::{3}",
                 httpMethod.toString(),
                 route,
@@ -177,6 +179,7 @@ public class WebManager {
                         route,
                         httpMethod,
                         bodyType,
+                        timeout,
                         handler
                 )
         );
