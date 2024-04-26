@@ -67,6 +67,26 @@ public class FPLogger {
         this.sectionEnd("Start-Trace");
     }
 
+    public void error(String fromClass, String fromMethod, String message) {
+        this.resolve(
+                LogLevel.ERROR,
+                "CLASS::METHOD MESSAGE"
+                        .replace("CLASS", fromClass)
+                        .replace("METHOD", fromMethod)
+                        .replace("MESSAGE", message)
+        );
+    }
+
+    public void error(String fromClass, String fromMethod, String pattern, Object... args) {
+        this.resolve(
+                LogLevel.ERROR,
+                "CLASS::METHOD MESSAGE"
+                        .replace("CLASS", fromClass)
+                        .replace("METHOD", fromMethod)
+                        .replace("MESSAGE", MessageFormat.format(pattern, args))
+        );
+    }
+
     public void sectionStart(String section) {
         this.printStream.println(
                 MessageFormat.format(

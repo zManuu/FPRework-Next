@@ -49,6 +49,9 @@ public class FPUtils {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Instantiates an object of the given class with the given arguments. Note that null-values are not supported because the constructor can't be determined.
+     */
     public <T> T instantiate(Class<T> clazz, Object... args) {
         try {
 

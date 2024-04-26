@@ -1,14 +1,12 @@
 package de.fantasypixel.rework.framework.web;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import de.fantasypixel.rework.FPRework;
-import de.fantasypixel.rework.framework.FPConfig;
 import de.fantasypixel.rework.framework.UtilClasses;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
+import de.fantasypixel.rework.modules.config.WebConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,10 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Manages web-integration for {@link Controller} classes.
@@ -55,15 +50,15 @@ public class WebManager {
     private HttpHandler handler;
     private HttpServer server;
 
-    public WebManager(FPRework plugin, FPConfig config) {
+    public WebManager(FPRework plugin, WebConfig config) {
         this.plugin = plugin;
         this.routeMatcher = new WebRouteMatcher(plugin.getFpLogger());
         this.routeValidator = new WebRouteValidator(plugin.getFpLogger(), this.routeMatcher);
 
         try {
             this.setupHandler();
-            this.plugin.getFpLogger().info("The web-server is starting on port {0}.", String.valueOf(config.getWebServerPort()));
-            server = HttpServer.create(new InetSocketAddress(config.getWebServerPort()), 0);
+            this.plugin.getFpLogger().info("The web-server is starting on port {0}.", String.valueOf(config.getPort()));
+            server = HttpServer.create(new InetSocketAddress(config.getPort()), 0);
             server.setExecutor(null);
             server.createContext("/", this.handler);
             server.start();

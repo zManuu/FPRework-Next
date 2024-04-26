@@ -1,24 +1,23 @@
 package de.fantasypixel.rework.framework.provider;
 
 import de.fantasypixel.rework.FPRework;
-import de.fantasypixel.rework.framework.FPConfig;
 import de.fantasypixel.rework.framework.command.CommandManager;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.events.OnDisable;
 import de.fantasypixel.rework.framework.events.OnEnable;
-import de.fantasypixel.rework.framework.provider.autorigging.Config;
 import de.fantasypixel.rework.framework.provider.autorigging.Gson;
 import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.*;
-import lombok.Getter;
+import de.fantasypixel.rework.modules.config.DatabaseConfig;
+import de.fantasypixel.rework.framework.config.*;
+import de.fantasypixel.rework.modules.config.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
@@ -38,6 +37,7 @@ public class ProviderManager {
     private Set<Class<?>> serviceProviderClasses;
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
+    private Map<Class<?>, Object> configs;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
     private final TimerManager timerManager;
     private final CommandManager commandManager;
@@ -57,9 +57,15 @@ public class ProviderManager {
         this.initServiceHooks();
         this.plugin.getFpLogger().sectionEnd("Controllers & Services");
 
+        // config
+        this.plugin.getFpLogger().sectionStart("Config");
+        this.loadConfigs();
+        this.hookConfigs();
+        this.plugin.getFpLogger().sectionEnd("Config");
+
         // web
         this.plugin.getFpLogger().sectionStart("Web");
-        this.webManager = new WebManager(plugin, this.plugin.getFpConfig());
+        this.webManager = new WebManager(plugin, this.getConfig(WebConfig.class));
         this.initWebHandlers(WebManager.HttpMethod.GET, WebGet.class);
         this.initWebHandlers(WebManager.HttpMethod.POST, WebPost.class);
         this.initWebHandlers(WebManager.HttpMethod.PUT, WebPut.class);
@@ -70,7 +76,6 @@ public class ProviderManager {
         this.plugin.getFpLogger().sectionStart("Auto-Rigging");
         this.initHooks("Plugin", Plugin.class, plugin);
         this.initHooks("Gson", Gson.class, plugin.getGson());
-        this.initHooks("Config", Config.class, this.plugin.getFpConfig());
         this.plugin.getFpLogger().sectionEnd("Auto-Rigging");
 
         // database
@@ -82,7 +87,7 @@ public class ProviderManager {
         Bukkit.getScheduler().runTaskLaterAsynchronously(
                 this.plugin,
                 this::enableControllers,
-                this.plugin.getFpConfig().getControllerStartupTimeout()
+                1
         );
     }
 
@@ -135,7 +140,7 @@ public class ProviderManager {
                 var serviceProvider = this.serviceProviders.get(serviceName);
 
                 if (serviceProvider == null) {
-                    this.plugin.getFpLogger().warning("No service provider found for " + serviceName + ".");
+                    this.plugin.getFpLogger().warning("The controller {0} is accessing the non-existent service {1}.", controller.getClass().getName(), serviceName);
                 } else {
                     try {
                         serviceHook.set(controller, serviceProvider);
@@ -185,7 +190,7 @@ public class ProviderManager {
      * Auto riggs a given value into Services.
      * @param name the name of the rigged value (only used for logging)
      * @param annotationClass the annotation type of all objects that will be auto rigged
-     * @param value the value of the auto rigging process
+     * @param value the value to be rigged
      */
     public void initHooks(String name, Class<? extends Annotation> annotationClass, Object value) {
         this.serviceProviders.values().forEach(serviceProvider -> {
@@ -201,15 +206,80 @@ public class ProviderManager {
             hooks.forEach(hook -> {
                 try {
                     hook.set(serviceProvider, value);
-                } catch (IllegalAccessException e) {
-                    this.plugin.getFpLogger().error(CLASS_NAME, "initGsonHooks", e);
+                } catch (IllegalAccessException ex) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initGsonHooks", ex);
                 }
             });
         });
     }
 
     /**
-     * Creates all data-repository instances and populates them.
+     * Loads all configurations (classes annotated with the {@link ConfigProvider} annotation) into memory.
+     */
+    private void loadConfigs() {
+        this.configs = new HashMap<>();
+
+        var configProviders = this.plugin.getFpUtils().getClassesAnnotatedWith(ConfigProvider.class);
+        configProviders.forEach(configProvider -> {
+            this.plugin.getFpLogger().info(
+                    "Loading configuration {0}.",
+                    configProvider.getSimpleName()
+            );
+
+            var configFilePath = MessageFormat.format(
+                    "{0}.json",
+                    configProvider.getAnnotation(ConfigProvider.class).path()
+            );
+
+            var configFile = new File(this.plugin.getDataFolder(), configFilePath);
+            try (var reader = new FileReader(configFile)) {
+                var config = this.plugin.getGson().fromJson(reader, configProvider);
+                this.configs.put(configProvider, config);
+            } catch (IOException ex) {
+                this.plugin.getFpLogger().error(CLASS_NAME, "loadConfigs", ex);
+            }
+        });
+    }
+
+    /**
+     * Hooks all configurations from memory into the corresponding {@link Config} fields.
+     */
+    private void hookConfigs() {
+        this.serviceProviders.values().forEach(serviceProvider -> {
+            this.plugin.getFpLogger().info(
+                    MessageFormat.format(
+                            "Rigging configurations for {0}.",
+                            serviceProvider.getClass().getName()
+                    )
+            );
+
+            var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Config.class, serviceProvider.getClass());
+            hooks.forEach(hook -> {
+                try {
+                    hook.set(serviceProvider, this.getConfig(hook.getType()));
+                } catch (IllegalAccessException ex) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "hookConfigs", ex);
+                }
+            });
+        });
+    }
+
+    /**
+     * Retrieves the configuration currently loaded for the given configuration class. Note that this class must be annotated with the {@link ConfigProvider} annotation.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T getConfig(Class<T> clazz) {
+        Object configObj = this.configs.get(clazz);
+        if (configObj == null || !configObj.getClass().equals(clazz)) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "getConfig", "Tried to get configuration of type {0} -> type mismatch.", clazz.getName());
+            return null;
+        } else {
+            return (T) configObj;
+        }
+    }
+
+    /**
+     * Creates all data-repository instances.
      */
     private void createDataRepos() {
         this.plugin.getFpUtils().loadMysqlDriver();
@@ -225,7 +295,7 @@ public class ProviderManager {
                 var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
-                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.plugin.getFpConfig());
+                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.getConfig(DatabaseConfig.class));
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
 
@@ -244,24 +314,28 @@ public class ProviderManager {
     }
 
     /**
-     * Calls onEnable on all controllers and starts the timers.
+     * Calls onEnable on all controllers, registers listeners and starts the timers.
      */
     private void enableControllers() {
         this.controllers.forEach(controller -> {
+            this.plugin.getFpLogger().info("Enabling controller {0}...", controller.getClass().getName());
+
             // call onEnable
             this.plugin.getFpUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
                 try {
-                    this.plugin.getFpLogger().info(MessageFormat.format("Enabling controller {0}.", controller.getClass().getName()));
+                    this.plugin.getFpLogger().info("Calling OnEnable von {0}.", controller.getClass().getName());
                     onEnableFunc.invoke(controller);
 
-                    if (controller instanceof Listener controllerListener) {
-                        this.plugin.getFpLogger().info(MessageFormat.format("Registering controller-listener {0}.", controller.getClass().getName()));
-                        Bukkit.getPluginManager().registerEvents(controllerListener, plugin);
-                    }
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     this.plugin.getFpLogger().error(CLASS_NAME, "enableControllers", e);
                 }
             });
+
+            // register possible listeners
+            if (controller instanceof Listener controllerListener) {
+                this.plugin.getFpLogger().info("Registering controller-listener {0}.", controller.getClass().getName());
+                Bukkit.getPluginManager().registerEvents(controllerListener, plugin);
+            }
 
             // start timers in controller
             this.plugin.getFpUtils()

@@ -3,31 +3,26 @@ package de.fantasypixel.rework.modules.character.characters;
 import de.fantasypixel.rework.modules.character.Character;
 import org.bukkit.Material;
 
-public class CharacterWarrior extends Character {
+public class CharacterArcher extends Character {
 
     @Override
     public String getIdentifier() {
-        return "CHARACTER_WARRIOR";
+        return "CHARACTER_ARCHER";
     }
 
     @Override
     public String getName() {
-        return "Warrior";
+        return "Archer";
     }
 
     @Override
     public String getDescription() {
-        return "A warrior";
-    }
-
-    @Override
-    public int getMaxLevel() {
-        return 10;
+        return "An archer";
     }
 
     @Override
     public Material getIconMaterial() {
-        return Material.IRON_SWORD;
+        return Material.BOW;
     }
 
 }

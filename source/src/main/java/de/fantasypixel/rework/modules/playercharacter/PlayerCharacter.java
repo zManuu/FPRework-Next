@@ -3,37 +3,43 @@ package de.fantasypixel.rework.modules.playercharacter;
 import de.fantasypixel.rework.modules.character.Character;
 import de.fantasypixel.rework.modules.character.Characters;
 import de.fantasypixel.rework.framework.database.Entity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import de.fantasypixel.rework.modules.utils.Locatable;
+import lombok.*;
 
 import javax.annotation.Nullable;
 
-@Getter
 @Setter
+@Getter
 @Builder
-@Entity(tableName = "character")
-public class PlayerCharacter {
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(tableName = "characters")
+public class PlayerCharacter implements Locatable {
 
     @Nullable
     private Integer id;
     private int accountId;
     private String name;
+    private String locWorld;
+    private double locX;
+    private double locY;
+    private double locZ;
+    private boolean active;
 
     /**
      * The CHARACTER CLASS's unique identifier
      */
-    private String characterClassName;
+    private String characterClassIdentifier;
 
     /**
      * @return the CHARACTER CLASS
      */
     public Character getCharacter() {
-        var characterOptional = Characters.getByName(characterClassName);
+        var characterOptional = Characters.getByIdentifier(this.characterClassIdentifier);
         if (characterOptional.isPresent()) {
             return characterOptional.get();
         } else {
-            throw new IllegalArgumentException("Character " + characterClassName + " does not exist");
+            throw new IllegalArgumentException("Character " + this.characterClassIdentifier + " does not exist");
         }
     }
 

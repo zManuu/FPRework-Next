@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.modules.character;
 
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 abstract public class Character {
@@ -12,6 +13,7 @@ abstract public class Character {
     public abstract String getIdentifier();
     public abstract String getName();
     public abstract String getDescription();
+    public abstract Material getIconMaterial();
 
     // optional configuration
     public int getMaxLevel() { return DEFAULT_MAX_LEVEL; }

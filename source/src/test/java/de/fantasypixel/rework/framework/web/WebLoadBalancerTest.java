@@ -1,7 +1,7 @@
 package de.fantasypixel.rework.framework.web;
 
+import de.fantasypixel.rework.Constants;
 import de.fantasypixel.rework.framework.UtilClasses;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

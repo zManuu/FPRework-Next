@@ -1,99 +1,51 @@
 package de.fantasypixel.rework.modules.account;
 
-import de.fantasypixel.rework.framework.command.Command;
-import de.fantasypixel.rework.framework.events.OnEnable;
+import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
-import de.fantasypixel.rework.framework.timer.Timer;
-import de.fantasypixel.rework.framework.timer.TimerManager;
-import de.fantasypixel.rework.framework.web.*;
+import de.fantasypixel.rework.modules.menu.MenuService;
+import de.fantasypixel.rework.modules.utils.DateUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 @Controller
 public class AccountController implements Listener {
 
-    @Service(name = "account")
-    private AccountService accountService;
+    @Service(name = "account") private AccountService accountService;
+    @Service(name = "date_utils") private DateUtils dateUtils;
 
-    private int timerRuns = 0;
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        String playerName = player.getName();
+        String playerUuid = player.getUniqueId().toString();
+        Account account;
 
-    @OnEnable
-    public void onEnable() {
-        this.accountService.sayHello();
-        this.accountService.testAccountRepo();
+        event.setJoinMessage("[+] " + playerName);
+
+        if (!this.accountService.hasAccount(playerUuid)) {
+            // first join -> setup account
+            event.setJoinMessage("Ein neuer Spieler!! Willkommen " + playerName);
+            player.sendMessage("Willkommen auf dem Server! Dein Account wird erstellt und du wirst automatisch eingeloggt...");
+
+            account = this.accountService.createAccount(playerUuid, playerName, null);
+        } else {
+            account = this.accountService.getAccount(playerUuid);
+        }
+
+        // login
+        // todo: move this logic to service
+        account.setLastLogin(this.dateUtils.getCurrentDateTime());
+        Bukkit.getPluginManager().callEvent(new AccountLoginEvent(account, player));
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent ev) {
-        this.accountService.logPlayerJoin(ev.getPlayer().getDisplayName());
-        ev.setJoinMessage("HII");
-    }
-
-    @Command(name = "test")
-    public void onTestCommand(Player player, String[] args) {
-        this.accountService.logPlayerTestCommand(args);
-    }
-
-    @Timer(interval = 500, type = TimerManager.TimerType.ASYNC)
-    public void testTimer() {
-        this.accountService.logTimerRuns(++this.timerRuns);
-    }
-
-    @WebGet(name = "get-index", route = "/")
-    public WebResponse getHelloWorld() {
-        return new WebResponse(201, "Hello World!");
-    }
-
-    record ServerStatus(String motd, int playerCount) {}
-
-    @WebGet(name = "get-server-status", route = "/api/v1/server-status")
-    public WebResponse getServerStatus() {
-        return new WebResponse(
-                201,
-                new ServerStatus("Hello, I'm the MOTD!", 100)
-        );
-    }
-
-    public record Player(String id, String name, int level) {}
-
-    @WebGet(name = "get-player", route = "/api/v1/player/get")
-    public WebResponse getPlayer(String id) {
-        return new WebResponse(
-                201,
-                new Player(id, "zManuu", 100)
-        );
-    }
-
-    @WebPost(name = "post-player", route = "/api/v1/player/post")
-    public WebResponse postPlayer(Player player) {
-        return new WebResponse(
-                201,
-                new Player(player.id(), player.name(), 0)
-        );
-    }
-
-    public record PlayerPutRequestBody (String playerId, int level) {}
-
-    @WebPut(name = "put-player-level", route = "/api/v1/player/put-level")
-    public WebResponse putPlayerLevel(PlayerPutRequestBody body) {
-        return new WebResponse(
-                WebResponse.Codes.ACCEPTED,
-                new Player(
-                        body.playerId(),
-                        "zManuu",
-                        body.level()
-                )
-        );
-    }
-
-    @WebDelete(name = "delete-player", route = "/api/v1/player/delete")
-    public WebResponse deletePlayer(String playerId) {
-        return new WebResponse(
-                WebResponse.Codes.ACCEPTED,
-                "The Player " + playerId + " was deleted."
-        );
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        event.setQuitMessage("[-] " + event.getPlayer().getName());
     }
 
 }

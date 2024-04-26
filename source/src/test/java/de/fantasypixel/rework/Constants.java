@@ -1,4 +1,4 @@
-package de.fantasypixel.rework.framework.web;
+package de.fantasypixel.rework;
 
 import com.google.gson.Gson;
 import de.fantasypixel.rework.framework.FPLogger;
