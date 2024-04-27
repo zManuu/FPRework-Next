@@ -1,6 +1,6 @@
 package de.fantasypixel.rework.framework.jsondata;
 
-import com.google.common.reflect.TypeToken;
+import com.google.gson.reflect.TypeToken;
 import de.fantasypixel.rework.FPRework;
 import lombok.AllArgsConstructor;
 
@@ -52,9 +52,9 @@ public class JsonDataManager {
 
                         // multiple entries in file
                         this.plugin.getFpLogger().debug("Loading multiple entries from file {0}.", childrenFile.getPath());
-                        var arrayType = new TypeToken<Set<T>>(){}.getType();
+                        var arrayType = TypeToken.getParameterized(Set.class, clazz).getType();
                         var entries = this.plugin.getGson().fromJson(reader, arrayType);
-                        results.addAll((Collection<T>) entries);
+                        results.addAll((Collection<? extends T>) entries);
 
                     } else {
 

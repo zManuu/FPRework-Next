@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class PlayerCharacterController implements Listener {
 
     @Service(name = "account") private AccountService accountService;
-    @Service(name = "player_character") private PlayerCharacterService playerCharacterService;
+    @Service(name = "player-character") private PlayerCharacterService playerCharacterService;
     @Service(name = "menu") private MenuService menuService;
     @Service(name = "convert_utils") private ConvertUtils convertUtils;
 

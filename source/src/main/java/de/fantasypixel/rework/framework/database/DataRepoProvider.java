@@ -90,7 +90,7 @@ public class DataRepoProvider<E> {
     }
 
     public boolean exists(String columnName, Object value) {
-        var statementStr = MessageFormat.format("SELECT id FROM {0} WHERE `{1}` = ?", this.tableName, columnName);
+        var statementStr = MessageFormat.format("SELECT id FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
 
         try (
@@ -121,7 +121,7 @@ public class DataRepoProvider<E> {
     }
 
     public E get(String columnName, Object value) {
-        var statementStr = MessageFormat.format("SELECT * FROM {0} WHERE `{1}` = ?", this.tableName, columnName);
+        var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
 
         try (
@@ -157,7 +157,7 @@ public class DataRepoProvider<E> {
     }
 
     public Set<E> getMultiple(String columnName, Object value) {
-        var statementStr = MessageFormat.format("SELECT * FROM {0} WHERE `{1}` = ?", this.tableName, columnName);
+        var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
 
         try (
@@ -212,7 +212,7 @@ public class DataRepoProvider<E> {
 
         this.cachedEntities.remove(entityId);
 
-        var statementStr = MessageFormat.format("DELETE FROM {0} WHERE `id` = ?", this.tableName);
+        var statementStr = MessageFormat.format("DELETE FROM `{0}` WHERE `id` = ?", this.tableName);
         logSqlStatement(statementStr, entityId);
 
         try (
@@ -245,7 +245,7 @@ public class DataRepoProvider<E> {
                 .toList();
 
         var statementStr = MessageFormat.format(
-                "UPDATE {0} SET {1} WHERE `id` = ?",
+                "UPDATE `{0}` SET {1} WHERE `id` = ?",
                 this.tableName,
                 fields.stream()
                         .map(Field::getName)
@@ -293,7 +293,7 @@ public class DataRepoProvider<E> {
                 .toList();
 
         var statementStr = String.format(
-                "INSERT INTO %s VALUES (%s)",
+                "INSERT INTO `%s` VALUES (%s)",
                 this.tableName,
                 fields.stream()
                         .map(e -> "?")

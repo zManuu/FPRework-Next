@@ -27,8 +27,6 @@ public class AccountService {
     public Account createAccount(String playerUuid, String name, String password) {
         Account account = new Account(null, playerUuid, name, password, null);
         if (!this.accountRepo.insert(account)) {
-            // todo: ?????
-            System.out.println(account);
             this.plugin.getFpLogger().error(CLASS_NAME, "createAccount", "Couldn't insert account into the database.");
             return null;
         }

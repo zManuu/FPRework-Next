@@ -32,7 +32,7 @@ public class TimerManager {
         var timerData = method.getAnnotation(Timer.class);
 
         this.plugin.getFpLogger().debug(
-                "Timer {0} is starting. delay={1}ms, interval={2}ms, type={3}",
+                "Timer {0} is starting. delay={1}ticks, interval={2}ticks, type={3}",
                 method.getDeclaringClass().getSimpleName() + "::" + method.getName(),
                 timerData.delay(),
                 timerData.interval(),
