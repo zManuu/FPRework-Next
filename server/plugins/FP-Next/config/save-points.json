@@ -1,0 +1,4 @@
+{
+  "---": "The range indicates how close a player must be to a save-point to unlock it (in blocks).",
+  "range": 5
+}
