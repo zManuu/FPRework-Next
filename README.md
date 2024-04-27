@@ -13,4 +13,6 @@ The next rework of the minecraft server FantasyPixel.
 
 ### Infrastructure
 
+(Might be out of date, the live version can be found at [eraser.io](https://app.eraser.io/workspace/i0w4LQC7ZDzmc5JVdRBQ)).
+
 ![Infrastructure drawing](structure.svg)
