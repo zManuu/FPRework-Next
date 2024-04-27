@@ -6,6 +6,8 @@ import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.events.OnDisable;
 import de.fantasypixel.rework.framework.events.OnEnable;
+import de.fantasypixel.rework.framework.jsondata.JsonDataManager;
+import de.fantasypixel.rework.framework.jsondata.JsonDataProvider;
 import de.fantasypixel.rework.framework.provider.autorigging.Gson;
 import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.framework.timer.Timer;
@@ -13,6 +15,7 @@ import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.*;
 import de.fantasypixel.rework.modules.config.DatabaseConfig;
 import de.fantasypixel.rework.framework.config.*;
+import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.modules.config.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -20,11 +23,9 @@ import org.bukkit.event.Listener;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Manages the framework-layer.
@@ -38,10 +39,12 @@ public class ProviderManager {
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, Object> configs;
+    private Map<Class<?>, Set<?>> jsonData;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
     private final TimerManager timerManager;
     private final CommandManager commandManager;
     private final WebManager webManager;
+    private final JsonDataManager jsonDataManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -49,6 +52,7 @@ public class ProviderManager {
         // managers with no access to config
         this.timerManager = new TimerManager(plugin);
         this.commandManager = new CommandManager(plugin);
+        this.jsonDataManager = new JsonDataManager(plugin);
 
         // controllers & services
         this.plugin.getFpLogger().sectionStart("Controllers & Services");
@@ -62,6 +66,12 @@ public class ProviderManager {
         this.loadConfigs();
         this.hookConfigs();
         this.plugin.getFpLogger().sectionEnd("Config");
+
+        // json-data
+        this.plugin.getFpLogger().sectionStart("Json-Data");
+        this.loadJsonData();
+        this.hookJsonData();
+        this.plugin.getFpLogger().sectionEnd("Json-Data");
 
         // web
         this.plugin.getFpLogger().sectionStart("Web");
@@ -276,6 +286,61 @@ public class ProviderManager {
         } else {
             return (T) configObj;
         }
+    }
+
+    /**
+     * Loads all json-data into memory.
+     */
+    private void loadJsonData() {
+        this.jsonData = new HashMap<>();
+
+        var jsonDataProviders = this.plugin.getFpUtils().getClassesAnnotatedWith(JsonDataProvider.class);
+        jsonDataProviders.forEach(jsonDataProvider -> {
+            this.plugin.getFpLogger().info("Loading JSON-Data for provider {0}.", jsonDataProvider.getSimpleName());
+
+            var baseDirectory = new File(
+                    this.plugin.getDataFolder(),
+                    jsonDataProvider.getAnnotation(JsonDataProvider.class).path()
+            );
+
+            this.jsonData.put(
+                    jsonDataProvider,
+                    this.jsonDataManager.loadJsonData(baseDirectory, jsonDataProvider)
+            );
+        });
+    }
+
+    /**
+     * Hooks all json-data from the memory to the corresponding {@link JsonData} fields.
+     */
+    private void hookJsonData() {
+        this.serviceProviders.values().forEach(serviceProvider -> {
+            this.plugin.getFpLogger().info(
+                    MessageFormat.format(
+                            "Rigging json-data for {0}.",
+                            serviceProvider.getClass().getName()
+                    )
+            );
+
+            var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(JsonData.class, serviceProvider.getClass());
+            hooks.forEach(hook -> {
+                try {
+                    var providerSetType = hook.getGenericType();
+                    var providerSetTypeParam = (ParameterizedType) providerSetType;
+                    var providerSetTypeArguments = providerSetTypeParam.getActualTypeArguments();
+
+                    if (providerSetTypeArguments.length == 1) {
+                        var providerType = providerSetTypeArguments[0];
+                        hook.set(serviceProvider, this.jsonData.get(providerType));
+                    } else {
+                        this.plugin.getFpLogger().error(CLASS_NAME, "hookJsonData", "Type of variable {0} in service {1} doesn't have any arguments, one was expected!", hook.getName(), serviceProvider.getClass().getSimpleName());
+                    }
+
+                } catch (IllegalAccessException ex) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "hookJsonData", ex);
+                }
+            });
+        });
     }
 
     /**
