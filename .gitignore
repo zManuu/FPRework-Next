@@ -5,10 +5,8 @@ crash-reports/
 
 # Server
 server/Ephesus/
-server/plugins/WorldEdit/
-server/plugins/bStats/
-server/plugins/PluginMetrics/
-server/plugins/Citizens/
+server/plugins/
+!server/plugins/FP-Next
 server/spigot-1.19.2.jar
 server/bundler/
 
