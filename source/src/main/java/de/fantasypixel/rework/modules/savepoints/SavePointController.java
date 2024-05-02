@@ -27,6 +27,7 @@ public class SavePointController {
     @Service(name = "player-character") private PlayerCharacterService characterService;
     @Service(name = "menu") private MenuService menuService;
 
+    // todo: timer starting twice?
     @Timer(interval = 10, type = TimerManager.TimerType.SYNC)
     public void unlockTimer() {
         // todo: util layer for player management
