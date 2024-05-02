@@ -68,23 +68,11 @@ public class FPLogger {
     }
 
     public void error(String fromClass, String fromMethod, String message) {
-        this.resolve(
-                LogLevel.ERROR,
-                "CLASS::METHOD MESSAGE"
-                        .replace("CLASS", fromClass)
-                        .replace("METHOD", fromMethod)
-                        .replace("MESSAGE", message)
-        );
+        this.error(fromClass, fromMethod, new Exception(message));
     }
 
     public void error(String fromClass, String fromMethod, String pattern, Object... args) {
-        this.resolve(
-                LogLevel.ERROR,
-                "CLASS::METHOD MESSAGE"
-                        .replace("CLASS", fromClass)
-                        .replace("METHOD", fromMethod)
-                        .replace("MESSAGE", MessageFormat.format(pattern, args))
-        );
+        this.error(fromClass, fromMethod, new Exception(MessageFormat.format(pattern, args)));
     }
 
     public void sectionStart(String section) {
