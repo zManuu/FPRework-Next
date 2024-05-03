@@ -12,9 +12,7 @@ public class AccountService {
     private final static String CLASS_NAME = AccountService.class.getSimpleName();
 
     @Plugin private FPRework plugin;
-
-    @DataRepo(type = Account.class)
-    private DataRepoProvider<Account> accountRepo;
+    @DataRepo private DataRepoProvider<Account> accountRepo;
 
     public boolean hasAccount(String playerUuid) {
         return this.accountRepo.exists("playerUuid", playerUuid);

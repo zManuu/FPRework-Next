@@ -13,11 +13,4 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface DataRepo {
-
-    /**
-     * The entity-type that will be handled.
-     */
-    Class<?> type();
-
-}
+public @interface DataRepo {}

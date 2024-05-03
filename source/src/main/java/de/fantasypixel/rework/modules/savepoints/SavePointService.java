@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class SavePointService {
 
     @JsonData private JsonDataContainer<SavePoint> savePoints;
-    @DataRepo(type = UnlockedSavePoint.class) private DataRepoProvider<UnlockedSavePoint> dataRepo;
+    @DataRepo private DataRepoProvider<UnlockedSavePoint> dataRepo;
     @Config private SavePointConfig config;
     @Plugin private FPRework plugin;
 

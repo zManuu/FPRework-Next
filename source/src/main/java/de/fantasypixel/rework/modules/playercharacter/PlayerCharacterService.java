@@ -20,7 +20,7 @@ public class PlayerCharacterService {
     private final static String CLASS_NAME = PlayerCharacterService.class.getSimpleName();
 
     @Plugin private FPRework plugin;
-    @DataRepo(type = PlayerCharacter.class) private DataRepoProvider<PlayerCharacter> playerCharacterRepo;
+    @DataRepo private DataRepoProvider<PlayerCharacter> playerCharacterRepo;
     @Config private PositionsConfig positionsConfig;
 
     public boolean hasCharacter(Account account) {

@@ -362,7 +362,25 @@ public class ProviderManager {
 
             dataRepoHooks.forEach(dataRepoHook -> {
 
-                var dataRepoEntityType = dataRepoHook.getAnnotation(DataRepo.class).type();
+                var dataRepoHookType = dataRepoHook.getGenericType();
+                if (!(dataRepoHookType instanceof ParameterizedType dataRepoHookParameterizedType)) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", "The data-repo-hook {0} in class {1} doesn't seem to be parameterized!", dataRepoHook.getName(), serviceProviderClass.getSimpleName());
+                    return;
+                }
+
+                var dataRepoHookTypeParameters = dataRepoHookParameterizedType.getActualTypeArguments();
+                if (dataRepoHookTypeParameters.length != 1) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", "The data-repo-hook {0} in class {1} is parameterized but hasn't got 1 parameter-type as expected!", dataRepoHook.getName(), serviceProviderClass.getSimpleName());
+                    return;
+                }
+
+                var dataRepoHookTypeParameter = dataRepoHookTypeParameters[0];
+
+                if (!(dataRepoHookTypeParameter instanceof Class<?> dataRepoEntityType)) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", "The data-repo-hook {0} in class {1} is parameterized the type isn't a class!", dataRepoHook.getName(), serviceProviderClass.getSimpleName());
+                    return;
+                }
+
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
                     var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.getConfig(DatabaseConfig.class));
@@ -378,7 +396,6 @@ public class ProviderManager {
                 }
 
                 this.plugin.getFpLogger().info("Auto rigged data-repo " + dataRepoEntityType.getName() + " for service-provider " + serviceProviderClass.getName());
-
             });
         });
     }
