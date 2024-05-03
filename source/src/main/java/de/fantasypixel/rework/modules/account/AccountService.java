@@ -6,7 +6,7 @@ import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 
-@ServiceProvider(name = "account")
+@ServiceProvider
 public class AccountService {
 
     private final static String CLASS_NAME = AccountService.class.getSimpleName();

@@ -3,10 +3,10 @@ package de.fantasypixel.rework.modules.savepoints;
 import de.fantasypixel.rework.framework.command.Command;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
-import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.modules.account.AccountService;
+import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
@@ -16,7 +16,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 
-import java.awt.*;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -24,10 +23,10 @@ import java.util.stream.Collectors;
 @Controller
 public class SavePointController {
 
-    @Service(name = "save-points") private SavePointService savePointService;
-    @Service(name = "account") private AccountService accountService;
-    @Service(name = "player-character") private PlayerCharacterService characterService;
-    @Service(name = "menu") private MenuService menuService;
+    @Service private SavePointService savePointService;
+    @Service private AccountService accountService;
+    @Service private PlayerCharacterService characterService;
+    @Service private MenuService menuService;
 
     // todo: timer starting twice?
     @Timer(interval = 10, type = TimerManager.TimerType.SYNC)

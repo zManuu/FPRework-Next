@@ -15,8 +15,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 @Controller
 public class AccountController implements Listener {
 
-    @Service(name = "account") private AccountService accountService;
-    @Service(name = "date_utils") private DateUtils dateUtils;
+    @Service private AccountService accountService;
+    @Service private DateUtils dateUtils;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 // todo: create utils layer that is accessible like services for service-providers
-@ServiceProvider(name = "date_utils")
+@ServiceProvider
 public class DateUtils {
 
     // Formats:

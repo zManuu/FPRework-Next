@@ -14,7 +14,7 @@ import org.bukkit.Location;
 import javax.annotation.Nullable;
 import java.util.Set;
 
-@ServiceProvider(name = "player-character")
+@ServiceProvider
 public class PlayerCharacterService {
 
     private final static String CLASS_NAME = PlayerCharacterService.class.getSimpleName();

@@ -11,8 +11,4 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ServiceProvider {
-
-    String name();
-
-}
+public @interface ServiceProvider {}

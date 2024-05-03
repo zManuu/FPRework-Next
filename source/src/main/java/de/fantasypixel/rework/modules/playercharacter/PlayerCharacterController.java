@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 @Controller
 public class PlayerCharacterController implements Listener {
 
-    @Service(name = "account") private AccountService accountService;
-    @Service(name = "player-character") private PlayerCharacterService playerCharacterService;
-    @Service(name = "menu") private MenuService menuService;
-    @Service(name = "convert_utils") private ConvertUtils convertUtils;
+    @Service private AccountService accountService;
+    @Service private PlayerCharacterService playerCharacterService;
+    @Service private MenuService menuService;
+    @Service private ConvertUtils convertUtils;
 
     @EventHandler
     public void onAccountLogin(AccountLoginEvent event) {

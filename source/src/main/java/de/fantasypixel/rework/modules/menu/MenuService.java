@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@ServiceProvider(name = "menu")
+@ServiceProvider
 public class MenuService {
 
     @Plugin private FPRework plugin;

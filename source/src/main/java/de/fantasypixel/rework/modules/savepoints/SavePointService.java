@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@ServiceProvider(name = "save-points")
+@ServiceProvider
 public class SavePointService {
 
     @JsonData private JsonDataContainer<SavePoint> savePoints;

@@ -15,8 +15,7 @@ import java.util.Optional;
 @Controller
 public class MenuController implements Listener {
 
-    @Service(name = "menu")
-    private MenuService menuService;
+    @Service private MenuService menuService;
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {

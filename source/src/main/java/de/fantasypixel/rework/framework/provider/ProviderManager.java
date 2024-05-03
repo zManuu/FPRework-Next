@@ -37,7 +37,7 @@ public class ProviderManager {
 
     private final FPRework plugin;
     private Set<Class<?>> serviceProviderClasses;
-    private Map<String, Object> serviceProviders;
+    private Map<Class<?>, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, Object> configs;
     private Map<Class<?>, JsonDataContainer<?>> jsonData;
@@ -110,10 +110,10 @@ public class ProviderManager {
         this.serviceProviders = new HashMap<>();
 
         serviceProviderClasses.forEach(serviceProviderClass -> {
-            var serviceName = serviceProviderClass.getAnnotation(ServiceProvider.class).name();
+            var serviceName = serviceProviderClass.getName();
             var serviceProviderInstance = this.plugin.getFpUtils().instantiate(serviceProviderClass);
-            this.serviceProviders.put(serviceName, serviceProviderInstance);
-            this.plugin.getFpLogger().info("Created service-provider " + serviceName);
+            this.serviceProviders.put(serviceProviderClass, serviceProviderInstance);
+            this.plugin.getFpLogger().info("Created service-provider {0}.", serviceName);
         });
     }
 
@@ -147,8 +147,9 @@ public class ProviderManager {
             var serviceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
 
             serviceHooks.forEach(serviceHook -> {
-                var serviceName = serviceHook.getAnnotation(Service.class).name();
-                var serviceProvider = this.serviceProviders.get(serviceName);
+                var serviceClass = serviceHook.getType();
+                var serviceName = serviceClass.getName();
+                var serviceProvider = this.serviceProviders.get(serviceClass);
 
                 if (serviceProvider == null) {
                     this.plugin.getFpLogger().warning("The controller {0} is accessing the non-existent service {1}.", controller.getClass().getName(), serviceName);
@@ -358,7 +359,7 @@ public class ProviderManager {
 
         this.serviceProviderClasses.forEach(serviceProviderClass -> {
             var dataRepoHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(DataRepo.class, serviceProviderClass);
-            var serviceProvider = this.serviceProviders.get(serviceProviderClass.getAnnotation(ServiceProvider.class).name());
+            var serviceProvider = this.serviceProviders.get(serviceProviderClass);
 
             dataRepoHooks.forEach(dataRepoHook -> {
 
