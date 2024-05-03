@@ -63,8 +63,9 @@ public class FPUtils {
 
             return constructor.newInstance(args);
 
-        } catch (Exception e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "instantiate", e);
+        } catch (Exception ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "instantiate", "There was an issue while instantiating {0} with args [{1}]", clazz.getSimpleName(), this.plugin.getGson().toJson(args));
+            this.plugin.getFpLogger().error(CLASS_NAME, "instantiate", ex);
             return null;
         }
     }

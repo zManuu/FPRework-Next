@@ -6,6 +6,7 @@ import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.events.OnDisable;
 import de.fantasypixel.rework.framework.events.OnEnable;
+import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.jsondata.JsonDataManager;
 import de.fantasypixel.rework.framework.jsondata.JsonDataProvider;
 import de.fantasypixel.rework.framework.provider.autorigging.Gson;
@@ -39,7 +40,7 @@ public class ProviderManager {
     private Map<String, Object> serviceProviders;
     private Set<Object> controllers;
     private Map<Class<?>, Object> configs;
-    private Map<Class<?>, Set<?>> jsonData;
+    private Map<Class<?>, JsonDataContainer<?>> jsonData;
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
     private final TimerManager timerManager;
     private final CommandManager commandManager;
@@ -305,7 +306,11 @@ public class ProviderManager {
 
             this.jsonData.put(
                     jsonDataProvider,
-                    this.jsonDataManager.loadJsonData(baseDirectory, jsonDataProvider)
+                    this.jsonDataManager.convertEntriesToJsonDataContainer(
+                        baseDirectory,
+                        jsonDataProvider,
+                        this.jsonDataManager.loadJsonData(baseDirectory, jsonDataProvider)
+                    )
             );
         });
     }

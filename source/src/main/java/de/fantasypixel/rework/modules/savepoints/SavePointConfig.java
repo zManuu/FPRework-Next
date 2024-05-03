@@ -8,5 +8,6 @@ import lombok.Getter;
 public class SavePointConfig {
 
     private double range;
+    private String defaultIconMaterial;
 
 }
