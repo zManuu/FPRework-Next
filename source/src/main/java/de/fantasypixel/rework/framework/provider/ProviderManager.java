@@ -58,8 +58,9 @@ public class ProviderManager {
         // controllers & services
         this.plugin.getFpLogger().sectionStart("Controllers & Services");
         this.initServiceProviders();
+        this.initServiceToServiceHooks();
         this.initControllers();
-        this.initServiceHooks();
+        this.initControllerToServiceHooks();
         this.plugin.getFpLogger().sectionEnd("Controllers & Services");
 
         // config
@@ -118,6 +119,32 @@ public class ProviderManager {
     }
 
     /**
+     * Initializes service hooks coming from other services.
+     */
+    private void initServiceToServiceHooks() {
+        this.serviceProviders.forEach((serviceProviderClass, serviceProvider) -> {
+            this.plugin.getFpLogger().info("Auto rigging service-2-service-hooks for {0}.", serviceProviderClass.getName());
+            var serviceToServiceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, serviceProviderClass);
+
+            serviceToServiceHooks.forEach(serviceToServiceHook -> {
+                var depServiceProviderClass = serviceToServiceHook.getType();
+                var depServiceProvider = this.serviceProviders.get(depServiceProviderClass);
+
+                if (depServiceProvider == null) {
+                    plugin.getFpLogger().warning("Tried to initialize service-2-service-hook, but no matching serviceProvider was found for class {0}.", depServiceProviderClass.getName());
+                    return;
+                }
+
+                try {
+                    serviceToServiceHook.set(serviceProvider, depServiceProvider);
+                } catch (IllegalAccessException ex) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initServiceToServiceHooks", ex);
+                }
+            });
+        });
+    }
+
+    /**
      * Creates instances of all controllers and populates them into {@link #controllers}.
      */
     private void initControllers() {
@@ -141,7 +168,7 @@ public class ProviderManager {
      * Auto riggs the specific service-provider instance from {@link #serviceProviders} to controllers requiring it.
      * Similar to {@link #initHooks(String, Class, Object)}, but here the {@link #controllers} are iterated.
      */
-    private void initServiceHooks() {
+    private void initControllerToServiceHooks() {
         this.controllers.forEach(controller -> {
             this.plugin.getFpLogger().info("Auto rigging service hooks for controller " + controller.getClass().getName());
             var serviceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
@@ -156,8 +183,8 @@ public class ProviderManager {
                 } else {
                     try {
                         serviceHook.set(controller, serviceProvider);
-                    } catch (IllegalAccessException e) {
-                        this.plugin.getFpLogger().error(CLASS_NAME, "initServiceHooks", e);
+                    } catch (IllegalAccessException ex) {
+                        this.plugin.getFpLogger().error(CLASS_NAME, "initServiceHooks", ex);
                     }
                 }
             });
