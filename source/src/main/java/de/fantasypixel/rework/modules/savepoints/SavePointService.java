@@ -13,11 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 
 import javax.annotation.Nullable;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ServiceProvider
@@ -59,6 +55,27 @@ public class SavePointService {
                 .map(this::getSavePoint)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    public Set<SavePoint> getLockedSavePoints(int characterId) {
+        var unlockedSavePoints = this.getUnlockedSavePoints(characterId);
+        var result = new HashSet<SavePoint>();
+
+        for (SavePoint savePoint : this.savePoints.getEntries()) {
+            var found = false;
+
+            for (SavePoint unlockedSavePoint : unlockedSavePoints) {
+                if (Objects.equals(savePoint.getId(), unlockedSavePoint.getId())) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                result.add(savePoint);
+        }
+
+        return result;
     }
 
     public boolean isSavePointUnlocked(int characterId, int savePointId) {

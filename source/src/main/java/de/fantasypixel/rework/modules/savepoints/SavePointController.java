@@ -16,6 +16,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 
+import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -55,24 +58,42 @@ public class SavePointController {
             // open menu
             var account = this.accountService.getAccount(player.getUniqueId().toString());
             var character = this.characterService.getActivePlayerCharacter(account);
-            var savePoints = this.savePointService.getUnlockedSavePoints(character.getId());
+            var unlockedSavePoints = this.savePointService.getUnlockedSavePoints(character.getId());
+            var lockedSavePoints = this.savePointService.getLockedSavePoints(character.getId());
 
             var itemSlotIndex = new AtomicInteger(0);
+            var items = new HashSet<MenuItem>();
+
+            items.addAll(
+                    unlockedSavePoints.stream()
+                            .map(savePoint -> MenuItem.builder()
+                                    .closesMenu(true)
+                                    .displayName(savePoint.getName())
+                                    .lore(List.of(MessageFormat.format("Distanz: {0} Blöcke", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
+                                    .material(Material.getMaterial(savePoint.getIconMaterial()))
+                                    .slot(itemSlotIndex.getAndIncrement())
+                                    .onSelect(() -> player.teleport(savePoint.getPosition().toLocation()))
+                                    .build())
+                            .collect(Collectors.toSet())
+            );
+
+            items.addAll(
+                    lockedSavePoints.stream()
+                            .map(savePoint -> MenuItem.builder()
+                                    .closesMenu(false)
+                                    .displayName(savePoint.getName())
+                                    .lore(List.of(MessageFormat.format("Distanz: {0} Blöcke", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
+                                    .material(Material.GRAY_DYE)
+                                    .slot(itemSlotIndex.getAndIncrement())
+                                    .build())
+                            .collect(Collectors.toSet())
+            );
+
             var menu = Menu.builder()
                     .closable(true)
                     .title("Save Points")
                     .type(InventoryType.CHEST)
-                    .items(
-                            savePoints.stream()
-                                    .map(savePoint -> MenuItem.builder()
-                                            .closesMenu(true)
-                                            .displayName(savePoint.getName())
-                                            .material(Material.getMaterial(savePoint.getIconMaterial()))
-                                            .slot(itemSlotIndex.getAndIncrement())
-                                            .onSelect(() -> player.teleport(savePoint.getPosition().toLocation()))
-                                            .build())
-                                    .collect(Collectors.toSet())
-                    )
+                    .items(items)
                     .build();
 
             this.menuService.openMenu(player, menu);
