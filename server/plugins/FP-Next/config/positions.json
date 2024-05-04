@@ -1,11 +1,12 @@
 {
-  "mainWorldName": "Ephesus",
   "blackBox": {
+    "world": "Ephesus",
     "x": 974.5,
     "y": 33,
     "z": 815.5
   },
   "firstSpawn": {
+    "world": "Ephesus",
     "x": 973.5,
     "y": 44,
     "z": 810.5

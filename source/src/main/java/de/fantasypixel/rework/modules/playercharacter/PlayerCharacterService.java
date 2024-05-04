@@ -49,7 +49,7 @@ public class PlayerCharacterService {
                 .accountId(accountId)
                 .name(name)
                 .characterClassIdentifier(characterClass.getIdentifier())
-                .locWorld(this.positionsConfig.getMainWorldName())
+                .locWorld(this.positionsConfig.getFirstSpawn().getWorld())
                 .locX(this.positionsConfig.getFirstSpawn().getX())
                 .locY(this.positionsConfig.getFirstSpawn().getY())
                 .locZ(this.positionsConfig.getFirstSpawn().getZ())

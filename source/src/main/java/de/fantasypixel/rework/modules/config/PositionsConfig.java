@@ -8,7 +8,6 @@ import lombok.Getter;
 @ConfigProvider(path = "config/positions")
 public class PositionsConfig {
 
-    private String mainWorldName;
     private JsonPosition blackBox;
     private JsonPosition firstSpawn;
 
