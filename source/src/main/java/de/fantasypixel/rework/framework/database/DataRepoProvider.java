@@ -4,6 +4,7 @@ import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.modules.config.DatabaseConfig;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -121,6 +122,7 @@ public class DataRepoProvider<E> {
         return this.get("id", id);
     }
 
+    @Nullable
     public E get(String columnName, Object value) {
         var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
@@ -233,7 +235,7 @@ public class DataRepoProvider<E> {
      * Only used to override entities present in the database. To insert, use {@link DataRepoProvider#insert(E entity)}.
      * @return whether the operation was successful
      */
-    public boolean save(E entity) {
+    public boolean update(E entity) {
         var entityId = this.getId(entity);
         if (entityId == 0) {
             this.plugin.getFpLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the id-field is not valid.");

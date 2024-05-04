@@ -11,7 +11,6 @@ import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.config.PositionsConfig;
 import org.bukkit.Location;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 @ServiceProvider
@@ -76,7 +75,7 @@ public class PlayerCharacterService {
         character.setLocYaw(location.getYaw());
         character.setLocPitch(location.getPitch());
 
-        this.playerCharacterRepo.save(character);
+        this.playerCharacterRepo.update(character);
         this.plugin.getFpLogger().debug("Successfully saved the character-position of {0}.", character.getId());
     }
 }

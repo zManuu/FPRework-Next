@@ -41,7 +41,7 @@ public class SavePointController {
             if (savePointInRange == null || savePointInRange.getId() == null)
                 continue;
 
-            var account = this.accountService.getAccount(onlinePlayer.getUniqueId().toString());
+            var account = this.accountService.getAccount(onlinePlayer.getUniqueId());
             var character = this.characterService.getActivePlayerCharacter(account);
 
             if (!this.savePointService.isSavePointUnlocked(character.getId(), savePointInRange.getId())) {
@@ -56,7 +56,7 @@ public class SavePointController {
         if (args.length == 0) {
 
             // open menu
-            var account = this.accountService.getAccount(player.getUniqueId().toString());
+            var account = this.accountService.getAccount(player.getUniqueId());
             var character = this.characterService.getActivePlayerCharacter(account);
             var unlockedSavePoints = this.savePointService.getUnlockedSavePoints(character.getId());
             var lockedSavePoints = this.savePointService.getLockedSavePoints(character.getId());
@@ -117,9 +117,8 @@ public class SavePointController {
         } else if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
 
             // list save-points
-            var savePointsList = this.savePointService.getSavePointsList();
             player.sendMessage("Die aktuellen Save-Points:");
-            player.sendMessage(savePointsList.toArray(String[]::new));
+            player.sendMessage(this.savePointService.getSavePointsList());
 
         } else if ((args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("create")) {
 

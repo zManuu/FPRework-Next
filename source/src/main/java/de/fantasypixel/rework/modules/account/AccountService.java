@@ -6,6 +6,8 @@ import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 
+import java.util.UUID;
+
 @ServiceProvider
 public class AccountService {
 
@@ -20,6 +22,10 @@ public class AccountService {
 
     public Account getAccount(String playerUuid) {
         return this.accountRepo.get("playerUuid", playerUuid);
+    }
+
+    public Account getAccount(UUID uuid) {
+        return this.getAccount(uuid.toString());
     }
 
     public Account createAccount(String playerUuid, String name, String password) {

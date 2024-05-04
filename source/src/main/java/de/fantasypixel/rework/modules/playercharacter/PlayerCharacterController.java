@@ -50,7 +50,7 @@ public class PlayerCharacterController implements Listener {
      */
     private void openCharacterCreateMenu(Player player, @Nullable Integer accountId, boolean firstCharacter) {
         Integer finalAccountId = accountId == null
-                ? this.accountService.getAccount(player.getUniqueId().toString()).getId()
+                ? this.accountService.getAccount(player.getUniqueId()).getId()
                 : accountId;
 
         player.teleport(this.playerCharacterService.getBlackBoxLocation());
@@ -89,7 +89,7 @@ public class PlayerCharacterController implements Listener {
     @Timer(interval = 100, type = TimerManager.TimerType.ASYNC)
     public void positionSaveTimer() {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            var account = this.accountService.getAccount(onlinePlayer.getUniqueId().toString());
+            var account = this.accountService.getAccount(onlinePlayer.getUniqueId());
             var character = this.playerCharacterService.getActivePlayerCharacter(account);
 
             if (character == null)
