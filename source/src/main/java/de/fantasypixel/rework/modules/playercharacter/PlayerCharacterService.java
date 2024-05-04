@@ -41,7 +41,7 @@ public class PlayerCharacterService {
     }
 
     public Location getBlackBoxLocation() {
-        return this.positionsConfig.getBlackBox().toLocation(this.positionsConfig.getMainWorldName());
+        return this.positionsConfig.getBlackBox().toLocation();
     }
 
     public PlayerCharacter createPlayerCharacter(int accountId, String name, Character characterClass, boolean autoActive) {

@@ -3,8 +3,11 @@
   "name": "Deep in the forest",
   "iconMaterial": "OAK_LEAVES",
   "position": {
+    "world": "Ephesus",
     "x": 1207.145649537041,
     "y": 97.0,
-    "z": 538.0327473660914
+    "z": 538.0327473660914,
+    "pitch": 56.0,
+    "yaw": 12.0
   }
 }

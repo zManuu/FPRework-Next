@@ -45,7 +45,7 @@ public class SavePointService {
     @Nullable
     public SavePoint getSavePointInRange(Location location) {
         for (SavePoint savePoint : this.savePoints.getEntries()) {
-            var savePointLocation = savePoint.getPosition().toLocation(location.getWorld());
+            var savePointLocation = savePoint.getPosition().toLocation();
             if (savePointLocation.distance(location) <= this.config.getRange())
                 return savePoint;
         }

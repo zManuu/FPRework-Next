@@ -3,8 +3,10 @@
   "name": "Beautiful beach",
   "iconMaterial": "SAND",
   "position": {
+    "world": "Ephesus",
     "x": 1175.430037606931,
     "y": 36.0,
-    "z": 390.1365750354733
+    "z": 390.1365750354733,
+    "pitch": 180.0
   }
 }

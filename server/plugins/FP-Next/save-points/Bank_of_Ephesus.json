@@ -3,8 +3,11 @@
   "name": "Bank of Ephesus",
   "iconMaterial": "EMERALD",
   "position": {
+    "world": "Ephesus",
     "x": 1576.533762397441,
     "y": 105.5,
-    "z": 874.5572464648233
+    "z": 874.5572464648233,
+    "pitch": 75.0,
+    "yaw": 15.0
   }
 }

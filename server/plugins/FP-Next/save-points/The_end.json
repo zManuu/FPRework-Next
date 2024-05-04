@@ -3,8 +3,10 @@
   "name": "The end",
   "iconMaterial": "BEACON",
   "position": {
+    "world": "Ephesus",
     "x": 345.4840320194414,
     "y": 86.5,
-    "z": 1507.5454134677686
+    "z": 1507.5454134677686,
+    "pitch": 90.0
   }
 }

@@ -3,8 +3,11 @@
   "name": "North Harbor",
   "iconMaterial": "BARREL",
   "position": {
+    "world": "Ephesus",
     "x": 1414.5520042790554,
     "y": 67.0,
-    "z": 259.07433644800386
+    "z": 259.07433644800386,
+    "pitch": 100.0,
+    "yaw": 20.0
   }
 }

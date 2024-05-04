@@ -69,7 +69,7 @@ public class SavePointController {
                                             .displayName(savePoint.getName())
                                             .material(Material.getMaterial(savePoint.getIconMaterial()))
                                             .slot(itemSlotIndex.getAndIncrement())
-                                            .onSelect(() -> player.teleport(savePoint.getPosition().toLocation(player.getWorld())))
+                                            .onSelect(() -> player.teleport(savePoint.getPosition().toLocation()))
                                             .build())
                                     .collect(Collectors.toSet())
                     )

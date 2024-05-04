@@ -3,8 +3,11 @@
   "name": "The conquerer",
   "iconMaterial": "IRON_SWORD",
   "position": {
+    "world": "Ephesus",
     "x": 1335.572790937989,
     "y": 163.5,
-    "z": 915.3883906635491
+    "z": 915.3883906635491,
+    "pitch": -135.0,
+    "yaw": 25.0
   }
 }

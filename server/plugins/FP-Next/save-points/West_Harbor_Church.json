@@ -3,8 +3,11 @@
   "name": "West Harbor Church",
   "iconMaterial": "RED_CANDLE",
   "position": {
+    "world": "Ephesus",
     "x": 1037.343922426955,
     "y": 78.5,
-    "z": 876.7090308090927
+    "z": 876.7090308090927,
+    "pitch": 150.0,
+    "yaw": 20.0
   }
 }

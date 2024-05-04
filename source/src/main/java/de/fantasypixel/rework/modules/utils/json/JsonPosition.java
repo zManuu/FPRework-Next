@@ -16,22 +16,28 @@ import javax.annotation.Nonnull;
 @AllArgsConstructor
 public class JsonPosition {
 
+    private String world;
     private double x;
     private double y;
     private double z;
+    private float pitch;
+    private float yaw;
 
     public JsonPosition(Location location) {
+        this.world = location.getWorld() != null ? location.getWorld().getName() : null;
         this.x = location.getX();
         this.y = location.getY();
         this.z = location.getZ();
+        this.pitch = location.getPitch();
+        this.yaw = location.getYaw();
     }
 
-    public Location toLocation(String worldName) {
-        return new Location(Bukkit.getWorld(worldName), x, y, z);
-    }
-
-    public Location toLocation(World world) {
-        return new Location(world, x, y, z);
+    public Location toLocation() {
+        return new Location(
+                Bukkit.getWorld(this.world),
+                this.x, this.y, this.z,
+                this.pitch, this.yaw
+        );
     }
 
 }

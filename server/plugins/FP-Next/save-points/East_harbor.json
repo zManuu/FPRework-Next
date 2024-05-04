@@ -3,8 +3,11 @@
   "name": "East harbor",
   "iconMaterial": "BLUE_ICE",
   "position": {
+    "world": "Ephesus",
     "x": 1726.6378007739957,
     "y": 51.0,
-    "z": 1431.602784785479
+    "z": 1431.602784785479,
+    "pitch": -40.0,
+    "yaw": 10.0
   }
 }
