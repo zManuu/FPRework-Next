@@ -1,18 +1,36 @@
 package de.fantasypixel.rework.modules.utils;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+
 /**
  * Represents something that has a position including world-name and coordinates.
  */
-public interface Locatable {
+public abstract class Locatable {
 
-    String getLocWorld();
-    double getLocX();
-    double getLocY();
-    double getLocZ();
+    public abstract String getLocWorld();
+    public abstract double getLocX();
+    public abstract double getLocY();
+    public abstract double getLocZ();
+    public abstract float getLocYaw();
+    public abstract float getLocPitch();
 
-    void setLocWorld(String world);
-    void setLocX(double LocX);
-    void setLocY(double LocY);
-    void setLocZ(double LocZ);
+    public abstract void setLocWorld(String world);
+    public abstract void setLocX(double x);
+    public abstract void setLocY(double y);
+    public abstract void setLocZ(double z);
+    public abstract void setLocYaw(float yaw);
+    public abstract void setLocPitch(float pitch);
+
+    public Location getLocation() {
+        return new Location(
+                Bukkit.getWorld(this.getLocWorld()),
+                this.getLocX(),
+                this.getLocY(),
+                this.getLocZ(),
+                this.getLocYaw(),
+                this.getLocPitch()
+        );
+    }
 
 }

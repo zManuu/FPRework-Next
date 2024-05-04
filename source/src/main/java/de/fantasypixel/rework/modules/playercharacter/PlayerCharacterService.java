@@ -63,4 +63,20 @@ public class PlayerCharacterService {
         return playerCharacter;
     }
 
+    public void savePlayerCharacterPosition(PlayerCharacter character, Location location) {
+        if (location.getWorld() == null) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "savePlayerCharacterPosition", "Tried to save character position, no world found on the location object!");
+            return;
+        }
+
+        character.setLocWorld(location.getWorld().getName());
+        character.setLocX(location.getX());
+        character.setLocY(location.getY());
+        character.setLocZ(location.getZ());
+        character.setLocYaw(location.getYaw());
+        character.setLocPitch(location.getPitch());
+
+        this.playerCharacterRepo.save(character);
+        this.plugin.getFpLogger().debug("Successfully saved the character-position of {0}.", character.getId());
+    }
 }

@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(tableName = "characters")
-public class PlayerCharacter implements Locatable {
+public class PlayerCharacter extends Locatable {
 
     @Nullable
     private Integer id;
@@ -24,6 +24,8 @@ public class PlayerCharacter implements Locatable {
     private double locX;
     private double locY;
     private double locZ;
+    private float locYaw;
+    private float locPitch;
     private boolean active;
 
     /**

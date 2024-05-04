@@ -1,5 +1,7 @@
 package de.fantasypixel.rework.modules.playercharacter;
 
+import de.fantasypixel.rework.framework.timer.Timer;
+import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
@@ -8,15 +10,13 @@ import de.fantasypixel.rework.modules.character.Characters;
 import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
-import de.fantasypixel.rework.modules.utils.ConvertUtils;
-import org.bukkit.Material;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryType;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,6 @@ public class PlayerCharacterController implements Listener {
     @Service private AccountService accountService;
     @Service private PlayerCharacterService playerCharacterService;
     @Service private MenuService menuService;
-    @Service private ConvertUtils convertUtils;
 
     @EventHandler
     public void onAccountLogin(AccountLoginEvent event) {
@@ -83,8 +82,18 @@ public class PlayerCharacterController implements Listener {
      */
     private void login(Player player, PlayerCharacter playerCharacter) {
         player.sendMessage("Du wirst eingeloggt...");
-        player.teleport(this.convertUtils.locatableToLocation(playerCharacter));
+        player.teleport(playerCharacter.getLocation());
         player.sendMessage("Du wurdest erfolgreich eingeloggt.");
+    }
+
+    @Timer(interval = 100, type = TimerManager.TimerType.ASYNC)
+    public void positionSaveTimer() {
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var account = this.accountService.getAccount(onlinePlayer.getUniqueId().toString());
+            var character = this.playerCharacterService.getActivePlayerCharacter(account);
+
+            this.playerCharacterService.savePlayerCharacterPosition(character, onlinePlayer.getLocation());
+        }
     }
 
 }
