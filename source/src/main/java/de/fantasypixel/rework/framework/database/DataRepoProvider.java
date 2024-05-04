@@ -5,7 +5,10 @@ import de.fantasypixel.rework.modules.config.DatabaseConfig;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,25 +37,23 @@ public class DataRepoProvider<E> {
             this.plugin.getFpLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The server will shutdown.");
             this.plugin.getServer().shutdown();
         }
-
-        testDatabaseConnection();
     }
 
-    private void testDatabaseConnection() {
+    public static void testDatabaseConnection(FPRework plugin, DatabaseConfig config) {
         try (
-                var conn = this.getConnection();
+                var conn = DriverManager.getConnection(String.format("jdbc:mysql://%s:%s/%s", config.getHost(), config.getPort(), config.getName()), config.getUser(), config.getPassword());
                 var stmt = conn.prepareStatement("SELECT VERSION()");
                 var rs = stmt.executeQuery();
         ) {
             if (!rs.next()) {
-                this.plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config.json. Server will continue operating as normal.");
+                plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config.json. Server will continue operating as normal.");
                 return;
             }
 
-            this.plugin.getFpLogger().info("The database connection was established. Database-Version: {0}", rs.getString(1));
+            plugin.getFpLogger().info("The database connection was established. Database-Version: {0}", rs.getString(1));
         } catch (Exception e) {
-            this.plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
-            this.plugin.getServer().shutdown();
+            plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
+            plugin.getServer().shutdown();
         }
     }
 

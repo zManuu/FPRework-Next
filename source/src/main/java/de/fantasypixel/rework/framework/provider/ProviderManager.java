@@ -353,7 +353,10 @@ public class ProviderManager {
      * Creates all data-repository instances.
      */
     private void createDataRepos() {
+        var databaseConfig = this.getConfig(DatabaseConfig.class);
+
         this.plugin.getFpUtils().loadMysqlDriver();
+        DataRepoProvider.testDatabaseConnection(this.plugin, databaseConfig);
 
         this.dataProviders = new HashMap<>();
 
@@ -384,7 +387,7 @@ public class ProviderManager {
 
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
                     this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
-                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, this.getConfig(DatabaseConfig.class));
+                    var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, databaseConfig);
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
                 }
 
