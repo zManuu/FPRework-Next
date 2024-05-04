@@ -3,6 +3,7 @@ package de.fantasypixel.rework.modules.account;
 import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
+import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.menu.MenuService;
 import de.fantasypixel.rework.modules.utils.DateUtils;
 import org.bukkit.Bukkit;
@@ -17,6 +18,7 @@ public class AccountController implements Listener {
 
     @Service private AccountService accountService;
     @Service private DateUtils dateUtils;
+    @Service private LanguageService languageService;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -29,10 +31,8 @@ public class AccountController implements Listener {
 
         if (!this.accountService.hasAccount(playerUuid)) {
             // first join -> setup account
-            event.setJoinMessage("Ein neuer Spieler!! Willkommen " + playerName);
-            player.sendMessage("Willkommen auf dem Server! Dein Account wird erstellt und du wirst automatisch eingeloggt...");
-
             account = this.accountService.createAccount(playerUuid, playerName, null);
+            player.sendMessage(this.languageService.getTranslation(null, "welcome", playerName, account.getId()));
         } else {
             account = this.accountService.getAccount(playerUuid);
         }

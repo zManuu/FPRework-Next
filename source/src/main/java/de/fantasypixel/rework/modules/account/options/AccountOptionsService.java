@@ -90,17 +90,17 @@ public class AccountOptionsService {
     public String[] getOptionsText(int accountId) {
         var options = this.getOptions(accountId);
         return new String[] {
-                "Sprache: " + options.getLanguageKey()
+                options.getLanguageKey()
         };
     }
 
     /**
      * @return a text-representation of all options and their possible values
      */
-    public String[] getOptionDefinitionsText() {
-        return new String[] {
+    public String getOptionDefinitionsText() {
+        return String.join("\n", new String[] {
                 "language - de, en"
-        };
+        });
     }
 
 }
