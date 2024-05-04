@@ -92,6 +92,9 @@ public class PlayerCharacterController implements Listener {
             var account = this.accountService.getAccount(onlinePlayer.getUniqueId().toString());
             var character = this.playerCharacterService.getActivePlayerCharacter(account);
 
+            if (character == null)
+                continue;
+
             this.playerCharacterService.savePlayerCharacterPosition(character, onlinePlayer.getLocation());
         }
     }
