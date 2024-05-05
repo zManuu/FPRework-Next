@@ -3,8 +3,7 @@ package de.fantasypixel.rework.modules.account;
 import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
-import de.fantasypixel.rework.modules.language.LanguageService;
-import de.fantasypixel.rework.modules.menu.MenuService;
+import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.utils.DateUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -18,7 +17,7 @@ public class AccountController implements Listener {
 
     @Service private AccountService accountService;
     @Service private DateUtils dateUtils;
-    @Service private LanguageService languageService;
+    @Service private NotificationService notificationService;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -32,7 +31,7 @@ public class AccountController implements Listener {
         if (!this.accountService.hasAccount(playerUuid)) {
             // first join -> setup account
             account = this.accountService.createAccount(playerUuid, playerName, null);
-            player.sendMessage(this.languageService.getTranslation(null, "welcome", playerName, account.getId()));
+            this.notificationService.sendChatMessage(player, "welcome", playerName, account.getId());
         } else {
             account = this.accountService.getAccount(playerUuid);
         }

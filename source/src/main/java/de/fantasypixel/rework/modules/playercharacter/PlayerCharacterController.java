@@ -10,6 +10,7 @@ import de.fantasypixel.rework.modules.character.Characters;
 import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
+import de.fantasypixel.rework.modules.notification.NotificationService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,6 +27,7 @@ public class PlayerCharacterController implements Listener {
     @Service private AccountService accountService;
     @Service private PlayerCharacterService playerCharacterService;
     @Service private MenuService menuService;
+    @Service private NotificationService notificationService;
 
     @EventHandler
     public void onAccountLogin(AccountLoginEvent event) {
@@ -81,9 +83,9 @@ public class PlayerCharacterController implements Listener {
      * Logs a player into the given character.
      */
     private void login(Player player, PlayerCharacter playerCharacter) {
-        player.sendMessage("Du wirst eingeloggt...");
+        this.notificationService.sendChatMessage(player, "login-start");
         player.teleport(playerCharacter.getLocation());
-        player.sendMessage("Du wurdest erfolgreich eingeloggt.");
+        this.notificationService.sendChatMessage(player, "login-success");
     }
 
     @Timer(interval = 100, type = TimerManager.TimerType.ASYNC)

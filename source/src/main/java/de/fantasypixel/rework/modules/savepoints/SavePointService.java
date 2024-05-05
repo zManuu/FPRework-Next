@@ -116,13 +116,16 @@ public class SavePointService {
     /**
      * @return an array of strings representing the loaded save points or a message of non found.
      */
-    public String[] getSavePointsList() {
+    public String getSavePointsList() {
         return !this.savePoints.getEntries().isEmpty()
                 ?
-                    this.savePoints.getEntries().stream()
-                        .map(e -> String.format("%d - %s", e.getId(), e.getName()))
-                        .toArray(String[]::new)
-                : new String[]{"Non found."};
+                    String.join(
+                        "\n",
+                        this.savePoints.getEntries().stream()
+                            .map(e -> String.format("%d - %s", e.getId(), e.getName()))
+                            .toArray(String[]::new)
+                    )
+                : "Non found.";
     }
 
 }

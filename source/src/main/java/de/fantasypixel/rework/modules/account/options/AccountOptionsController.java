@@ -4,7 +4,7 @@ import de.fantasypixel.rework.framework.command.Command;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.account.AccountService;
-import de.fantasypixel.rework.modules.language.LanguageService;
+import de.fantasypixel.rework.modules.notification.NotificationService;
 import org.bukkit.entity.Player;
 
 @Controller
@@ -12,7 +12,7 @@ public class AccountOptionsController {
 
     @Service private AccountOptionsService accountOptionsService;
     @Service private AccountService accountService;
-    @Service private LanguageService languageService;
+    @Service private NotificationService notificationService;
 
     @Command(name = "options", aliases = {"settings", "account"})
     public void optionsCommand(Player player, String[] args) {
@@ -22,7 +22,7 @@ public class AccountOptionsController {
         if (args.length == 0) {
 
             var optionsText = this.accountOptionsService.getOptionsText(accountId);
-            player.sendMessage(this.languageService.getTranslation(account.getId(), "options-list", optionsText));
+            this.notificationService.sendChatMessage(player, "options-list", (Object[]) optionsText);
 
         } else if (args.length == 3 && args[0].equalsIgnoreCase("update")) {
             var optionKey = args[1];
@@ -32,23 +32,23 @@ public class AccountOptionsController {
                 var updateSuccess = this.accountOptionsService.updateOptions(accountId, optionKey, optionValue);
 
                 if (!updateSuccess) {
-                    player.sendMessage(this.languageService.getTranslation(accountId, "options-update-error"));
+                    this.notificationService.sendChatMessage(player, "options-update-error");
                     throw new IllegalArgumentException("Options couldn't be updated properly.");
                 } else
-                    player.sendMessage(this.languageService.getTranslation(accountId, "options-update-success"));
+                    this.notificationService.sendChatMessage(player, "options-update-success");
 
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage() == null) {
                     // invalid option
-                    player.sendMessage(this.languageService.getTranslation(accountId, "options-invalid-option", this.accountOptionsService.getOptionDefinitionsText()));
+                    this.notificationService.sendChatMessage(player, "options-invalid-option", this.accountOptionsService.getOptionDefinitionsText());
                 } else {
                     // invalid value
-                    player.sendMessage(this.languageService.getTranslation(accountId, "options-invalid-value", ex.getMessage()));
+                    this.notificationService.sendChatMessage(player, "options-invalid-value", ex.getMessage());
                 }
             }
 
         } else {
-            player.sendMessage(this.languageService.getTranslation(accountId, "options-invalid-syntax"));
+            this.notificationService.sendChatMessage(player, "options-invalid-syntax");
         }
     }
 

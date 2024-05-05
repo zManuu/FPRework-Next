@@ -6,9 +6,11 @@ import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.modules.account.AccountService;
+import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
+import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.Bukkit;
@@ -19,6 +21,7 @@ import org.bukkit.event.inventory.InventoryType;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -30,6 +33,8 @@ public class SavePointController {
     @Service private AccountService accountService;
     @Service private PlayerCharacterService characterService;
     @Service private MenuService menuService;
+    @Service private NotificationService notificationService;
+    @Service private LanguageService languageService;
 
     // todo: timer starting twice?
     @Timer(interval = 10, type = TimerManager.TimerType.SYNC)
@@ -45,7 +50,7 @@ public class SavePointController {
             var character = this.characterService.getActivePlayerCharacter(account);
 
             if (!this.savePointService.isSavePointUnlocked(character.getId(), savePointInRange.getId())) {
-                onlinePlayer.sendMessage("Du hast den Save-Point " + savePointInRange.getName() + " freigeschaltet! Mit /savepoints kannst du jetzt jederzeit wieder hier hinreisen.");
+                this.notificationService.sendChatMessage(onlinePlayer, "savepoint-unlocked", Map.of("NAME", savePointInRange.getName()));
                 this.savePointService.unlockSavePoint(character.getId(), savePointInRange.getId());
             }
         }
@@ -69,7 +74,7 @@ public class SavePointController {
                             .map(savePoint -> MenuItem.builder()
                                     .closesMenu(true)
                                     .displayName(savePoint.getName())
-                                    .lore(List.of(MessageFormat.format("Distanz: {0} Blöcke", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
+                                    .lore(List.of(this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
                                     .material(Material.getMaterial(savePoint.getIconMaterial()))
                                     .slot(itemSlotIndex.getAndIncrement())
                                     .onSelect(() -> player.teleport(savePoint.getPosition().toLocation()))
@@ -82,7 +87,7 @@ public class SavePointController {
                             .map(savePoint -> MenuItem.builder()
                                     .closesMenu(false)
                                     .displayName(savePoint.getName())
-                                    .lore(List.of(MessageFormat.format("Distanz: {0} Blöcke", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
+                                    .lore(List.of(this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
                                     .material(Material.GRAY_DYE)
                                     .slot(itemSlotIndex.getAndIncrement())
                                     .build())
@@ -105,20 +110,19 @@ public class SavePointController {
             try {
                 savePointId = Integer.parseInt(args[1]);
             } catch (NumberFormatException ex) {
-                player.sendMessage("Die ID muss eine Zahl sein!");
+                this.notificationService.sendChatMessage(player, "savepoint-delete-expected-number");
                 return;
             }
             if (this.savePointService.deleteSavePoint(savePointId)) {
-                player.sendMessage("Der Save-Point " + savePointId + " wurde gelöscht!");
+                this.notificationService.sendChatMessage(player, "savepoint-delete-success", Map.of("ID", savePointId));
             } else {
-                player.sendMessage("Der Save-Point " + savePointId + " konnte nicht gelöscht werden! Bitte stelle sicher, dass er existiert (/savepoints list) und die Datei valide ist.");
+                this.notificationService.sendChatMessage(player, "savepoint-delete-error", Map.of("ID", savePointId));
             }
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
 
             // list save-points
-            player.sendMessage("Die aktuellen Save-Points:");
-            player.sendMessage(this.savePointService.getSavePointsList());
+            this.notificationService.sendChatMessage(player, "savepoint-list", this.savePointService.getSavePointsList());
 
         } else if ((args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("create")) {
 
@@ -131,11 +135,10 @@ public class SavePointController {
                     iconMaterial
             );
 
-
             if (success) {
-                player.sendMessage("Der Save-Point wurde erstellt!");
+                this.notificationService.sendChatMessage(player, "savepoint-create-success");
             } else {
-                player.sendMessage("Der Save-Point konnte nicht erstellt werden! Bitte überprüfe die Logs.");
+                this.notificationService.sendChatMessage(player, "savepoint-create-error");
             }
 
         }
