@@ -66,7 +66,7 @@ public class AccountOptionsService {
      * @throws IllegalArgumentException if an option hasn't been found (-> no message) or if the given value was invalid (with message)
      * @return weather the update was successful
      */
-    public boolean updateOptions(int accountId, String option, String value) throws IllegalArgumentException {
+    public boolean updateOptions(int accountId, @Nonnull String option, @Nonnull String value) throws IllegalArgumentException {
         var options = this.getOptions(accountId);
 
         if (option.equalsIgnoreCase("language") || option.equalsIgnoreCase("lang")) {
@@ -97,6 +97,7 @@ public class AccountOptionsService {
     /**
      * @return a text-representation of all options and their possible values
      */
+    @Nonnull
     public String getOptionDefinitionsText() {
         return String.join("\n", new String[] {
                 "language - de, en"

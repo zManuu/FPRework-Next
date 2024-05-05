@@ -1,11 +1,13 @@
 package de.fantasypixel.rework.framework.web;
 
 import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,13 +26,12 @@ public class WebLoadBalancer {
 
     private static final String CLASS_NAME = WebLoadBalancer.class.getSimpleName();
 
+    @Getter private final WebRouteMatcher routeMatcher;
     private final FPLogger logger;
-    @Getter
-    private final WebRouteMatcher routeMatcher;
     private final Map<String, Set<RouteTimeout>> timeouts;
     private Thread timeoutThread;
 
-    public WebLoadBalancer(FPLogger logger, WebRouteMatcher routeMatcher) {
+    public WebLoadBalancer(@Nonnull FPLogger logger, @Nonnull WebRouteMatcher routeMatcher) {
         this.logger = logger;
         this.routeMatcher = routeMatcher;
         this.timeouts = new HashMap<>();
@@ -68,7 +69,7 @@ public class WebLoadBalancer {
      * If the client can access the route, the specified {@link WebGet#timeout()}, {@link WebPut#timeout()}, etc. is assigned.
      * @throws IllegalArgumentException if no route was found with the specified name
      */
-    public boolean canAccess(String ip, String routeName) throws IllegalArgumentException {
+    public boolean canAccess(@Nonnull String ip, @Nonnull String routeName) throws IllegalArgumentException {
         // get the route timeout
         var routeTimeout = this.routeMatcher.getTimeoutForRoute(routeName);
 
@@ -92,7 +93,13 @@ public class WebLoadBalancer {
         return false;
     }
 
-    private void assignTimeout(String ip, String routeName, int timeout) {
+    /**
+     * Assigns a timeout to an ip address.
+     * @param ip the ip address to assign the timeout to
+     * @param routeName the name of the route that will be timed out
+     * @param timeout the timeout to assign in milliseconds
+     */
+    private void assignTimeout(@Nonnull String ip, @Nonnull String routeName, int timeout) {
         if (!this.timeouts.containsKey(ip))
             this.timeouts.put(ip, new HashSet<>());
 

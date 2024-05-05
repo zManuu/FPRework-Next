@@ -3,8 +3,11 @@ package de.fantasypixel.rework.framework.timer;
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
+import de.fantasypixel.rework.framework.provider.Service;
+import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import org.bukkit.scheduler.BukkitTask;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,12 +26,17 @@ public class TimerManager {
     private final FPRework plugin;
     private final Set<Integer> timerIds;
 
-    public TimerManager(FPRework plugin) {
+    public TimerManager(@Nonnull FPRework plugin) {
         this.plugin = plugin;
         this.timerIds = new HashSet<>();
     }
 
-    public void startTimer(Method method, Object object) {
+    /**
+     * Starts a given method.
+     * @param method the method that will be executed and holds the {@link Timer} annotation
+     * @param object the object holding the method
+     */
+    public void startTimer(@Nonnull Method method, @Nonnull Object object) {
         var timerData = method.getAnnotation(Timer.class);
 
         this.plugin.getFpLogger().debug(
@@ -77,6 +85,9 @@ public class TimerManager {
         this.timerIds.add(task.getTaskId());
     }
 
+    /**
+     * Stops all timers.
+     */
     public void stopTimers() {
         this.plugin.getFpLogger().debug("Stopping timers.");
         this.timerIds.forEach(e -> this.plugin.getServer().getScheduler().cancelTask(e));

@@ -3,6 +3,8 @@ package de.fantasypixel.rework.modules.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
+import javax.annotation.Nonnull;
+
 /**
  * Represents something that has a position including world-name and coordinates.
  */
@@ -22,6 +24,7 @@ public abstract class Locatable {
     public abstract void setLocYaw(float yaw);
     public abstract void setLocPitch(float pitch);
 
+    @Nonnull
     public Location getLocation() {
         return new Location(
                 Bukkit.getWorld(this.getLocWorld()),

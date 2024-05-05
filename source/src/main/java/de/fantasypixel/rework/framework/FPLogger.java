@@ -2,6 +2,8 @@ package de.fantasypixel.rework.framework;
 
 import com.google.gson.Gson;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.stream.Collectors;
@@ -27,17 +29,12 @@ public class FPLogger {
     private final Gson gson;
     private final PrintStream printStream;
 
-    public FPLogger(Gson gson, PrintStream printStream) {
+    public FPLogger(@Nonnull Gson gson, @Nonnull PrintStream printStream) {
         this.gson = gson;
         this.printStream = printStream;
     }
 
-    // log methods with more complex arguments
-    public void log(LogLevel level, String message) { this.resolve(level, message); }
-    public void log(LogLevel level, String pattern, Object... args) { this.resolve(level, MessageFormat.format(pattern, args)); }
-    public void log(LogLevel level, String pattern, boolean stringifyArgs, Object... args) { this.resolve(level, MessageFormat.format(pattern, this.stringifyArgs(args))); }
-
-    public void info(String message) {
+    public void info(@Nonnull String message) {
         this.resolve(LogLevel.INFO, message);
     }
 
@@ -46,11 +43,11 @@ public class FPLogger {
      * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
      * @param args the arguments to be passed to the pattern
      */
-    public void info(String pattern, Object... args) {
+    public void info(@Nonnull String pattern, @Nullable Object... args) {
         this.resolve(LogLevel.INFO, MessageFormat.format(pattern, args));
     }
 
-    public void error(String fromClass, String fromMethod, Throwable throwable) {
+    public void error(@Nonnull String fromClass, @Nonnull String fromMethod, @Nonnull Throwable throwable) {
         var errorMessage = throwable.getMessage() == null
                 ? throwable.toString()
                 : throwable.getMessage();
@@ -67,15 +64,15 @@ public class FPLogger {
         this.sectionEnd("Start-Trace");
     }
 
-    public void error(String fromClass, String fromMethod, String message) {
+    public void error(@Nonnull String fromClass, @Nonnull String fromMethod, @Nonnull String message) {
         this.error(fromClass, fromMethod, new Exception(message));
     }
 
-    public void error(String fromClass, String fromMethod, String pattern, Object... args) {
+    public void error(@Nonnull String fromClass, @Nonnull String fromMethod, @Nonnull String pattern, @Nullable Object... args) {
         this.error(fromClass, fromMethod, new Exception(MessageFormat.format(pattern, args)));
     }
 
-    public void sectionStart(String section) {
+    public void sectionStart(@Nonnull String section) {
         this.printStream.println(
                 MessageFormat.format(
                         "{0}[ Start of {1} ]{0}",
@@ -85,7 +82,7 @@ public class FPLogger {
         );
     }
 
-    public void sectionEnd(String section) {
+    public void sectionEnd(@Nonnull String section) {
         this.printStream.println(
                 MessageFormat.format(
                         "{0}[ End of {1} ]{0}",
@@ -95,7 +92,7 @@ public class FPLogger {
         );
     }
 
-    public void warning(String message) {
+    public void warning(@Nonnull String message) {
         this.resolve(LogLevel.WARNING, message);
     }
 
@@ -104,11 +101,31 @@ public class FPLogger {
      * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
      * @param args the arguments to be passed to the pattern
      */
-    public void warning(String pattern, Object... args) {
+    public void warning(@Nonnull String pattern, @Nullable Object... args) {
         this.resolve(LogLevel.WARNING, MessageFormat.format(pattern, args));
     }
 
-    public void debug(String message) {
+    public void warn(@Nonnull String fromClass, @Nonnull String fromMethod, @Nonnull String message) {
+        this.resolve(
+                LogLevel.WARNING,
+                "CLASS::METHOD MESSAGE"
+                        .replace("CLASS", fromClass)
+                        .replace("METHOD", fromMethod)
+                        .replace("MESSAGE", message)
+        );
+    }
+
+    public void warn(@Nonnull String fromClass, @Nonnull String fromMethod, @Nonnull String pattern, @Nullable Object... args) {
+        this.resolve(
+                LogLevel.WARNING,
+                "CLASS::METHOD MESSAGE"
+                        .replace("CLASS", fromClass)
+                        .replace("METHOD", fromMethod)
+                        .replace("MESSAGE", MessageFormat.format(pattern, args))
+        );
+    }
+
+    public void debug(@Nonnull String message) {
         this.resolve(LogLevel.DEBUG, message);
     }
 
@@ -117,33 +134,25 @@ public class FPLogger {
      * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
      * @param args the arguments to be passed to the pattern
      */
-    public void debug(String pattern, Object... args) {
+    public void debug(@Nonnull String pattern, @Nullable Object... args) {
         this.resolve(LogLevel.DEBUG, MessageFormat.format(pattern, args));
     }
 
-    public void entering(String fromClass, String fromMethod) {
+    public void entering(@Nonnull String fromClass, @Nonnull String fromMethod) {
         this.resolve(
                 LogLevel.ENTERING,
                 fromClass + "::" + fromMethod
         );
     }
 
-    public void exiting(String fromClass, String fromMethod) {
+    public void exiting(@Nonnull String fromClass, @Nonnull String fromMethod) {
         this.resolve(
                 LogLevel.EXITING,
                 fromClass + "::" + fromMethod
         );
     }
 
-    private String stringifyArgs(Object[] arguments) {
-        var stringified = new StringBuilder(this.gson.toJson(arguments[0]));
-        for (int i = 1; i < arguments.length; i++) {
-            stringified.append(", ").append(arguments[i]);
-        }
-        return stringified.toString();
-    }
-
-    private void resolve(LogLevel level, String message) {
+    private void resolve(@Nonnull LogLevel level, @Nonnull String message) {
         this.printStream.println(
                 "LEVEL | MESSAGE"
                     .replace("LEVEL", level.name())

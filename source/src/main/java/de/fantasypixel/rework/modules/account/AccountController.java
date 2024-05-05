@@ -1,12 +1,8 @@
 package de.fantasypixel.rework.modules.account;
 
-import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.notification.NotificationService;
-import de.fantasypixel.rework.modules.utils.DateUtils;
-import de.fantasypixel.rework.modules.utils.ServerUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

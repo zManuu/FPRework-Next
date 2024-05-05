@@ -34,12 +34,12 @@ public class WebManager {
      * @param handler The handler that is called when the route is requested. Example-1: "() -> {...}", Example-2: "(String name) -> {...}"
      */
     public record WebRoute (
-            String name,
-            String route,
-            HttpMethod httpMethod,
-            Class<?> bodyClass,
+            @Nonnull String name,
+            @Nonnull String route,
+            @Nonnull HttpMethod httpMethod,
+            @Nonnull Class<?> bodyClass,
             int timeout,
-            BiFunction<String, Object, WebResponse> handler
+            @Nonnull BiFunction<String, Object, WebResponse> handler
     ) {}
 
     private final static String CLASS_NAME = WebManager.class.getSimpleName();
@@ -50,7 +50,7 @@ public class WebManager {
     private HttpHandler handler;
     private HttpServer server;
 
-    public WebManager(FPRework plugin, WebConfig config) {
+    public WebManager(@Nonnull FPRework plugin, @Nonnull WebConfig config) {
         this.plugin = plugin;
         this.routeMatcher = new WebRouteMatcher(plugin.getFpLogger());
         this.routeValidator = new WebRouteValidator(plugin.getFpLogger(), this.routeMatcher);
@@ -67,6 +67,9 @@ public class WebManager {
         }
     }
 
+    /**
+     * Initializes the handler for the central route.
+     */
     private void setupHandler() {
         this.handler = exchange -> {
             var requestedRoute = exchange.getRequestURI().toString();
@@ -113,7 +116,16 @@ public class WebManager {
         };
     }
 
-    public void registerRoute(String name, String route, HttpMethod httpMethod, int timeout, Method method, Object object) {
+    /**
+     * Registers a route.
+     * @param name the name of the route (used for logging)
+     * @param route the route pattern
+     * @param httpMethod the associated http method
+     * @param timeout the timeout to assign after each access
+     * @param method the method to be executed
+     * @param object the object holding the method
+     */
+    public void registerRoute(@Nonnull String name, @Nonnull String route, @Nonnull HttpMethod httpMethod, int timeout, @Nonnull Method method, @Nonnull Object object) {
         this.plugin.getFpLogger().info(
                 "Registering a web handler for route \"{0} {1}\": {2}::{3}",
                 httpMethod.toString(),
@@ -210,6 +222,9 @@ public class WebManager {
         );
     }
 
+    /**
+     * Stops the web-server.
+     */
     public void stop() {
         this.plugin.getFpLogger().info("The web-server is stopping.");
         this.server.stop(0);

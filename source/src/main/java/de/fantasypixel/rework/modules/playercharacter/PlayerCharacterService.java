@@ -11,6 +11,8 @@ import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.config.PositionsConfig;
 import org.bukkit.Location;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Set;
 
 @ServiceProvider
@@ -22,15 +24,17 @@ public class PlayerCharacterService {
     @DataRepo private DataRepoProvider<PlayerCharacter> playerCharacterRepo;
     @Config private PositionsConfig positionsConfig;
 
-    public boolean hasCharacter(Account account) {
+    public boolean hasCharacter(@Nonnull Account account) {
         return this.playerCharacterRepo.exists("accountId", account.getId());
     }
 
-    public Set<PlayerCharacter> getPlayerCharacters(Account account) {
+    @Nonnull
+    public Set<PlayerCharacter> getPlayerCharacters(@Nonnull Account account) {
         return this.playerCharacterRepo.getMultiple("accountId", account.getId());
     }
 
-    public PlayerCharacter getActivePlayerCharacter(Account account) {
+    @Nullable
+    public PlayerCharacter getActivePlayerCharacter(@Nonnull Account account) {
         // todo: implement a way to filter by multiple fields in the DataRepository
         return this.getPlayerCharacters(account)
                 .stream()
@@ -39,11 +43,13 @@ public class PlayerCharacterService {
                 .orElse(null);
     }
 
+    @Nonnull
     public Location getBlackBoxLocation() {
         return this.positionsConfig.getBlackBox().toLocation();
     }
 
-    public PlayerCharacter createPlayerCharacter(int accountId, String name, Character characterClass, boolean autoActive) {
+    @Nullable
+    public PlayerCharacter createPlayerCharacter(int accountId, @Nonnull String name, @Nonnull Character characterClass, boolean autoActive) {
         PlayerCharacter playerCharacter = PlayerCharacter.builder()
                 .accountId(accountId)
                 .name(name)
@@ -62,7 +68,7 @@ public class PlayerCharacterService {
         return playerCharacter;
     }
 
-    public void savePlayerCharacterPosition(PlayerCharacter character, Location location) {
+    public void savePlayerCharacterPosition(@Nonnull PlayerCharacter character, @Nonnull Location location) {
         if (location.getWorld() == null) {
             this.plugin.getFpLogger().error(CLASS_NAME, "savePlayerCharacterPosition", "Tried to save character position, no world found on the location object!");
             return;

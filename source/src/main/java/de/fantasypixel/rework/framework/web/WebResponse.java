@@ -5,6 +5,8 @@ import de.fantasypixel.rework.FPRework;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.annotation.Nullable;
+
 @Getter
 public class WebResponse {
 
@@ -14,12 +16,12 @@ public class WebResponse {
     // the FPRework's gson object can't be wired to here.
     private static final Gson gson = new Gson();
 
-    public WebResponse(int code, Object body) {
+    public WebResponse(int code, @Nullable Object body) {
         this.code = code;
         this.body = gson.toJson(body);
     }
 
-    public record WebCodeResponse(String message) {}
+    public record WebCodeResponse(@Nullable String message) {}
 
     // Successful responses
     public static WebResponse OK = new WebResponse(200, new WebCodeResponse("OK"));

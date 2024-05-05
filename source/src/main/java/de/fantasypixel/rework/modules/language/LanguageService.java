@@ -24,7 +24,8 @@ public class LanguageService {
     @Config private LanguageConfig languageConfig;
     @Service private FormatUtils formatUtils;
 
-    public Map<String, String> getDictionary(String languageKey) {
+    @Nonnull
+    public Map<String, String> getDictionary(@Nullable String languageKey) {
         return this.languageContainer.getEntries()
                 .stream()
                 .filter(language -> language.getKey().equalsIgnoreCase(languageKey))

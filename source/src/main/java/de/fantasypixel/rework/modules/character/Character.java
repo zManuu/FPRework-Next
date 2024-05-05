@@ -4,6 +4,8 @@ import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
+
 abstract public class Character {
 
     public static final int DEFAULT_XP_PER_LEVEL = 100;
@@ -20,7 +22,7 @@ abstract public class Character {
     public int getXpPerLevel() { return DEFAULT_XP_PER_LEVEL; }
 
     // optional events
-    public void onLevelUp(Player player, PlayerCharacter playerCharacter, int oldLevel, int newLevel) {}
-    public void onCharacterCreate(Player player, PlayerCharacter playerCharacter) {}
+    public void onLevelUp(@Nonnull Player player, @Nonnull PlayerCharacter playerCharacter, int oldLevel, int newLevel) {}
+    public void onCharacterCreate(@Nonnull Player player, @Nonnull PlayerCharacter playerCharacter) {}
 
 }

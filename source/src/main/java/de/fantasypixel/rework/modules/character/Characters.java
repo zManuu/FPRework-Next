@@ -4,6 +4,8 @@ import de.fantasypixel.rework.modules.character.characters.CharacterArcher;
 import de.fantasypixel.rework.modules.character.characters.CharacterWarrior;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +23,11 @@ public class Characters {
     /**
      * Returns an optional. For a Nonnull result, use {@link PlayerCharacter#getCharacter()}
      */
-    public static Optional<Character> getByIdentifier(String characterClassIdentifier) {
+    @Nonnull
+    public static Optional<Character> getByIdentifier(@Nullable String characterClassIdentifier) {
+        if (characterClassIdentifier == null)
+            return Optional.empty();
+
         return switch (characterClassIdentifier) {
             case "Warrior" -> Optional.of(CHARACTER_WARRIOR);
             case "Archer" -> Optional.of(CHARACTER_ARCHER);

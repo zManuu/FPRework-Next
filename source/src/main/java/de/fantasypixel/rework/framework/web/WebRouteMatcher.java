@@ -3,6 +3,7 @@ package de.fantasypixel.rework.framework.web;
 import de.fantasypixel.rework.framework.FPLogger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -19,21 +20,30 @@ public class WebRouteMatcher {
     private final FPLogger logger;
     private final Set<WebManager.WebRoute> routes;
 
-    public WebRouteMatcher(FPLogger logger) {
+    public WebRouteMatcher(@Nonnull FPLogger logger) {
         this.logger = logger;
         this.routes = new HashSet<>();
     }
 
-    public boolean existsRoute(String route) {
+    /**
+     * Checks if a route exists with the matching pattern.
+     */
+    public boolean existsRoute(@Nonnull String route) {
         return this.routes.stream()
                 .anyMatch(e -> this.prettifyRoute(e.route()).equalsIgnoreCase(this.prettifyRoute(route)));
     }
 
-    public boolean existsRouteWithName(String routeName) {
+    /**
+     * Checks if a route exists with the matching name.
+     */
+    public boolean existsRouteWithName(@Nonnull String name) {
         return this.routes.stream()
-                .anyMatch(e -> e.name().equalsIgnoreCase(routeName));
+                .anyMatch(e -> e.name().equalsIgnoreCase(name));
     }
 
+    /**
+     * Registers the given route.
+     */
     public void registerRoute(@Nonnull WebManager.WebRoute route) {
         this.routes.add(route);
     }
@@ -43,7 +53,8 @@ public class WebRouteMatcher {
      * @param route the requested route
      * @return the matching route or null if not found.
      */
-    public Optional<WebManager.WebRoute> matchRoute(String route, WebManager.HttpMethod httpMethod) {
+    @Nonnull
+    public Optional<WebManager.WebRoute> matchRoute(@Nullable String route, @Nonnull WebManager.HttpMethod httpMethod) {
         Optional<WebManager.WebRoute> matchingRoute = Optional.empty();
         route = this.prettifyRoute(route);
 
@@ -91,7 +102,8 @@ public class WebRouteMatcher {
     /**
      * Removes slashes at the beginning and end of the route. Also replaces double slashes and backslashes.
      */
-    public String prettifyRoute(String route) {
+    @Nonnull
+    public String prettifyRoute(@Nullable String route) {
         if (route == null || route.isEmpty() || route.isBlank() || route.equals("/"))
             return "/";
 
@@ -109,14 +121,12 @@ public class WebRouteMatcher {
     /**
      * @throws IllegalArgumentException if no route with the specified name is found
      */
-    public int getTimeoutForRoute(String routeName) throws IllegalArgumentException {
+    public int getTimeoutForRoute(@Nullable String routeName) throws IllegalArgumentException {
         return this.routes.stream()
                 .filter(e -> e.name().equals(routeName))
                 .findAny()
                 .orElseThrow(IllegalArgumentException::new)
                 .timeout();
     }
-
-    public int getRoutesCount() {return this.routes.size();}
 
 }

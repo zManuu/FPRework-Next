@@ -8,6 +8,8 @@ import de.fantasypixel.rework.modules.language.LanguageService;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -51,7 +53,7 @@ public class NotificationService {
     @Service private LanguageService languageService;
     @Service private AccountService accountService;
 
-    private void sendChatMessage(Player player, String message) {
+    private void sendChatMessage(@Nonnull Player player, @Nonnull String message) {
         player.sendMessage(
                 ChatColor.translateAlternateColorCodes(
                     '&',
@@ -64,12 +66,12 @@ public class NotificationService {
         );
     }
 
-    public void sendChatMessage(Player player, String languageKey, Object... args) {
+    public void sendChatMessage(@Nonnull Player player, @Nonnull String languageKey, @Nullable Object... args) {
         var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
         this.sendChatMessage(player, this.languageService.getTranslation(accountId, languageKey, args));
     }
 
-    public void sendChatMessage(Player player, String languageKey, Map<String, Object> args) {
+    public void sendChatMessage(@Nonnull Player player, @Nonnull String languageKey, @Nonnull Map<String, Object> args) {
         var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
         this.sendChatMessage(player, this.languageService.getTranslation(accountId, languageKey, args));
     }

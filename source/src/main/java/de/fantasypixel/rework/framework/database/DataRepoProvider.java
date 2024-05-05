@@ -14,6 +14,10 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * An endpoint to the mysql-database. Supports creating, editing, querying and deleting of data.
+ * @param <E> the type of the given entity representing the table
+ */
 public class DataRepoProvider<E> {
     
     private final static String CLASS_NAME = DataRepoProvider.class.getSimpleName();
@@ -24,7 +28,7 @@ public class DataRepoProvider<E> {
     private final String tableName;
     private final DatabaseConfig config;
 
-    public DataRepoProvider(Class<E> typeParameterClass, FPRework plugin, DatabaseConfig config) {
+    public DataRepoProvider(@Nonnull Class<E> typeParameterClass, @Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
         this.typeParameterClass = typeParameterClass;
         this.cachedEntities = new HashMap<>();
         this.plugin = plugin;
@@ -40,7 +44,10 @@ public class DataRepoProvider<E> {
         }
     }
 
-    public static void testDatabaseConnection(FPRework plugin, DatabaseConfig config) {
+    /**
+     * Tests the database-connection to the given configuration. If errors occur, the server will shut down.
+     */
+    public static void testDatabaseConnection(@Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
         try (
                 var conn = DriverManager.getConnection(String.format("jdbc:mysql://%s:%s/%s", config.getHost(), config.getPort(), config.getName()), config.getUser(), config.getPassword());
                 var stmt = conn.prepareStatement("SELECT VERSION()");
@@ -61,7 +68,12 @@ public class DataRepoProvider<E> {
     /**
      * @return the entities id or 0 if not set / an error occurred
      */
-    private int getId(E entity) {
+    private int getId(@Nullable E entity) {
+        if (entity == null) {
+            this.plugin.getFpLogger().warning(CLASS_NAME, "getId", "Tried to get id from entity, but none submitted!");
+            return 0;
+        }
+
         try {
             var idField = entity.getClass().getDeclaredField("id");
             idField.setAccessible(true);
@@ -73,6 +85,9 @@ public class DataRepoProvider<E> {
         }
     }
 
+    /**
+     * Establishes a connection to the database that can be used for queries.
+     */
     @Nonnull
     private Connection getConnection() {
         try {
@@ -91,7 +106,12 @@ public class DataRepoProvider<E> {
         }
     }
 
-    public boolean exists(String columnName, Object value) {
+    /**
+     * @param columnName the name of the column to be queried
+     * @param value the value to check the column against
+     * @return whether a match was found
+     */
+    public boolean exists(@Nonnull String columnName, @Nonnull Object value) {
         var statementStr = MessageFormat.format("SELECT id FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
 
@@ -108,6 +128,10 @@ public class DataRepoProvider<E> {
         }
     }
 
+    /**
+     * @param id the id of the entity to be queried for
+     * @return whether an entity exists in the database with a matching id
+     */
     public boolean existsWithId(int id) {
         if (this.cachedEntities.containsKey(id))
             return true;
@@ -115,6 +139,11 @@ public class DataRepoProvider<E> {
         return this.exists("id", id);
     }
 
+    /**
+     * @param id id the id of the entity to be queried for
+     * @return the associated entity of null if none found
+     */
+    @Nullable
     public E getById(int id) {
         if (this.cachedEntities.containsKey(id))
             return this.cachedEntities.get(id);
@@ -122,8 +151,13 @@ public class DataRepoProvider<E> {
         return this.get("id", id);
     }
 
+    /**
+     * @param columnName the name of the column to be queried
+     * @param value the value to check the column against
+     * @return the found match or null of none found
+     */
     @Nullable
-    public E get(String columnName, Object value) {
+    public E get(@Nonnull String columnName, @Nonnull Object value) {
         var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
 
@@ -159,7 +193,14 @@ public class DataRepoProvider<E> {
         }
     }
 
-    public Set<E> getMultiple(String columnName, Object value) {
+    /**
+     * Searches for multiple entries in the database.
+     * @param columnName the name of the column to be queried
+     * @param value the value to check the column against
+     * @return the found matches
+     */
+    @Nonnull
+    public Set<E> getMultiple(@Nonnull String columnName, @Nonnull Object value) {
         var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
         logSqlStatement(statementStr, value);
 
@@ -194,14 +235,20 @@ public class DataRepoProvider<E> {
             return result;
         } catch (Exception ex) {
             this.plugin.getFpLogger().error(CLASS_NAME, "getMultiple", ex);
-            return null;
+            return new HashSet<>();
         }
     }
 
     /**
+     * Deletes an entity from the database.
      * @return whether the operation was successful
      */
-    public boolean delete(E entity) {
+    public boolean delete(@Nullable E entity) {
+        if (entity == null) {
+            this.plugin.getFpLogger().warning(CLASS_NAME, "delete", "Tried to delete entity, but none submitted!");
+            return false;
+        }
+
         var entityId = this.getId(entity);
         if (entityId == 0) {
             this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
@@ -235,7 +282,12 @@ public class DataRepoProvider<E> {
      * Only used to override entities present in the database. To insert, use {@link DataRepoProvider#insert(E entity)}.
      * @return whether the operation was successful
      */
-    public boolean update(E entity) {
+    public boolean update(@Nullable E entity) {
+        if (entity == null) {
+            this.plugin.getFpLogger().warning(CLASS_NAME, "update", "Tried to update entity, but none submitted!");
+            return false;
+        }
+
         var entityId = this.getId(entity);
         if (entityId == 0) {
             this.plugin.getFpLogger().warning("Couldn't save entity of type " + entity.getClass().getName() + " as the id-field is not valid.");
@@ -283,7 +335,12 @@ public class DataRepoProvider<E> {
      * Inserts the entity into the database, updates the id of passed entity after completion (if successful).
      * @return whether the operation was successful
      */
-    public boolean insert(E entity) {
+    public boolean insert(@Nullable E entity) {
+        if (entity == null) {
+            this.plugin.getFpLogger().warning(CLASS_NAME, "insert", "Tried to insert entity, but none submitted!");
+            return false;
+        }
+
         var entityId = this.getId(entity);
         if (entityId != 0) {
             this.plugin.getFpLogger().warning("Couldn't insert entity of type " + entity.getClass().getName() + " as the entity has an id-value already.");
@@ -342,8 +399,7 @@ public class DataRepoProvider<E> {
         }
     }
 
-
-    private void logSqlStatement(String statementStr, Object... args) {
+    private void logSqlStatement(@Nonnull String statementStr, @Nonnull Object... args) {
         StringBuilder formattedStatement = new StringBuilder("Executing SQL: \"");
         formattedStatement.append(statementStr).append("\" with arguments: [");
 

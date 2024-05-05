@@ -22,7 +22,14 @@ public class JsonDataManager {
 
     private final FPRework plugin;
 
-    public <T> Set<T> loadJsonData(File directory, Class<T> clazz) {
+    /**
+     * Loads json-data into a set.
+     * @param directory the directory to load files from
+     * @param clazz the associated class (structure of the file)
+     * @param <T> the type of the associated class
+     */
+    @Nonnull
+    public <T> Set<T> loadJsonData(@Nonnull File directory, @Nonnull Class<T> clazz) {
         var results = new HashSet<T>();
         var directoryChildren = directory.list();
 
@@ -86,8 +93,15 @@ public class JsonDataManager {
      */
     private record FileAndData<T>(@Nonnull File file, @Nullable Set<T> entries, @Nonnull T entry) {}
 
+    /**
+     * Finds the file and data loaded from this file by an entry-id.
+     * @param directory the directory to search
+     * @param clazz the associated class of the entries
+     * @param entryId the id to look for in the json files
+     * @return an object holding the file, all entries and the found entry
+     */
     @Nullable
-    private <T> FileAndData<T> findFileAndData(File directory, Class<?> clazz, int entryId) {
+    private <T> FileAndData<T> findFileAndData(@Nonnull File directory, @Nonnull Class<?> clazz, int entryId) {
         File resultFile = null;
         Set<T> resultEntries = null;
         T resultEntry = null;
@@ -191,9 +205,17 @@ public class JsonDataManager {
         return new FileAndData<>(resultFile, resultEntries, resultEntry);
     }
 
-    public <T> JsonDataContainer<T> convertEntriesToJsonDataContainer(File directory, Class<?> clazz, Set<T> entries) {
+    /**
+     * Converts a set of data to a {@link JsonDataContainer} that supports editing, updating and deleting.
+     * @param directory the base directory of the json-data
+     * @param clazz the associated class of the entries
+     * @param entries the initial set of entries
+     * @return the created {@link JsonDataContainer}
+     */
+    public <T> JsonDataContainer<T> convertEntriesToJsonDataContainer(@Nonnull File directory, @Nonnull Class<?> clazz, @Nonnull Set<T> entries) {
         return new JsonDataContainer<>() {
 
+            @Nonnull
             @Override
             public Set<T> getEntries() {
                 return entries;

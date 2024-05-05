@@ -3,6 +3,8 @@ package de.fantasypixel.rework.framework;
 import de.fantasypixel.rework.FPRework;
 import org.reflections.Reflections;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -18,10 +20,13 @@ public class FPUtils {
     private final String CLASS_NAME = FPUtils.class.getSimpleName();
     private final FPRework plugin;
 
-    public FPUtils(FPRework plugin) {
+    public FPUtils(@Nonnull FPRework plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Loads the mysql-driver.
+     */
     public void loadMysqlDriver() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -30,12 +35,23 @@ public class FPUtils {
         }
     }
 
-    public Set<Class<?>> getClassesAnnotatedWith(Class<? extends Annotation> annotationClass) {
+    /**
+     * @param annotationClass the annotation class to be searched for
+     * @return all classes in the module package that have the annotation
+     */
+    @Nonnull
+    public Set<Class<?>> getClassesAnnotatedWith(@Nonnull Class<? extends Annotation> annotationClass) {
         var reflections = new Reflections("de.fantasypixel.rework");
         return reflections.getTypesAnnotatedWith(annotationClass);
     }
 
-    public Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
+    /**
+     * @param annotationClass the annotation class to be searched for
+     * @param clazz the class holding the fields to be searched
+     * @return the found fields having the annotation
+     */
+    @Nonnull
+    public Set<Field> getFieldsAnnotatedWith(@Nonnull Class<? extends Annotation> annotationClass, @Nonnull Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(e -> !e.isSynthetic())
                 .peek(field -> field.setAccessible(true))
@@ -43,7 +59,13 @@ public class FPUtils {
                 .collect(Collectors.toSet());
     }
 
-    public Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotationClass, Class<?> clazz) {
+    /**
+     * @param annotationClass the annotation class to be searched for
+     * @param clazz the class holding the methods to be searched
+     * @return the found methods having the annotation
+     */
+    @Nonnull
+    public Set<Method> getMethodsAnnotatedWith(@Nonnull Class<? extends Annotation> annotationClass, @Nonnull Class<?> clazz) {
         return Arrays.stream(clazz.getMethods())
                 .filter(method -> method.isAnnotationPresent(annotationClass))
                 .collect(Collectors.toSet());
@@ -52,7 +74,8 @@ public class FPUtils {
     /**
      * Instantiates an object of the given class with the given arguments. Note that null-values are not supported because the constructor can't be determined.
      */
-    public <T> T instantiate(Class<T> clazz, Object... args) {
+    @Nullable
+    public <T> T instantiate(@Nonnull Class<T> clazz, @Nullable Object... args) {
         try {
 
             var argTypes = Arrays.stream(args)
@@ -70,28 +93,40 @@ public class FPUtils {
         }
     }
 
-
-    public void invoke(Method method, Object target, Object... args) {
+    /**
+     * Safely invokes a method with given args.
+     * @param method the method to be invoked
+     * @param target the holder object of the method
+     * @param args the arguments to be passed to the method
+     */
+    public void invoke(@Nonnull Method method, @Nonnull Object target, @Nullable Object... args) {
         method.setAccessible(true);
         try {
 
             // some commands will ignore args -> only one arg passed
-
-            if (method.getParameterCount() == 1)
+            if (method.getParameterCount() == 1 && args != null && args.length == 1)
                 method.invoke(target, args[0]);
             else
                 method.invoke(target, args);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "invoke", e);
+
+        } catch (IllegalAccessException | InvocationTargetException ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "invoke", ex);
         }
     }
 
-    public Object getFieldValueSafe(Field field, Object object) {
+    /**
+     * Gets a field value safely. If no value is found, null is returned.
+     * @param field the field to be accessed
+     * @param object the object holding the field
+     * @return the field's value or null
+     */
+    @Nullable
+    public Object getFieldValueSafe(@Nonnull Field field, @Nonnull Object object) {
         try {
             field.setAccessible(true);
             return field.get(object);
-        } catch (IllegalAccessException e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "getFieldValueSafe", e);
+        } catch (IllegalAccessException ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "getFieldValueSafe", ex);
             return null;
         }
     }

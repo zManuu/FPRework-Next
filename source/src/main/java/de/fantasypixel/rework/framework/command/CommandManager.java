@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -24,7 +25,10 @@ public class CommandManager {
         this.plugin = plugin;
     }
 
-    public void registerCommands(Object commandExecutor) {
+    /**
+     * Registers all methods as commands in the given command executor that are annotated with the Command annotation.
+     */
+    public void registerCommands(@Nonnull Object commandExecutor) {
         for (Method method : commandExecutor.getClass().getDeclaredMethods()) {
             if (!method.isAnnotationPresent(Command.class))
                 continue;
@@ -56,7 +60,10 @@ public class CommandManager {
         }
     }
 
-    private boolean canCommandBeUsed(CommandSender sender, CommandTarget target) {
+    /**
+     * Checks if the given sender is allowed to use a command with the specified target.
+     */
+    private boolean canCommandBeUsed(@Nonnull CommandSender sender, @Nonnull CommandTarget target) {
         if (!(sender instanceof ConsoleCommandSender) && !(sender instanceof Player))
             return false;
 

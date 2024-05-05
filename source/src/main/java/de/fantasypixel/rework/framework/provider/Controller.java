@@ -7,7 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * Applied on controller classes.
- * Only these classes can access {@link de.fantasypixel.rework.framework.provider.Service} and {@link de.fantasypixel.rework.framework.command.Command}.
+ * Controllers play the role of connecting the game logic with the minecraft-server, the web-server and other endpoints.
+ * Controllers communicate with the game logic through {@link Service} annotations.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -12,6 +12,7 @@ import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,7 +40,7 @@ public class SavePointService {
     }
 
     @Nullable
-    public SavePoint getSavePointInRange(Location location) {
+    public SavePoint getSavePointInRange(@Nonnull Location location) {
         for (SavePoint savePoint : this.savePoints.getEntries()) {
             var savePointLocation = savePoint.getPosition().toLocation();
             if (savePointLocation.distance(location) <= this.config.getRange())
@@ -49,6 +50,7 @@ public class SavePointService {
         return null;
     }
 
+    @Nonnull
     public Set<SavePoint> getUnlockedSavePoints(int characterId) {
         return this.dataRepo.getMultiple("characterId", characterId)
                 .stream()
@@ -57,6 +59,7 @@ public class SavePointService {
                 .collect(Collectors.toSet());
     }
 
+    @Nonnull
     public Set<SavePoint> getLockedSavePoints(int characterId) {
         var unlockedSavePoints = this.getUnlockedSavePoints(characterId);
         var result = new HashSet<SavePoint>();
@@ -93,7 +96,7 @@ public class SavePointService {
 
     // ADMIN
 
-    public boolean createSavePoint(JsonPosition position, String name, Optional<String> iconMaterial) {
+    public boolean createSavePoint(@Nonnull JsonPosition position, @Nonnull String name, @Nonnull Optional<String> iconMaterial) {
         if (iconMaterial.isPresent() && Material.getMaterial(iconMaterial.get()) == null) {
             this.plugin.getFpLogger().warning("Someone tried to create a save-point with the non-existing material {0}.", iconMaterial.get());
             return false;
@@ -116,6 +119,7 @@ public class SavePointService {
     /**
      * @return an array of strings representing the loaded save points or a message of non found.
      */
+    @Nonnull
     public String getSavePointsList() {
         return !this.savePoints.getEntries().isEmpty()
                 ?

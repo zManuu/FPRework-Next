@@ -31,21 +31,21 @@ public class MenuService {
     /**
      * @return The currently opened menu of the player.
      */
-    public Menu getOpenedMenu(Player player) {
+    public Menu getOpenedMenu(@Nonnull Player player) {
         return this.openedMenus.get(player);
     }
 
     /**
      * @return Whether the player has currently opened a menu.
      */
-    public boolean hasOpenedMenu(Player player) {
+    public boolean hasOpenedMenu(@Nonnull Player player) {
         return this.openedMenus.containsKey(player);
     }
 
     /**
      * Opens a menu to the specified player.
      */
-    public void openMenu(Player player, Menu menu) {
+    public void openMenu(@Nonnull Player player, @Nonnull Menu menu) {
         if (this.hasOpenedMenu(player)) {
             this.plugin.getFpLogger().warning("Player '" + player.getName() + "' tried to open menu '" + menu.getTitle() + "', another is open already: '" + this.getOpenedMenu(player).getTitle() + "'.");
             return;
@@ -59,7 +59,7 @@ public class MenuService {
     /**
      * Closes the currently opened menu of the player.
      */
-    public void closeMenu(Player player) {
+    public void closeMenu(@Nonnull Player player) {
         if (!this.hasOpenedMenu(player)) {
             this.plugin.getFpLogger().warning("Player '" + player.getName() + "' tried close menu but none is opened currently.");
             return;
@@ -81,7 +81,7 @@ public class MenuService {
         }
     }
 
-    protected void handleMenuClose(Player player, Menu menu) {
+    protected void handleMenuClose(@Nonnull Player player, @Nonnull Menu menu) {
         var manually = this.menuClosedManually.getOrDefault(player, true);
 
         if (!menu.isClosable() && manually) {

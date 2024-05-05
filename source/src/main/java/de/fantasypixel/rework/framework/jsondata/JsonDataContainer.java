@@ -1,5 +1,7 @@
 package de.fantasypixel.rework.framework.jsondata;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /**
@@ -13,9 +15,31 @@ import java.util.Set;
  */
 public abstract class JsonDataContainer <T> {
 
-    public abstract Set<T> getEntries();
-    public abstract boolean create(T entry);
-    public abstract boolean modify(T entry);
+    /**
+     * @return all entries currently loaded
+     */
+    @Nonnull public abstract Set<T> getEntries();
+
+    /**
+     * Creates an entry. The json file will be named after the entries name field or the generated id
+     * @param entry the entry to create
+     * @return whether the entry could be created
+     */
+    public abstract boolean create(@Nullable T entry);
+
+    /**
+     * Modifies an entry.
+     * <br><b>Note: The method is not implemented yet!</b>
+     * @param entry the entry to modify
+     * @return whether the entry could be modified
+     */
+    public abstract boolean modify(@Nullable T entry);
+
+    /**
+     * Deletes an entry.
+     * @param entryId the entry's unique identifier
+     * @return whether the entry was deleted
+     */
     public abstract boolean delete(int entryId);
 
 }

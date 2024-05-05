@@ -3,6 +3,7 @@ package de.fantasypixel.rework.framework.web;
 import de.fantasypixel.rework.framework.FPLogger;
 import lombok.AllArgsConstructor;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 
 @AllArgsConstructor
@@ -11,7 +12,15 @@ public class WebRouteValidator {
     private final FPLogger logger;
     private final WebRouteMatcher routeMatcher;
 
-    public boolean validate(String name, String route, WebManager.HttpMethod httpMethod, Method method) {
+    /**
+     * Checks if the parameters are valid for constructing a route.
+     * @param name the route's name (used for logging)
+     * @param route the pattern
+     * @param httpMethod the HTTP method to be used
+     * @param method the method to be executed
+     * @return whether the parameters are valid for constructing a route
+     */
+    public boolean validate(@Nonnull String name, @Nonnull String route, @Nonnull WebManager.HttpMethod httpMethod, @Nonnull Method method) {
         var className = method.getDeclaringClass().getSimpleName();
         var methodName = method.getName();
 
