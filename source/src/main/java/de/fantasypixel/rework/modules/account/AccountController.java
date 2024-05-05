@@ -5,6 +5,7 @@ import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.utils.DateUtils;
+import de.fantasypixel.rework.modules.utils.ServerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,7 +17,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class AccountController implements Listener {
 
     @Service private AccountService accountService;
-    @Service private DateUtils dateUtils;
     @Service private NotificationService notificationService;
 
     @EventHandler
@@ -36,10 +36,7 @@ public class AccountController implements Listener {
             account = this.accountService.getAccount(playerUuid);
         }
 
-        // login
-        // todo: move this logic to service
-        account.setLastLogin(this.dateUtils.getCurrentDateTime());
-        Bukkit.getPluginManager().callEvent(new AccountLoginEvent(account, player));
+        this.accountService.login(player, account);
     }
 
     @EventHandler

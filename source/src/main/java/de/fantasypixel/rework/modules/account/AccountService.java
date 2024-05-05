@@ -3,9 +3,15 @@ package de.fantasypixel.rework.modules.account;
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
+import de.fantasypixel.rework.modules.events.AccountLoginEvent;
+import de.fantasypixel.rework.modules.utils.DateUtils;
+import de.fantasypixel.rework.modules.utils.ServerUtils;
+import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 @ServiceProvider
@@ -15,6 +21,8 @@ public class AccountService {
 
     @Plugin private FPRework plugin;
     @DataRepo private DataRepoProvider<Account> accountRepo;
+    @Service private DateUtils dateUtils;
+    @Service private ServerUtils serverUtils;
 
     public boolean hasAccount(String playerUuid) {
         return this.accountRepo.exists("playerUuid", playerUuid);
@@ -37,4 +45,12 @@ public class AccountService {
         return account;
     }
 
+    /**
+     * Logs in a player into the given account.
+     */
+    public void login(@Nonnull Player player, @Nonnull Account account) {
+        account.setLastLogin(this.dateUtils.getCurrentDateTime());
+        this.accountRepo.update(account);
+        this.serverUtils.callEvent(new AccountLoginEvent(account, player));
+    }
 }

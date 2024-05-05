@@ -12,6 +12,7 @@ import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
+import de.fantasypixel.rework.modules.utils.ServerUtils;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -35,12 +36,11 @@ public class SavePointController {
     @Service private MenuService menuService;
     @Service private NotificationService notificationService;
     @Service private LanguageService languageService;
+    @Service private ServerUtils serverUtils;
 
-    // todo: timer starting twice?
     @Timer(interval = 10, type = TimerManager.TimerType.SYNC)
     public void unlockTimer() {
-        // todo: util layer for player management
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+        for (var onlinePlayer : this.serverUtils.getOnlinePlayers()) {
             var savePointInRange = this.savePointService.getSavePointInRange(onlinePlayer.getLocation());
 
             if (savePointInRange == null || savePointInRange.getId() == null)

@@ -8,7 +8,6 @@ import java.util.Map;
 
 /**
  * Provides utility methods for logging / language purposes.
- * todo: util layer
  */
 @ServiceProvider
 public class FormatUtils {

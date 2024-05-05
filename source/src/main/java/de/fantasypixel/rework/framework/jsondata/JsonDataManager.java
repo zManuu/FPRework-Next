@@ -204,7 +204,7 @@ public class JsonDataManager {
 
                 // find fileName & id (from name field or generated id)
                 String fileName;
-                int entryId = ThreadLocalRandom.current().nextInt(999999); // todo: util random
+                int entryId = ThreadLocalRandom.current().nextInt(999999);
                 try {
                     var fileNameField = entry.getClass().getDeclaredField("name");
                     fileNameField.setAccessible(true);

@@ -1,8 +1,10 @@
 package de.fantasypixel.rework.modules.menu;
 
 import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
+import de.fantasypixel.rework.modules.utils.ServerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class MenuService {
 
     @Plugin private FPRework plugin;
+    @Service private ServerUtils serverUtils;
     private final Map<Player, Menu> openedMenus;
     private final Map<Player, Boolean> menuClosedManually;
 
@@ -65,8 +68,7 @@ public class MenuService {
         this.menuClosedManually.put(player, false);
         this.openedMenus.remove(player);
 
-        // todo: util layer for timers
-        Bukkit.getScheduler().runTaskLater(this.plugin, player::closeInventory, 1);
+        this.serverUtils.runTaskLater(player::closeInventory, 1);
     }
 
     protected void handleMenuItemSelect(@Nullable MenuItem item, @Nonnull Player player) {
@@ -85,8 +87,7 @@ public class MenuService {
         if (!menu.isClosable() && manually) {
             this.menuClosedManually.remove(player);
 
-            // todo: util layer for timers
-            Bukkit.getScheduler().runTaskLater(this.plugin, () -> player.openInventory(menu.toInventory()), 1);
+            this.serverUtils.runTaskLater(() -> player.openInventory(menu.toInventory()), 1);
             return;
         }
 

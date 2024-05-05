@@ -5,7 +5,6 @@ import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-// todo: create utils layer that is accessible like services for service-providers
 @ServiceProvider
 public class DateUtils {
 
