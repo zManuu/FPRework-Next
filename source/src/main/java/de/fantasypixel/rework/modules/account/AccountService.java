@@ -1,11 +1,11 @@
 package de.fantasypixel.rework.modules.account;
 
-import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
-import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.modules.utils.DateUtils;
 import de.fantasypixel.rework.modules.utils.ServerUtils;
@@ -20,7 +20,7 @@ public class AccountService {
 
     private final static String CLASS_NAME = AccountService.class.getSimpleName();
 
-    @Plugin private FPRework plugin;
+    @Auto private FPLogger logger;
     @DataRepo private DataRepoProvider<Account> accountRepo;
     @Service private DateUtils dateUtils;
     @Service private ServerUtils serverUtils;
@@ -43,7 +43,7 @@ public class AccountService {
     public Account createAccount(@Nonnull String playerUuid, @Nonnull String name, @Nullable String password) {
         Account account = new Account(null, playerUuid, name, password, null);
         if (!this.accountRepo.insert(account)) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "createAccount", "Couldn't insert account into the database.");
+            this.logger.error(CLASS_NAME, "createAccount", "Couldn't insert account into the database.");
             return null;
         }
         return account;

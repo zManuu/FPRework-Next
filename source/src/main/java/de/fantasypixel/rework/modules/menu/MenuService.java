@@ -1,11 +1,10 @@
 package de.fantasypixel.rework.modules.menu;
 
-import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
-import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.modules.utils.ServerUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -13,12 +12,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @ServiceProvider
 public class MenuService {
 
-    @Plugin private FPRework plugin;
+    @Auto private FPLogger logger;
     @Service private ServerUtils serverUtils;
     private final Map<Player, Menu> openedMenus;
     private final Map<Player, Boolean> menuClosedManually;
@@ -47,7 +45,7 @@ public class MenuService {
      */
     public void openMenu(@Nonnull Player player, @Nonnull Menu menu) {
         if (this.hasOpenedMenu(player)) {
-            this.plugin.getFpLogger().warning("Player '" + player.getName() + "' tried to open menu '" + menu.getTitle() + "', another is open already: '" + this.getOpenedMenu(player).getTitle() + "'.");
+            this.logger.warning("Player '" + player.getName() + "' tried to open menu '" + menu.getTitle() + "', another is open already: '" + this.getOpenedMenu(player).getTitle() + "'.");
             return;
         }
 
@@ -61,7 +59,7 @@ public class MenuService {
      */
     public void closeMenu(@Nonnull Player player) {
         if (!this.hasOpenedMenu(player)) {
-            this.plugin.getFpLogger().warning("Player '" + player.getName() + "' tried close menu but none is opened currently.");
+            this.logger.warning("Player '" + player.getName() + "' tried close menu but none is opened currently.");
             return;
         }
 

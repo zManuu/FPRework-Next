@@ -1,13 +1,13 @@
 package de.fantasypixel.rework.modules.savepoints;
 
-import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
+import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
-import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,7 +23,7 @@ public class SavePointService {
     @JsonData private JsonDataContainer<SavePoint> savePoints;
     @DataRepo private DataRepoProvider<UnlockedSavePoint> dataRepo;
     @Config private SavePointConfig config;
-    @Plugin private FPRework plugin;
+    @Auto private FPLogger logger;
 
     @Nullable
     private SavePoint getSavePoint(@Nullable UnlockedSavePoint unlockedSavePoint) {
@@ -98,7 +98,7 @@ public class SavePointService {
 
     public boolean createSavePoint(@Nonnull JsonPosition position, @Nonnull String name, @Nonnull Optional<String> iconMaterial) {
         if (iconMaterial.isPresent() && Material.getMaterial(iconMaterial.get()) == null) {
-            this.plugin.getFpLogger().warning("Someone tried to create a save-point with the non-existing material {0}.", iconMaterial.get());
+            this.logger.warning("Someone tried to create a save-point with the non-existing material {0}.", iconMaterial.get());
             return false;
         }
 

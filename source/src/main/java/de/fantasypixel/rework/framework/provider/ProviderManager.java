@@ -9,8 +9,6 @@ import de.fantasypixel.rework.framework.events.OnEnable;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.jsondata.JsonDataManager;
 import de.fantasypixel.rework.framework.jsondata.JsonDataProvider;
-import de.fantasypixel.rework.framework.provider.autorigging.Gson;
-import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.*;
@@ -86,8 +84,12 @@ public class ProviderManager {
 
         // auto rigging
         this.plugin.getFpLogger().sectionStart("Auto-Rigging");
-        this.initHooks("Plugin", Plugin.class, plugin);
-        this.initHooks("Gson", Gson.class, plugin.getGson());
+        this.initAutoRigging(Set.of(
+                this.plugin.getFpLogger(),
+                this.plugin.getGson(),
+                this.plugin.getServer(),
+                this.plugin
+        ));
         this.plugin.getFpLogger().sectionEnd("Auto-Rigging");
 
         // database
@@ -166,7 +168,6 @@ public class ProviderManager {
 
     /**
      * Auto riggs the specific service-provider instance from {@link #serviceProviders} to controllers requiring it.
-     * Similar to {@link #initHooks(String, Class, Object)}, but here the {@link #controllers} are iterated.
      */
     private void initControllerToServiceHooks() {
         this.controllers.forEach(controller -> {
@@ -226,27 +227,32 @@ public class ProviderManager {
     }
 
     /**
-     * Auto riggs a given value into Services.
-     * @param name the name of the rigged value (only used for logging)
-     * @param annotationClass the annotation type of all objects that will be auto rigged
-     * @param value the value to be rigged
+     * Riggs the given values into fields in service-providers annotated with the {@link Auto} annotation.
+     * Note: Only one value per type is allowed!
+     * @param values the values to be rigged
      */
-    public void initHooks(String name, Class<? extends Annotation> annotationClass, Object value) {
-        this.serviceProviders.values().forEach(serviceProvider -> {
-            this.plugin.getFpLogger().info(
-                    MessageFormat.format(
-                            "Auto rigging {0} for service {1}",
-                            name,
-                            serviceProvider.getClass().getName()
-                    )
-            );
+    private void initAutoRigging(Set<Object> values) {
+        this.serviceProviders.forEach((serviceProviderClass, serviceProvider) -> {
+            var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Auto.class, serviceProviderClass);
 
-            var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(annotationClass, serviceProvider.getClass());
             hooks.forEach(hook -> {
+
+                var hookType = hook.getType();
+                var hookValue = values.stream()
+                        .filter(e -> hookType.isAssignableFrom(e.getClass()))
+                        .findAny()
+                        .orElse(null);
+
+                if (hookValue == null) {
+                    this.plugin.getFpLogger().warning("Tried to auto-rig field {0} in service {1}, but no value was found with the type.", hook.getName(), serviceProviderClass.getSimpleName());
+                    return;
+                }
+
                 try {
-                    hook.set(serviceProvider, value);
+                    hook.set(serviceProvider, hookValue);
+                    this.plugin.getFpLogger().debug("Successfully auto-rigged field {0} ({1}) in service {2}.", hook.getName(), hookType.getSimpleName(), serviceProviderClass.getSimpleName());
                 } catch (IllegalAccessException ex) {
-                    this.plugin.getFpLogger().error(CLASS_NAME, "initGsonHooks", ex);
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initAutoRigging", ex);
                 }
             });
         });

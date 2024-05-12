@@ -1,11 +1,12 @@
 package de.fantasypixel.rework.modules.account.options;
 
-import de.fantasypixel.rework.FPRework;
+import com.google.gson.Gson;
+import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
-import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 
 import javax.annotation.Nonnull;
 
@@ -14,7 +15,8 @@ public class AccountOptionsService {
 
     private final static String CLASS_NAME = AccountOptionsService.class.getSimpleName();
 
-    @Plugin private FPRework plugin;
+    @Auto private FPLogger logger;
+    @Auto private Gson gson;
     @DataRepo private DataRepoProvider<AccountOptions> dataRepo;
     @Config private AccountOptionsConfig config;
 
@@ -23,17 +25,17 @@ public class AccountOptionsService {
      * @param accountId the id of the associated account
      */
     private void createDefaultOptions(int accountId) {
-        var defaultOptions = this.plugin.getGson().fromJson(
-                this.plugin.getGson().toJson(this.config.getDefaultOptions()),
+        var defaultOptions = this.gson.fromJson(
+                this.gson.toJson(this.config.getDefaultOptions()),
                 AccountOptions.class
         );
 
         defaultOptions.setAccountId(accountId);
 
         if (this.dataRepo.insert(defaultOptions)) {
-            this.plugin.getFpLogger().debug("Created default account-options for account {0}.", accountId);
+            this.logger.debug("Created default account-options for account {0}.", accountId);
         } else {
-            this.plugin.getFpLogger().warning(CLASS_NAME, "createDefaultOptions", "Couldn't insert default account-options for account {0}.", accountId);
+            this.logger.warning(CLASS_NAME, "createDefaultOptions", "Couldn't insert default account-options for account {0}.", accountId);
         }
     }
 
@@ -49,7 +51,7 @@ public class AccountOptionsService {
             var existingOptions = this.dataRepo.get("accountId", accountId);
 
             if (existingOptions == null) {
-                this.plugin.getFpLogger().error(CLASS_NAME, "getOptions", "Tried to retrieve existing options for account {0}, but found none.", accountId);
+                this.logger.error(CLASS_NAME, "getOptions", "Tried to retrieve existing options for account {0}, but found none.", accountId);
                 return this.config.getDefaultOptions();
             }
 

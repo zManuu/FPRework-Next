@@ -1,12 +1,12 @@
 package de.fantasypixel.rework.modules.playercharacter;
 
-import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.modules.account.Account;
 import de.fantasypixel.rework.modules.character.Character;
-import de.fantasypixel.rework.framework.provider.autorigging.Plugin;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.config.PositionsConfig;
 import org.bukkit.Location;
@@ -20,7 +20,7 @@ public class PlayerCharacterService {
 
     private final static String CLASS_NAME = PlayerCharacterService.class.getSimpleName();
 
-    @Plugin private FPRework plugin;
+    @Auto private FPLogger logger;
     @DataRepo private DataRepoProvider<PlayerCharacter> playerCharacterRepo;
     @Config private PositionsConfig positionsConfig;
 
@@ -62,7 +62,7 @@ public class PlayerCharacterService {
                 .build();
 
         if (!this.playerCharacterRepo.insert(playerCharacter)) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "createPlayerCharacter", "Couldn't insert player-character into the database.");
+            this.logger.error(CLASS_NAME, "createPlayerCharacter", "Couldn't insert player-character into the database.");
             return null;
         }
         return playerCharacter;
@@ -70,7 +70,7 @@ public class PlayerCharacterService {
 
     public void savePlayerCharacterPosition(@Nonnull PlayerCharacter character, @Nonnull Location location) {
         if (location.getWorld() == null) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "savePlayerCharacterPosition", "Tried to save character position, no world found on the location object!");
+            this.logger.error(CLASS_NAME, "savePlayerCharacterPosition", "Tried to save character position, no world found on the location object!");
             return;
         }
 
@@ -82,6 +82,6 @@ public class PlayerCharacterService {
         character.setLocPitch(location.getPitch());
 
         this.playerCharacterRepo.update(character);
-        this.plugin.getFpLogger().debug("Successfully saved the character-position of {0}.", character.getId());
+        this.logger.debug("Successfully saved the character-position of {0}.", character.getId());
     }
 }
