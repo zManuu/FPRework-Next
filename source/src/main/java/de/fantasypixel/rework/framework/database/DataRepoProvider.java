@@ -58,7 +58,7 @@ public class DataRepoProvider<E> {
                 return;
             }
 
-            plugin.getFpLogger().info("The database connection was established. Database-Version: {0}", rs.getString(1));
+            plugin.getFpLogger().debug("The database connection was established. Database-Version: {0}", rs.getString(1));
         } catch (Exception e) {
             plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
             plugin.getServer().shutdown();

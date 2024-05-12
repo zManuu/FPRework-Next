@@ -56,12 +56,15 @@ public class WebManager {
         this.routeValidator = new WebRouteValidator(plugin.getFpLogger(), this.routeMatcher);
 
         try {
+            this.plugin.getFpLogger().debug("The web-server is starting on port {0}.", String.valueOf(config.getPort()));
+
             this.setupHandler();
-            this.plugin.getFpLogger().info("The web-server is starting on port {0}.", String.valueOf(config.getPort()));
             server = HttpServer.create(new InetSocketAddress(config.getPort()), 0);
             server.setExecutor(null);
             server.createContext("/", this.handler);
             server.start();
+
+            this.plugin.getFpLogger().debug("The web-server was started successfully.");
         } catch (IOException ex) {
             this.plugin.getFpLogger().error(CLASS_NAME, "constructor", ex);
         }
@@ -226,7 +229,7 @@ public class WebManager {
      * Stops the web-server.
      */
     public void stop() {
-        this.plugin.getFpLogger().info("The web-server is stopping.");
+        this.plugin.getFpLogger().debug("The web-server is stopping.");
         this.server.stop(0);
     }
 

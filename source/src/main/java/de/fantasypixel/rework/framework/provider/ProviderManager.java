@@ -19,6 +19,7 @@ import de.fantasypixel.rework.modules.config.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -113,10 +114,9 @@ public class ProviderManager {
         this.serviceProviders = new HashMap<>();
 
         serviceProviderClasses.forEach(serviceProviderClass -> {
-            var serviceName = serviceProviderClass.getName();
             var serviceProviderInstance = this.plugin.getFpUtils().instantiate(serviceProviderClass);
             this.serviceProviders.put(serviceProviderClass, serviceProviderInstance);
-            this.plugin.getFpLogger().info("Created service-provider {0}.", serviceName);
+            this.plugin.getFpLogger().debug("Successfully created service-provider {0}.", serviceProviderClass.getSimpleName());
         });
     }
 
@@ -125,7 +125,6 @@ public class ProviderManager {
      */
     private void initServiceToServiceHooks() {
         this.serviceProviders.forEach((serviceProviderClass, serviceProvider) -> {
-            this.plugin.getFpLogger().info("Auto rigging service-2-service-hooks for {0}.", serviceProviderClass.getName());
             var serviceToServiceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, serviceProviderClass);
 
             serviceToServiceHooks.forEach(serviceToServiceHook -> {
@@ -133,12 +132,13 @@ public class ProviderManager {
                 var depServiceProvider = this.serviceProviders.get(depServiceProviderClass);
 
                 if (depServiceProvider == null) {
-                    plugin.getFpLogger().warning("Tried to initialize service-2-service-hook, but no matching serviceProvider was found for class {0}.", depServiceProviderClass.getName());
+                    plugin.getFpLogger().warning("Tried to initialize service-2-service hook, but no matching serviceProvider was found for class {0}.", depServiceProviderClass.getName());
                     return;
                 }
 
                 try {
                     serviceToServiceHook.set(serviceProvider, depServiceProvider);
+                    this.plugin.getFpLogger().debug("Setup service-2-service hook for field {0} ({1}) in service {2}.", serviceToServiceHook.getName(), depServiceProviderClass.getSimpleName(), serviceProviderClass.getSimpleName());
                 } catch (IllegalAccessException ex) {
                     this.plugin.getFpLogger().error(CLASS_NAME, "initServiceToServiceHooks", ex);
                 }
@@ -158,8 +158,7 @@ public class ProviderManager {
 
             if (controllerInstance != null) {
                 this.controllers.add(controllerInstance);
-                this.commandManager.registerCommands(controllerInstance);
-                this.plugin.getFpLogger().info("Created controller " + controllerClass.getName());
+                this.plugin.getFpLogger().debug("Created controller {0}.", controllerClass.getSimpleName());
             } else {
                 this.plugin.getFpLogger().warning("Couldn't instantiate controller " + controllerClass.getName());
             }
@@ -171,19 +170,18 @@ public class ProviderManager {
      */
     private void initControllerToServiceHooks() {
         this.controllers.forEach(controller -> {
-            this.plugin.getFpLogger().info("Auto rigging service hooks for controller " + controller.getClass().getName());
             var serviceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
 
             serviceHooks.forEach(serviceHook -> {
                 var serviceClass = serviceHook.getType();
-                var serviceName = serviceClass.getName();
                 var serviceProvider = this.serviceProviders.get(serviceClass);
 
                 if (serviceProvider == null) {
-                    this.plugin.getFpLogger().warning("The controller {0} is accessing the non-existent service {1}.", controller.getClass().getName(), serviceName);
+                    this.plugin.getFpLogger().warning("The controller {0} is accessing the non-existent service {1}.", controller.getClass().getName(), serviceClass.getName());
                 } else {
                     try {
                         serviceHook.set(controller, serviceProvider);
+                        this.plugin.getFpLogger().debug("Setup service hook for field {0} ({1}) in controller {2}.", serviceHook.getName(), serviceClass.getSimpleName(), controller.getClass().getSimpleName());
                     } catch (IllegalAccessException ex) {
                         this.plugin.getFpLogger().error(CLASS_NAME, "initServiceHooks", ex);
                     }
@@ -266,7 +264,7 @@ public class ProviderManager {
 
         var configProviders = this.plugin.getFpUtils().getClassesAnnotatedWith(ConfigProvider.class);
         configProviders.forEach(configProvider -> {
-            this.plugin.getFpLogger().info(
+            this.plugin.getFpLogger().debug(
                     "Loading configuration {0}.",
                     configProvider.getSimpleName()
             );
@@ -290,18 +288,19 @@ public class ProviderManager {
      * Hooks all configurations from memory into the corresponding {@link Config} fields.
      */
     private void hookConfigs() {
-        this.serviceProviders.values().forEach(serviceProvider -> {
-            this.plugin.getFpLogger().info(
-                    MessageFormat.format(
-                            "Rigging configurations for {0}.",
-                            serviceProvider.getClass().getName()
-                    )
-            );
-
+        this.serviceProviders.forEach((serviceProviderClass, serviceProvider) -> {
             var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Config.class, serviceProvider.getClass());
             hooks.forEach(hook -> {
                 try {
-                    hook.set(serviceProvider, this.getConfig(hook.getType()));
+                    var configValue = this.getConfig(hook.getType());
+
+                    if (configValue == null) {
+                        this.plugin.getFpLogger().warning("Tried to setup config-hook {0} in service {1}, but no corresponding config found for {2}!", hook.getName(), serviceProviderClass.getName(), hook.getType().getName());
+                        return;
+                    }
+
+                    hook.set(serviceProvider, configValue);
+                    this.plugin.getFpLogger().debug("Setup config-hook {0} ({1}) in service {2}.", hook.getName(), configValue.getClass().getSimpleName(), serviceProviderClass.getSimpleName());
                 } catch (IllegalAccessException ex) {
                     this.plugin.getFpLogger().error(CLASS_NAME, "hookConfigs", ex);
                 }
@@ -312,6 +311,7 @@ public class ProviderManager {
     /**
      * Retrieves the configuration currently loaded for the given configuration class. Note that this class must be annotated with the {@link ConfigProvider} annotation.
      */
+    @Nullable
     @SuppressWarnings("unchecked")
     private <T> T getConfig(Class<T> clazz) {
         Object configObj = this.configs.get(clazz);
@@ -331,7 +331,7 @@ public class ProviderManager {
 
         var jsonDataProviders = this.plugin.getFpUtils().getClassesAnnotatedWith(JsonDataProvider.class);
         jsonDataProviders.forEach(jsonDataProvider -> {
-            this.plugin.getFpLogger().info("Loading JSON-Data for provider {0}.", jsonDataProvider.getSimpleName());
+            this.plugin.getFpLogger().debug("Loading JSON-Data for provider {0}.", jsonDataProvider.getSimpleName());
 
             var baseDirectory = new File(
                     this.plugin.getDataFolder(),
@@ -353,14 +353,7 @@ public class ProviderManager {
      * Hooks all json-data from the memory to the corresponding {@link JsonData} fields.
      */
     private void hookJsonData() {
-        this.serviceProviders.values().forEach(serviceProvider -> {
-            this.plugin.getFpLogger().info(
-                    MessageFormat.format(
-                            "Rigging json-data for {0}.",
-                            serviceProvider.getClass().getName()
-                    )
-            );
-
+        this.serviceProviders.forEach((serviceProviderClass, serviceProvider) -> {
             var hooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(JsonData.class, serviceProvider.getClass());
             hooks.forEach(hook -> {
                 try {
@@ -371,6 +364,7 @@ public class ProviderManager {
                     if (providerSetTypeArguments.length == 1) {
                         var providerType = providerSetTypeArguments[0];
                         hook.set(serviceProvider, this.jsonData.get(providerType));
+                        this.plugin.getFpLogger().debug("Successfully hooked json-data to field {0} in service {1}.", hook.getName(), serviceProviderClass.getSimpleName());
                     } else {
                         this.plugin.getFpLogger().error(CLASS_NAME, "hookJsonData", "Type of variable {0} in service {1} doesn't have any arguments, one was expected!", hook.getName(), serviceProvider.getClass().getSimpleName());
                     }
@@ -387,6 +381,11 @@ public class ProviderManager {
      */
     private void createDataRepos() {
         var databaseConfig = this.getConfig(DatabaseConfig.class);
+
+        if (databaseConfig == null) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", "Database configuration missing!");
+            return;
+        }
 
         this.plugin.getFpUtils().loadMysqlDriver();
         DataRepoProvider.testDatabaseConnection(this.plugin, databaseConfig);
@@ -419,47 +418,49 @@ public class ProviderManager {
                 }
 
                 if (!this.dataProviders.containsKey(dataRepoEntityType)) {
-                    this.plugin.getFpLogger().info("Creating data-repo for " + dataRepoEntityType.getName());
                     var dataRepoInstance = (DataRepoProvider<?>) this.plugin.getFpUtils().instantiate(DataRepoProvider.class, dataRepoEntityType, this.plugin, databaseConfig);
                     this.dataProviders.put(dataRepoEntityType, dataRepoInstance);
+                    this.plugin.getFpLogger().debug("Created data-repo {0}.", dataRepoEntityType.getSimpleName());
                 }
 
                 var dataRepo = this.dataProviders.get(dataRepoEntityType);
 
                 try {
                     dataRepoHook.set(serviceProvider, dataRepo);
+                    this.plugin.getFpLogger().debug("Setup data-repo hook {0} in service {1}.", dataRepoEntityType.getSimpleName(), serviceProviderClass.getSimpleName());
                 } catch (IllegalAccessException e) {
                     this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", e);
                 }
-
-                this.plugin.getFpLogger().info("Auto rigged data-repo " + dataRepoEntityType.getName() + " for service-provider " + serviceProviderClass.getName());
             });
         });
     }
 
     /**
-     * Calls onEnable on all controllers, registers listeners and starts the timers.
+     * Calls onEnable on all controllers, registers listeners & commands and starts the timers.
      */
     private void enableControllers() {
         this.controllers.forEach(controller -> {
-            this.plugin.getFpLogger().info("Enabling controller {0}...", controller.getClass().getName());
+            var controllerClass = controller.getClass();
+
+            this.plugin.getFpLogger().debug("Enabling controller {0}...", controllerClass.getSimpleName());
 
             // call onEnable
-            this.plugin.getFpUtils().getMethodsAnnotatedWith(OnEnable.class, controller.getClass()).forEach(onEnableFunc -> {
+            this.plugin.getFpUtils().getMethodsAnnotatedWith(OnEnable.class, controllerClass).forEach(onEnableFunc -> {
                 try {
-                    this.plugin.getFpLogger().info("Calling OnEnable von {0}.", controller.getClass().getName());
+                    this.plugin.getFpLogger().debug("Calling OnEnable of {0}.", controllerClass.getSimpleName());
                     onEnableFunc.invoke(controller);
-
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    this.plugin.getFpLogger().error(CLASS_NAME, "enableControllers", e);
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "enableControllers", ex);
                 }
             });
 
             // register possible listeners
             if (controller instanceof Listener controllerListener) {
-                this.plugin.getFpLogger().info("Registering controller-listener {0}.", controller.getClass().getName());
+                this.plugin.getFpLogger().debug("Registering controller-listener {0}.", controllerClass.getSimpleName());
                 Bukkit.getPluginManager().registerEvents(controllerListener, plugin);
             }
+
+            this.commandManager.registerCommands(controller);
 
             // start timers in controller
             this.plugin.getFpUtils()

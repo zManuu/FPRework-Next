@@ -30,6 +30,7 @@ public class FPUtils {
     public void loadMysqlDriver() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            this.plugin.getFpLogger().debug("Successfully loaded the mysql-driver.");
         } catch (ClassNotFoundException e) {
             this.plugin.getFpLogger().error(CLASS_NAME, "loadMysqlDriver", e);
         }
