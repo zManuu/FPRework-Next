@@ -1,13 +1,9 @@
 package de.fantasypixel.rework.framework;
 
-import com.google.gson.Gson;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.PrintStream;
 import java.text.MessageFormat;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * A logger that supports more log levels than the spigot logger.
@@ -16,21 +12,12 @@ import java.util.stream.IntStream;
  */
 public class FPLogger {
 
-    public enum LogLevel {
-        ERROR,
-        WARNING,
-        INFO,
-        ENTERING,
-        EXITING,
-        DEBUG
-    }
+    public enum LogLevel { ERROR, WARNING, INFO, ENTERING, EXITING, DEBUG }
 
     private final static int sectionIndentation = 25;
-    private final Gson gson;
     private final PrintStream printStream;
 
-    public FPLogger(@Nonnull Gson gson, @Nonnull PrintStream printStream) {
-        this.gson = gson;
+    public FPLogger(@Nonnull PrintStream printStream) {
         this.printStream = printStream;
     }
 

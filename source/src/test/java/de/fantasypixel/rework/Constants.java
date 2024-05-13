@@ -1,12 +1,10 @@
 package de.fantasypixel.rework;
 
-import com.google.gson.Gson;
 import de.fantasypixel.rework.framework.FPLogger;
 
 public class Constants {
 
-    public static final Gson gson = new Gson();
-    public static final FPLogger logger = new FPLogger(gson, System.out);
+    public static final FPLogger logger = new FPLogger(System.out);
 
     private static boolean initialized;
     public static void beforeOnce() {

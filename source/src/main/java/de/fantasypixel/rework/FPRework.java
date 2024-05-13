@@ -26,7 +26,7 @@ public class FPRework extends JavaPlugin {
                 .setPrettyPrinting()
                 .create();
 
-        this.fpLogger = new FPLogger(this.gson, System.out);
+        this.fpLogger = new FPLogger(System.out);
 
         this.fpUtils = new FPUtils(this);
         this.providerManager = new ProviderManager(this);
