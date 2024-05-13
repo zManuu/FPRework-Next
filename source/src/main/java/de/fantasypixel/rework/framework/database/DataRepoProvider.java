@@ -111,7 +111,7 @@ public class DataRepoProvider<E> {
      * @return whether a match was found
      */
     public boolean exists(@Nonnull Query query) {
-        var statementStr = MessageFormat.format(query.toSelectQuery(), this.tableName);
+        var statementStr = MessageFormat.format(query.toSelectQuery("id"), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
 
@@ -137,7 +137,7 @@ public class DataRepoProvider<E> {
      */
     @Nullable
     public E get(@Nonnull Query query) {
-        var statementStr = MessageFormat.format(query.toSelectQuery(), this.tableName);
+        var statementStr = MessageFormat.format(query.toSelectQuery("*"), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
 
@@ -183,7 +183,7 @@ public class DataRepoProvider<E> {
      */
     @Nonnull
     public Set<E> getMultiple(@Nonnull Query query) {
-        var statementStr = MessageFormat.format(query.toSelectQuery(), this.tableName);
+        var statementStr = MessageFormat.format(query.toSelectQuery("*"), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
 
@@ -388,20 +388,13 @@ public class DataRepoProvider<E> {
     }
 
     private void logSqlStatement(@Nonnull String statementStr, @Nonnull Object... args) {
-        StringBuilder formattedStatement = new StringBuilder("Executing SQL: \"");
-        formattedStatement.append(statementStr).append("\" with arguments: [");
+        for (var arg : args)
+            statementStr = statementStr.replaceFirst("\\?", arg == null ? "NULL" : arg.toString());
 
-        for (int i = 0; i < args.length; i++) {
-            formattedStatement.append(args[i]);
-            if (i < args.length - 1) {
-                formattedStatement.append(", ");
-            }
-        }
-
-        formattedStatement.append("]");
-
-        this.plugin.getFpLogger().debug(formattedStatement.toString());
+        this.plugin.getFpLogger().debug("Executing SQL: \"{0}\"", statementStr);
     }
+
+
 
 
 

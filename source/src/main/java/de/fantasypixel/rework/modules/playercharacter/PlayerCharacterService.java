@@ -69,6 +69,8 @@ public class PlayerCharacterService {
     }
 
     public void savePlayerCharacterPosition(@Nonnull PlayerCharacter character, @Nonnull Location location) {
+        this.logger.debug("Saving the character-position of {0}...", character.getId());
+
         if (location.getWorld() == null) {
             this.logger.error(CLASS_NAME, "savePlayerCharacterPosition", "Tried to save character position, no world found on the location object!");
             return;

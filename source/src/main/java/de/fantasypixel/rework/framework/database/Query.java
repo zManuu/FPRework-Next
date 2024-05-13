@@ -66,12 +66,18 @@ public class Query {
      * For instance: {@code SELECT * FROM `{0}` WHERE accountId = ? AND active = ?}
      * <br><br>
      * Note that the table-name and values aren't inputted here but in the {@link DataRepoProvider}.
+     * @param select to colum to select (should be {@code *} or {@code id})
+     * @throws QueryException if the select parameter wasn't * or id
      */
     @Nonnull
-    public String toSelectQuery() {
+    public String toSelectQuery(String select) throws QueryException {
+        if (!select.equals("*") && !select.equals("id"))
+            throw new QueryException("Invalid select: {0}! It should be * or id!", select);
+
         var whereString = this.getWhereString();
         return String.format(
-                "SELECT * FROM `{0}` WHERE %s",
+                "SELECT %s FROM `{0}` WHERE %s",
+                select,
                 whereString
         );
     }
