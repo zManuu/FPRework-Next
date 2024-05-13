@@ -107,19 +107,21 @@ public class DataRepoProvider<E> {
     }
 
     /**
-     * @param columnName the name of the column to be queried
-     * @param value the value to check the column against
+     * @param query the query to be used
      * @return whether a match was found
      */
-    public boolean exists(@Nonnull String columnName, @Nonnull Object value) {
-        var statementStr = MessageFormat.format("SELECT id FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
-        logSqlStatement(statementStr, value);
+    public boolean exists(@Nonnull Query query) {
+        var statementStr = MessageFormat.format(query.toSelectQuery(), this.tableName);
+        var whereValues = query.getWhereValues();
+        logSqlStatement(statementStr, whereValues);
 
         try (
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr);
         ) {
-            statement.setObject(1, value);
+            for (var i=0; i<whereValues.length; i++)
+                statement.setObject(i+1, whereValues[i]);
+
             var rs = statement.executeQuery();
             return rs.next();
         } catch (Exception ex) {
@@ -129,43 +131,23 @@ public class DataRepoProvider<E> {
     }
 
     /**
-     * @param id the id of the entity to be queried for
-     * @return whether an entity exists in the database with a matching id
-     */
-    public boolean existsWithId(int id) {
-        if (this.cachedEntities.containsKey(id))
-            return true;
-
-        return this.exists("id", id);
-    }
-
-    /**
-     * @param id id the id of the entity to be queried for
-     * @return the associated entity of null if none found
-     */
-    @Nullable
-    public E getById(int id) {
-        if (this.cachedEntities.containsKey(id))
-            return this.cachedEntities.get(id);
-
-        return this.get("id", id);
-    }
-
-    /**
-     * @param columnName the name of the column to be queried
-     * @param value the value to check the column against
+     * Searches for a single entry in the database.
+     * @param query the query to be used
      * @return the found match or null of none found
      */
     @Nullable
-    public E get(@Nonnull String columnName, @Nonnull Object value) {
-        var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
-        logSqlStatement(statementStr, value);
+    public E get(@Nonnull Query query) {
+        var statementStr = MessageFormat.format(query.toSelectQuery(), this.tableName);
+        var whereValues = query.getWhereValues();
+        logSqlStatement(statementStr, whereValues);
 
         try (
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr);
         ) {
-            statement.setObject(1, value);
+            for (var i=0; i<whereValues.length; i++)
+                statement.setObject(i+1, whereValues[i]);
+
             var rs = statement.executeQuery();
             if (!rs.next())
                 return null;
@@ -186,6 +168,7 @@ public class DataRepoProvider<E> {
                     this.getId(entityInstance),
                     entityInstance
             );
+
             return entityInstance;
         } catch (Exception ex) {
             this.plugin.getFpLogger().error(CLASS_NAME, "get", ex);
@@ -195,20 +178,22 @@ public class DataRepoProvider<E> {
 
     /**
      * Searches for multiple entries in the database.
-     * @param columnName the name of the column to be queried
-     * @param value the value to check the column against
+     * @param query the query to be used
      * @return the found matches
      */
     @Nonnull
-    public Set<E> getMultiple(@Nonnull String columnName, @Nonnull Object value) {
-        var statementStr = MessageFormat.format("SELECT * FROM `{0}` WHERE `{1}` = ?", this.tableName, columnName);
-        logSqlStatement(statementStr, value);
+    public Set<E> getMultiple(@Nonnull Query query) {
+        var statementStr = MessageFormat.format(query.toSelectQuery(), this.tableName);
+        var whereValues = query.getWhereValues();
+        logSqlStatement(statementStr, whereValues);
 
         try (
                 var conn = this.getConnection();
                 var statement = conn.prepareStatement(statementStr);
         ) {
-            statement.setObject(1, value);
+            for (var i=0; i<whereValues.length; i++)
+                statement.setObject(i+1, whereValues[i]);
+
             var rs = statement.executeQuery();
             Set<E> result = new HashSet<>();
 
@@ -255,10 +240,13 @@ public class DataRepoProvider<E> {
             return false;
         }
 
-        if (!this.existsWithId(entityId)) {
-            this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as no entity with that id exists.");
-            return false;
-        }
+        /*
+         todo: is this necessary?
+         if (!this.existsWithId(entityId)) {
+             this.plugin.getFpLogger().warning("Couldn't delete entity of type " + entity.getClass().getName() + " as no entity with that id exists.");
+             return false;
+         }
+        */
 
         this.cachedEntities.remove(entityId);
 

@@ -4,6 +4,7 @@ import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.provider.Auto;
@@ -52,7 +53,7 @@ public class SavePointService {
 
     @Nonnull
     public Set<SavePoint> getUnlockedSavePoints(int characterId) {
-        return this.dataRepo.getMultiple("characterId", characterId)
+        return this.dataRepo.getMultiple(new Query("characterId", characterId))
                 .stream()
                 .map(this::getSavePoint)
                 .filter(Objects::nonNull)
@@ -82,10 +83,11 @@ public class SavePointService {
     }
 
     public boolean isSavePointUnlocked(int characterId, int savePointId) {
-        // todo: implement code in data-repo to filter by multiple columns (query builder)!
-        return this.getUnlockedSavePoints(characterId)
-                .stream()
-                .anyMatch(e -> Objects.equals(e.getId(), savePointId));
+        return this.dataRepo.exists(
+                new Query()
+                        .where("characterId", characterId)
+                        .where("savePointId", savePointId)
+        );
     }
 
     public void unlockSavePoint(int characterId, int savePointId) {

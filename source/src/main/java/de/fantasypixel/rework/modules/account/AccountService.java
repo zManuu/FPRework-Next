@@ -3,6 +3,7 @@ package de.fantasypixel.rework.modules.account;
 import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
@@ -26,12 +27,12 @@ public class AccountService {
     @Service private ServerUtils serverUtils;
 
     public boolean hasAccount(@Nonnull String playerUuid) {
-        return this.accountRepo.exists("playerUuid", playerUuid);
+        return this.accountRepo.exists(new Query("playerUuid", playerUuid));
     }
 
     @Nullable
     public Account getAccount(@Nonnull String playerUuid) {
-        return this.accountRepo.get("playerUuid", playerUuid);
+        return this.accountRepo.get(new Query("playerUuid", playerUuid));
     }
 
     @Nullable

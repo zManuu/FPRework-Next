@@ -4,6 +4,7 @@ import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.modules.account.Account;
 import de.fantasypixel.rework.modules.character.Character;
@@ -25,22 +26,21 @@ public class PlayerCharacterService {
     @Config private PositionsConfig positionsConfig;
 
     public boolean hasCharacter(@Nonnull Account account) {
-        return this.playerCharacterRepo.exists("accountId", account.getId());
+        return this.playerCharacterRepo.exists(new Query("accountId", account.getId()));
     }
 
     @Nonnull
     public Set<PlayerCharacter> getPlayerCharacters(@Nonnull Account account) {
-        return this.playerCharacterRepo.getMultiple("accountId", account.getId());
+        return this.playerCharacterRepo.getMultiple(new Query("accountId", account.getId()));
     }
 
     @Nullable
     public PlayerCharacter getActivePlayerCharacter(@Nonnull Account account) {
-        // todo: implement a way to filter by multiple fields in the DataRepository
-        return this.getPlayerCharacters(account)
-                .stream()
-                .filter(PlayerCharacter::isActive)
-                .findFirst()
-                .orElse(null);
+        return this.playerCharacterRepo.get(
+                new Query()
+                        .where("accountId", account.getId())
+                        .where("active", true)
+        );
     }
 
     @Nonnull

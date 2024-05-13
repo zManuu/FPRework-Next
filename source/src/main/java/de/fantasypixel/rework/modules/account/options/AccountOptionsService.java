@@ -5,6 +5,7 @@ import de.fantasypixel.rework.framework.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 
@@ -47,8 +48,8 @@ public class AccountOptionsService {
      */
     @Nonnull
     public AccountOptions getOptions(int accountId) {
-        if (this.dataRepo.exists("accountId", accountId)) {
-            var existingOptions = this.dataRepo.get("accountId", accountId);
+        if (this.dataRepo.exists(new Query("accountId", accountId))) {
+            var existingOptions = this.dataRepo.get(new Query("accountId", accountId));
 
             if (existingOptions == null) {
                 this.logger.error(CLASS_NAME, "getOptions", "Tried to retrieve existing options for account {0}, but found none.", accountId);
