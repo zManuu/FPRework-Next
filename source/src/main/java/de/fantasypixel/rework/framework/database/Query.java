@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.framework.database;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -88,6 +89,23 @@ public class Query {
     @Nonnull
     public Object[] getWhereValues() {
         return this.where.values().toArray();
+    }
+
+    @Nonnull
+    public Map<String, Object> getWhereMap() {
+        return this.where;
+    }
+
+    /**
+     * Checks if another object is equal to this one.
+     * If it is a Query, the comparison is based on the {@link #getWhereString()}.
+     */
+    @Override
+    public boolean equals(@Nullable Object other) {
+        if (!(other instanceof Query otherQuery))
+            return false;
+
+        return this.getWhereString().equals(otherQuery.getWhereString());
     }
 
 }

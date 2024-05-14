@@ -23,14 +23,14 @@ public class DataRepoProvider<E> {
     private final static String CLASS_NAME = DataRepoProvider.class.getSimpleName();
 
     private final Class<E> typeParameterClass;
-    private final Map<Integer, E> cachedEntities;
+    private final Set<E> cache;
     private final FPRework plugin;
     private final String tableName;
     private final DatabaseConfig config;
 
     public DataRepoProvider(@Nonnull Class<E> typeParameterClass, @Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
         this.typeParameterClass = typeParameterClass;
-        this.cachedEntities = new HashMap<>();
+        this.cache = new HashSet<>();
         this.plugin = plugin;
         this.config = config;
 
@@ -106,11 +106,47 @@ public class DataRepoProvider<E> {
         }
     }
 
+    @Nonnull
+    private Set<E> getFromCache(@Nonnull Query query) {
+        var results = new HashSet<E>();
+
+        for (var cachedEntity : this.cache) {
+            var match = true;
+
+            for (var whereKey : query.getWhereMap().keySet()) {
+                var whereValue = query.getWhereMap().get(whereKey);
+
+                try {
+                    var field = this.typeParameterClass.getDeclaredField(whereKey);
+                    field.setAccessible(true);
+                    var value = field.get(cachedEntity);
+
+                    if (!whereValue.equals(value))
+                        match = false;
+                } catch (NoSuchFieldException | IllegalAccessException ex) {
+                    match = false;
+                    this.plugin.getFpLogger().warning("!!!!");
+                    this.plugin.getFpLogger().error(CLASS_NAME, "getFromCache", ex);
+                }
+            }
+
+            if (match)
+                results.add(cachedEntity);
+        }
+
+        return results;
+    }
+
     /**
      * @param query the query to be used
      * @return whether a match was found
      */
     public boolean exists(@Nonnull Query query) {
+        if (!this.getFromCache(query).isEmpty()) {
+            this.plugin.getFpLogger().debug("Tried to check if entity exists, found in cache.");
+            return true;
+        }
+
         var statementStr = MessageFormat.format(query.toSelectQuery("id"), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
@@ -137,6 +173,17 @@ public class DataRepoProvider<E> {
      */
     @Nullable
     public E get(@Nonnull Query query) {
+        var cached = this.getFromCache(query);
+
+        if (!cached.isEmpty()) {
+            this.plugin.getFpLogger().debug("Tried to get, found in cache.");
+
+            if (cached.size() > 1)
+                this.plugin.getFpLogger().warning("Tried to get an entity, found in cache, but more than one! Returning the first.");
+
+            return cached.stream().findFirst().orElse(null);
+        }
+
         var statementStr = MessageFormat.format(query.toSelectQuery("*"), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
@@ -164,10 +211,7 @@ public class DataRepoProvider<E> {
                 field.set(entityInstance, fieldValue);
             }
 
-            this.cachedEntities.put(
-                    this.getId(entityInstance),
-                    entityInstance
-            );
+            this.cache.add(entityInstance);
 
             return entityInstance;
         } catch (Exception ex) {
@@ -183,6 +227,13 @@ public class DataRepoProvider<E> {
      */
     @Nonnull
     public Set<E> getMultiple(@Nonnull Query query) {
+        var cached = this.getFromCache(query);
+
+        if (!cached.isEmpty()) {
+            this.plugin.getFpLogger().debug("Tried to get multiple, found in cache: {0}.", cached.size());
+            return cached;
+        }
+
         var statementStr = MessageFormat.format(query.toSelectQuery("*"), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
@@ -210,12 +261,8 @@ public class DataRepoProvider<E> {
                     field.set(entityInstance, fieldValue);
                 }
 
-                this.cachedEntities.put(
-                        this.getId(entityInstance),
-                        entityInstance
-                );
-
                 result.add(entityInstance);
+                this.cache.add(entityInstance);
             }
             return result;
         } catch (Exception ex) {
@@ -248,8 +295,6 @@ public class DataRepoProvider<E> {
          }
         */
 
-        this.cachedEntities.remove(entityId);
-
         var statementStr = MessageFormat.format("DELETE FROM `{0}` WHERE `id` = ?", this.tableName);
         logSqlStatement(statementStr, entityId);
 
@@ -259,6 +304,9 @@ public class DataRepoProvider<E> {
         ) {
             statement.setInt(1, entityId);
             statement.execute();
+
+            this.cache.removeIf(e -> getId(e) == entityId);
+
             return true;
         } catch (Exception e) {
             this.plugin.getFpLogger().error(CLASS_NAME, "delete", e);
@@ -270,6 +318,7 @@ public class DataRepoProvider<E> {
      * Only used to override entities present in the database. To insert, use {@link DataRepoProvider#insert(E entity)}.
      * @return whether the operation was successful
      */
+    // todo: update in cache?
     public boolean update(@Nullable E entity) {
         if (entity == null) {
             this.plugin.getFpLogger().warning(CLASS_NAME, "update", "Tried to update entity, but none submitted!");
@@ -306,14 +355,14 @@ public class DataRepoProvider<E> {
                 var statement = conn.prepareStatement(statementStr)
         ) {
             int index = 1;
-            for (var field : fields) {
+            for (var field : fields)
                 statement.setObject(index++, this.plugin.getFpUtils().getFieldValueSafe(field, entity));
-            }
+
             statement.setInt(index, entityId);
             statement.execute();
             return true;
-        } catch (Exception e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "save", e);
+        } catch (Exception ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "save", ex);
             return false;
         }
     }
@@ -380,6 +429,8 @@ public class DataRepoProvider<E> {
             idField.setAccessible(true);
             idField.set(entity, generatedId);
 
+            this.cache.add(entity);
+
             return true;
         } catch (Exception e) {
             this.plugin.getFpLogger().error(CLASS_NAME, "insert", e);
@@ -393,9 +444,4 @@ public class DataRepoProvider<E> {
 
         this.plugin.getFpLogger().debug("Executing SQL: \"{0}\"", statementStr);
     }
-
-
-
-
-
 }
