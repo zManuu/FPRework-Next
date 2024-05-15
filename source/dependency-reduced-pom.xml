@@ -24,7 +24,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
+        <version>3.5.2</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -33,6 +33,24 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <filters>
+            <filter>
+              <artifact>*.*</artifact>
+              <excludes>
+                <exclude>module-info.class</exclude>
+                <exclude>META-INF/MANIFEST.MF</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <transformers>
+            <transformer>
+              <manifestEntries>
+                <Main-Class>${main-class}</Main-Class>
+              </manifestEntries>
+            </transformer>
+          </transformers>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -58,7 +76,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>RELEASE</version>
+      <version>5.10.2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -77,10 +95,13 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <build.path>../server/plugins</build.path>
     <java.version>17</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <build.name>FP-Next</build.name>
+    <finalName>${build.name}</finalName>
+    <main-class>de.fantasypixel.rework.FPRework</main-class>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
