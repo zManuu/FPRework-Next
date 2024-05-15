@@ -1,11 +1,7 @@
 package de.fantasypixel.rework.framework.web;
 
-import de.fantasypixel.rework.framework.FPLogger;
-import de.fantasypixel.rework.framework.timer.Timer;
-import de.fantasypixel.rework.framework.timer.TimerManager;
-import lombok.AllArgsConstructor;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;

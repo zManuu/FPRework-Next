@@ -1,6 +1,6 @@
 package de.fantasypixel.rework.modules.language;
 
-import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;

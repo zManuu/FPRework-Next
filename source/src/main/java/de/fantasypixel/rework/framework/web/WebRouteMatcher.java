@@ -1,6 +1,6 @@
 package de.fantasypixel.rework.framework.web;
 
-import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.log.FPLogger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

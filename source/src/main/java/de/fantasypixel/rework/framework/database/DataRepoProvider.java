@@ -106,6 +106,7 @@ public class DataRepoProvider<E> {
         }
     }
 
+    // todo: javadoc
     @Nonnull
     private Set<E> getFromCache(@Nonnull Query query) {
         var results = new HashSet<E>();
@@ -143,7 +144,7 @@ public class DataRepoProvider<E> {
      */
     public boolean exists(@Nonnull Query query) {
         if (!this.getFromCache(query).isEmpty()) {
-            this.plugin.getFpLogger().debug("Tried to check if entity exists, found in cache.");
+            this.plugin.getFpLogger().debugGrouped("DATABASE_CACHE","Tried to check if entity exists, found in cache.");
             return true;
         }
 
@@ -176,7 +177,7 @@ public class DataRepoProvider<E> {
         var cached = this.getFromCache(query);
 
         if (!cached.isEmpty()) {
-            this.plugin.getFpLogger().debug("Tried to get, found in cache.");
+            this.plugin.getFpLogger().debugGrouped("DATABASE_CACHE","Tried to get, found in cache.");
 
             if (cached.size() > 1)
                 this.plugin.getFpLogger().warning("Tried to get an entity, found in cache, but more than one! Returning the first.");
@@ -230,7 +231,7 @@ public class DataRepoProvider<E> {
         var cached = this.getFromCache(query);
 
         if (!cached.isEmpty()) {
-            this.plugin.getFpLogger().debug("Tried to get multiple, found in cache: {0}.", cached.size());
+            this.plugin.getFpLogger().debugGrouped("DATABASE_CACHE","Tried to get multiple, found in cache: {0}.", cached.size());
             return cached;
         }
 
@@ -442,6 +443,6 @@ public class DataRepoProvider<E> {
         for (var arg : args)
             statementStr = statementStr.replaceFirst("\\?", arg == null ? "NULL" : arg.toString());
 
-        this.plugin.getFpLogger().debug("Executing SQL: \"{0}\"", statementStr);
+        this.plugin.getFpLogger().debugGrouped("DATABASE_QUERY", "Executing SQL: \"{0}\"", statementStr);
     }
 }

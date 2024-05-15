@@ -1,6 +1,6 @@
 package de.fantasypixel.rework.modules.menu;
 
-import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;

@@ -1,6 +1,6 @@
 package de.fantasypixel.rework.modules.utils;
 
-import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import org.bukkit.Server;

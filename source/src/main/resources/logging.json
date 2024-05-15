@@ -1,0 +1,7 @@
+{
+  "sectionIndentation": 25,
+  "groups": {
+    "DATABASE_QUERY": false,
+    "DATABASE_CACHE": false
+  }
+}

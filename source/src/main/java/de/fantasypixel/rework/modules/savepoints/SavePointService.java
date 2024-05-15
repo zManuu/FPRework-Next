@@ -1,6 +1,6 @@
 package de.fantasypixel.rework.modules.savepoints;
 
-import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;

@@ -2,7 +2,7 @@ package de.fantasypixel.rework;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import de.fantasypixel.rework.framework.FPLogger;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.FPUtils;
 import de.fantasypixel.rework.framework.adapters.RecordTypeAdapterFactory;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
@@ -26,7 +26,7 @@ public class FPRework extends JavaPlugin {
                 .setPrettyPrinting()
                 .create();
 
-        this.fpLogger = new FPLogger(System.out);
+        this.fpLogger = new FPLogger(System.out, this.gson);
 
         this.fpUtils = new FPUtils(this);
         this.providerManager = new ProviderManager(this);

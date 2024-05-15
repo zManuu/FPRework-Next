@@ -1,9 +1,13 @@
-package de.fantasypixel.rework.framework;
+package de.fantasypixel.rework.framework.log;
+
+import com.google.gson.Gson;
+import de.fantasypixel.rework.FPRework;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.PrintStream;
+import java.io.*;
 import java.text.MessageFormat;
+import java.util.Collections;
 
 /**
  * A logger that supports more log levels than the spigot logger.
@@ -14,11 +18,36 @@ public class FPLogger {
 
     public enum LogLevel { ERROR, WARNING, INFO, ENTERING, EXITING, DEBUG }
 
-    private final static int sectionIndentation = 25;
-    private final PrintStream printStream;
+    private final static String CLASS_NAME = FPLogger.class.getSimpleName();
 
-    public FPLogger(@Nonnull PrintStream printStream) {
+    private final PrintStream printStream;
+    private FPLoggerConfig config = new FPLoggerConfig(25, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
+
+    /**
+     * Constructs a logger. Gson is used to load the configuration from resources.
+     */
+    public FPLogger(@Nonnull PrintStream printStream, @Nonnull Gson gson) {
         this.printStream = printStream;
+
+        // load config
+        try (
+                var configResource = FPRework.class.getResourceAsStream("logging.json")
+        ) {
+            if (configResource == null)
+                throw new RuntimeException();
+
+            var configReader = new InputStreamReader(configResource);
+            this.config = gson.fromJson(configReader, FPLoggerConfig.class);
+            configReader.close();
+        } catch (IOException | RuntimeException ex) {
+            this.warning("Couldn't load logging.json! Using fallback configuration.");
+        }
+
+    }
+
+    private boolean isGroupActive(String group) {
+        return this.config.getGroups().containsKey(group)
+                && this.config.getGroups().get(group);
     }
 
     public void info(@Nonnull String message) {
@@ -63,7 +92,7 @@ public class FPLogger {
         this.printStream.println(
                 MessageFormat.format(
                         "{0}[ Start of {1} ]{0}",
-                        "-".repeat(sectionIndentation),
+                        "-".repeat(this.config.getSectionIndentation()),
                         section
                 )
         );
@@ -73,7 +102,7 @@ public class FPLogger {
         this.printStream.println(
                 MessageFormat.format(
                         "{0}[ End of {1} ]{0}",
-                        "-".repeat(sectionIndentation + 1),
+                        "-".repeat(this.config.getSectionIndentation() + 1),
                         section
                 )
         );
@@ -123,6 +152,23 @@ public class FPLogger {
      */
     public void debug(@Nonnull String pattern, @Nullable Object... args) {
         this.resolve(LogLevel.DEBUG, MessageFormat.format(pattern, args));
+    }
+
+    public void debugGrouped(@Nonnull String group, @Nonnull String message) {
+        if (this.isGroupActive(group))
+            this.resolve(LogLevel.DEBUG, message);
+    }
+
+    /**
+     * Logs the given message if the group is active. Groups can be toggled in the logging.json
+     * Uses {@link MessageFormat} to format the message.
+     * @param group the log-group's name
+     * @param pattern the message pattern. Can include placeholders like {0}, {1}, ...
+     * @param args the arguments to be passed to the pattern
+     */
+    public void debugGrouped(@Nonnull String group, @Nonnull String pattern, @Nullable Object... args) {
+        if (this.isGroupActive(group))
+            this.resolve(LogLevel.DEBUG, MessageFormat.format(pattern, args));
     }
 
     public void entering(@Nonnull String fromClass, @Nonnull String fromMethod) {
