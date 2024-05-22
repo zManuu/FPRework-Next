@@ -14,6 +14,7 @@ import java.util.Collections;
  * Under the hood, everything is logged to the INFO level.
  * The formats are hardcoded because the config also relies on the logger.
  */
+// todo: as there is a logging.json now, the formats should also be configurable.
 public class FPLogger {
 
     public enum LogLevel { ERROR, WARNING, INFO, ENTERING, EXITING, DEBUG }

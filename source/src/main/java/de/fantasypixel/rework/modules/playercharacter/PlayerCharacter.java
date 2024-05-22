@@ -6,6 +6,7 @@ import de.fantasypixel.rework.framework.database.Entity;
 import de.fantasypixel.rework.modules.utils.Locatable;
 import lombok.*;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Setter
@@ -36,12 +37,13 @@ public class PlayerCharacter extends Locatable {
     /**
      * @return the CHARACTER CLASS
      */
-    public Character getCharacter() {
+    @Nonnull
+    public Character getCharacter() throws IllegalArgumentException {
         var characterOptional = Characters.getByIdentifier(this.characterClassIdentifier);
         if (characterOptional.isPresent()) {
             return characterOptional.get();
         } else {
-            throw new IllegalArgumentException("Character " + this.characterClassIdentifier + " does not exist");
+            throw new IllegalArgumentException("Character " + this.characterClassIdentifier + " does not exist!");
         }
     }
 

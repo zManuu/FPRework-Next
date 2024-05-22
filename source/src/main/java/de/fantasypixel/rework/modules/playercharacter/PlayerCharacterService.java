@@ -6,14 +6,18 @@ import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
+import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.account.Account;
+import de.fantasypixel.rework.modules.account.AccountService;
 import de.fantasypixel.rework.modules.character.Character;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.config.PositionsConfig;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Set;
 
 @ServiceProvider
@@ -24,6 +28,22 @@ public class PlayerCharacterService {
     @Auto private FPLogger logger;
     @DataRepo private DataRepoProvider<PlayerCharacter> playerCharacterRepo;
     @Config private PositionsConfig positionsConfig;
+    @Service private AccountService accountService;
+
+    /**
+     * Gets the active player-character directly for the player.
+     * @param player the player to get the active character of
+     * @return the currently active player-character
+     * @throws NullPointerException if either no account / character exists or no character is active
+     */
+    @Nonnull
+    public PlayerCharacter getPlayerCharacter(@Nonnull Player player) throws NullPointerException {
+        return Objects.requireNonNull(
+                this.getActivePlayerCharacter(
+                        Objects.requireNonNull(
+                                this.accountService.getAccount(player.getUniqueId()))
+                ));
+    }
 
     public boolean hasCharacter(@Nonnull Account account) {
         return this.playerCharacterRepo.exists(new Query("accountId", account.getId()));

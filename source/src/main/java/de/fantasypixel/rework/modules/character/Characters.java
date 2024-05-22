@@ -15,10 +15,10 @@ import java.util.Set;
  */
 public class Characters {
 
-    public static final CharacterWarrior CHARACTER_WARRIOR = new CharacterWarrior();
-    public static final CharacterArcher CHARACTER_ARCHER = new CharacterArcher();
-
-    public static Set<Character> CHARACTERS = Set.of(CHARACTER_WARRIOR, CHARACTER_ARCHER);
+    public static Set<Character> CHARACTERS = Set.of(
+            new CharacterWarrior(),
+            new CharacterArcher()
+    );
 
     /**
      * Returns an optional. For a Nonnull result, use {@link PlayerCharacter#getCharacter()}
@@ -28,12 +28,9 @@ public class Characters {
         if (characterClassIdentifier == null)
             return Optional.empty();
 
-        return switch (characterClassIdentifier) {
-            case "Warrior" -> Optional.of(CHARACTER_WARRIOR);
-            case "Archer" -> Optional.of(CHARACTER_ARCHER);
-            default -> Optional.empty();
-        };
+        return CHARACTERS.stream()
+                .filter(e -> e.getIdentifier().equalsIgnoreCase(characterClassIdentifier))
+                .findFirst();
     }
-
 
 }
