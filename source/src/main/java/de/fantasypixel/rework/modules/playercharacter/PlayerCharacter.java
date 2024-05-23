@@ -17,8 +17,7 @@ import javax.annotation.Nullable;
 @Entity(tableName = "characters")
 public class PlayerCharacter extends Locatable {
 
-    @Nullable
-    private Integer id;
+    @Nullable private Integer id;
     private int accountId;
     private String name;
     private String locWorld;

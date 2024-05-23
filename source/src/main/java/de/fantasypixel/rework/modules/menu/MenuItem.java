@@ -1,6 +1,5 @@
 package de.fantasypixel.rework.modules.menu;
 
-import com.sun.source.doctree.SeeTree;
 import lombok.Builder;
 import lombok.Getter;
 import org.bukkit.Material;
@@ -8,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
-import java.util.Set;
 
 @Builder
 @Getter

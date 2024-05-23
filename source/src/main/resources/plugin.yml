@@ -2,7 +2,7 @@ name: FP-Next
 version: 1.0.0
 main: de.fantasypixel.rework.FPRework
 author: zManuu
-description: Fantasypixel Rework 2023
+description: Fantasypixel Rework 2023-2024
 api-version: 1.19
 commands:
   savepoints:
@@ -10,3 +10,4 @@ commands:
     aliases:
       - settings
       - account
+  item:

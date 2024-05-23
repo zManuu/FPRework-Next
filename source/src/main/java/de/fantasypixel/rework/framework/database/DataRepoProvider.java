@@ -54,13 +54,13 @@ public class DataRepoProvider<E> {
                 var rs = stmt.executeQuery();
         ) {
             if (!rs.next()) {
-                plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config.json. Server will continue operating as normal.");
+                plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config/database.json. Server will continue operating as normal.");
                 return;
             }
 
             plugin.getFpLogger().debug("The database connection was established. Database-Version: {0}", rs.getString(1));
-        } catch (Exception e) {
-            plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config.json. Server will shutdown.");
+        } catch (Exception ex) {
+            plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config/database.json. Server will shutdown.");
             plugin.getServer().shutdown();
         }
     }
@@ -101,8 +101,8 @@ public class DataRepoProvider<E> {
                     this.config.getUser(),
                     this.config.getPassword()
             );
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 

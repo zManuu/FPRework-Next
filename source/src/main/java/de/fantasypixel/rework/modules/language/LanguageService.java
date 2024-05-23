@@ -12,6 +12,7 @@ import de.fantasypixel.rework.modules.utils.FormatUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Dictionary;
 import java.util.Map;
 
 @ServiceProvider
@@ -23,8 +24,14 @@ public class LanguageService {
     @Config private LanguageConfig languageConfig;
     @Service private FormatUtils formatUtils;
 
+    /**
+     * Gets the dictionary of a language
+     * @param languageKey the key of the language (de, en)
+     * @return the dictionary of a language
+     * @throws IllegalArgumentException if no dictionary was found with a matching language key
+     */
     @Nonnull
-    public Map<String, String> getDictionary(@Nullable String languageKey) {
+    public Map<String, String> getDictionary(@Nullable String languageKey) throws IllegalArgumentException {
         return this.languageContainer.getEntries()
                 .stream()
                 .filter(language -> language.getKey().equalsIgnoreCase(languageKey))

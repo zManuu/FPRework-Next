@@ -15,7 +15,7 @@ import java.util.Map;
 @ServiceProvider
 public class NamespacedKeyUtils {
 
-    public enum NamespacedKeyType { INVENTORY_ITEM_ID }
+    public enum NamespacedKeyType { ITEM_IDENTIFIER }
 
     @Auto private Plugin plugin;
 
