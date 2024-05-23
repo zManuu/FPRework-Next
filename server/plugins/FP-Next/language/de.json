@@ -1,0 +1,26 @@
+{
+  "key": "de",
+  "dictionary": {
+    "404": "Die Übersetzung wurde nicht gefunden!",
+    "welcome": "-----------------------------\nWillkommen auf dem Server, {0}!Du bist der {1}. Spieler.\n-----------------------------",
+    "login-start": "Du wirst eingeloggt...",
+    "login-success": "Du wurdest erfolgreich eingeloggt.",
+    "options-list": "Deine Optionen:\nSprache: {0}",
+    "options-update-error": "Deine Änderung konnte nicht gespeichert werden! Bitte melde dich an den Support, damit wir dir helfen können.",
+    "options-update-success": "Deine Änderung wurde gespeichert.",
+    "options-invalid-option": "Die Option wurde nicht gefunden.\nDie folgenden Optionen sind verfügbar:\n{0}",
+    "options-invalid-value": "Der Wert ist nicht valid! Es wird wie folgt erwartet: {0}.",
+    "options-invalid-syntax": "Falscher Syntax! Erwartet: update <KEY> <VALUE>",
+    "savepoint-unlocked": "Du hast den Save-Point %NAME% freigeschaltet! Mit /savepoints kannst du jetzt jederzeit wieder hier hinreisen.",
+    "savepoint-delete-expected-number": "Die ID muss eine Zahl sein!",
+    "savepoint-delete-success": "Der Save-Point %ID% wurde erfolgreich gelöscht.",
+    "savepoint-delete-error": "Der Save-Point %ID% konnte nicht gelöscht werden! Bitte stelle sicher, dass er existiert (/savepoints list) und die Datei valide ist.",
+    "savepoint-list": "Die aktuellen Save-Points:\n{0}",
+    "savepoint-create-success": "Der Save-Point wurde erfolgreich erstellt.",
+    "savepoint-create-error": "Der Save-Point konnte nicht erstellt werden! Bitte wende dich an den Support oder überprüfe die Logs.",
+    "savepoint-distance": "Distanz: {0} Blöcke",
+    "unknown-item-identifier": "Es wurde kein Item mit dem identifier {0} gefunden.",
+    "invalid-amount": "Der eingegebene Wert ist ungültig (es muss eine Zahl sein!)",
+    "item-given": "Du hast das Item erhalten."
+  }
+}

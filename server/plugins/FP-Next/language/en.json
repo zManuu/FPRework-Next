@@ -1,0 +1,26 @@
+{
+  "key": "en",
+  "dictionary": {
+    "404": "The translation couldn't be found!",
+    "welcome": "-----------------------------\nWelcome to the server, {0}!You are the {1}. player.\n-----------------------------",
+    "login-start": "The login process is starting...",
+    "login-success": "You were logged in successfully.",
+    "options-list": "Your options:\nLanguage: {0}",
+    "options-update-error": "Your changes couldn't be saved! Please contact support as we would like to help you.",
+    "options-update-success": "Your changes were saved.",
+    "options-invalid-option": "This option wasn't found.\nA list of available options:\n{0}",
+    "options-invalid-value": "This value is invalid! Expected: {0}.",
+    "options-invalid-syntax": "Wrong Syntax! Expected: update <KEY> <VALUE>",
+    "savepoint-unlocked": "You unlocked the Save-Point %NAME%! Use /savepoints to travel back here anytime.",
+    "savepoint-delete-expected-number": "The ID must be a number!",
+    "savepoint-delete-success": "The Save-Point %ID% was deleted successfully.",
+    "savepoint-delete-error": "The Save-Point %ID% couldn't be deleted! Please ensure that it exists (/savepoints list) and the associated json file is valid.",
+    "savepoint-list": "The current Save-Points:\n{0}",
+    "savepoint-create-success": "The save-point was created successfully.",
+    "savepoint-create-error": "The save-point couldn't be created! Please contact the administrator or check the logs if possible.",
+    "savepoint-distance": "Distance: {0} blocks",
+    "unknown-item-identifier": "No item was found with the identifier {0}.",
+    "invalid-amount": "Your given amount is invalid (input a number!)",
+    "item-given": "You have received the item."
+  }
+}
