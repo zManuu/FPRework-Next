@@ -1,0 +1,7 @@
+{
+  "defaultOptions": {
+    "---": "Note: the accountId is required in this format, it will be replaced upon creation.",
+    "accountId": -1,
+    "languageKey": "de"
+  }
+}
