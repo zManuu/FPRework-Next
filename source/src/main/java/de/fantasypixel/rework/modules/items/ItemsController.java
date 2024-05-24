@@ -4,13 +4,13 @@ import de.fantasypixel.rework.framework.command.Command;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.items.items.edible.Edible;
+import de.fantasypixel.rework.modules.items.items.potions.Potion;
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -80,11 +80,19 @@ public class ItemsController implements Listener {
         }
 
         if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-            if ((item instanceof Edible edible)) {
+            if ((item instanceof Potion potion)) {
+
+                potion.getEffects().forEach(player::addPotionEffect);
+                itemStack.setAmount(itemStack.getAmount() - 1);
+                event.setCancelled(true);
+
+            } else if ((item instanceof Edible edible)) {
+
                 player.setHealth(player.getHealth() + edible.getHealth());
                 player.setFoodLevel(player.getFoodLevel() + edible.getHunger());
                 itemStack.setAmount(itemStack.getAmount() - 1);
                 event.setCancelled(true);
+
             }
         }
 

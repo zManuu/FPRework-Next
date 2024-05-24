@@ -8,6 +8,12 @@
     "item-desc.TEST_SWORD": "A fuckin TEST sword my man.",
     "item-name.TEST_AXE": "Test Axe",
     "item-desc.TEST_AXE": "A TEST AXT MAN!!!",
+    "item-name.SPEED_POTION": "Speed potion",
+    "item-name.HEALTH_POTION": "Health potion",
+
+    "--- EFFECT DEFINITIONS ---": "",
+    "effect.SPEED": "Speed",
+    "effect.HEAL": "Instant heal",
 
     "--- LANGUAGE ---": "",
     "404": "The translation couldn't be found!",
@@ -35,6 +41,7 @@
     "damage": "Damage",
     "edible": "Food",
     "health-impact": "Health",
-    "hunger-impact": "Hunger"
+    "hunger-impact": "Hunger",
+    "potion": "Potion"
   }
 }

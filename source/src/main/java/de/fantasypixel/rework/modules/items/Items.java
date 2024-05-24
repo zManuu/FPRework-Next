@@ -1,6 +1,8 @@
 package de.fantasypixel.rework.modules.items;
 
 import de.fantasypixel.rework.modules.items.items.edible.Apple;
+import de.fantasypixel.rework.modules.items.items.potions.HealthPotion;
+import de.fantasypixel.rework.modules.items.items.potions.SpeedPotion;
 import de.fantasypixel.rework.modules.items.items.weapons.axes.TestAxe;
 import de.fantasypixel.rework.modules.items.items.weapons.swords.TestSword;
 
@@ -14,7 +16,9 @@ public class Items {
     public static Set<Item> ITEMS = Set.of(
             new TestSword(),
             new TestAxe(),
-            new Apple()
+            new Apple(),
+            new SpeedPotion(),
+            new HealthPotion()
     );
 
     @Nonnull

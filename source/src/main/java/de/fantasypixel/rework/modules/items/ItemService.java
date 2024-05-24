@@ -4,6 +4,7 @@ import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.items.items.edible.Edible;
+import de.fantasypixel.rework.modules.items.items.potions.Potion;
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
 import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
@@ -12,7 +13,10 @@ import de.fantasypixel.rework.modules.utils.NamespacedKeyUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,6 +74,8 @@ public class ItemService {
         var displayName = this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-name.{0}", item.getIdentifier()));
         if (item instanceof Weapon)
             displayName = "§c" + displayName;
+        else if (item instanceof Potion)
+            displayName = "§d" + displayName;
         else if (item instanceof Edible)
             displayName = "§a" + displayName;
         return displayName;
@@ -83,24 +89,40 @@ public class ItemService {
         var lore = new ArrayList<String>();
         var playerCharacterId = playerCharacter.getId();
 
+        // description
         var itemDescription = this.getItemDescription(item.getIdentifier(), playerCharacterId);
         if (itemDescription != null) {
             lore.add(itemDescription);
             lore.add("§8" + this.itemsConfig.getLoreLine());
         }
 
-        if (item instanceof Weapon weaponItem) {
-            var weaponHitDamage = weaponItem.getHitDamage();
+        // type-specific lore
+        if (item instanceof Weapon weapon) {
 
             lore.add(MessageFormat.format("§7➥ §4§l{0}", this.languageService.getTranslation(playerCharacterId, "weapon")));
-            lore.add(MessageFormat.format("§7  ➳ {0}: §c", this.languageService.getTranslation(playerCharacterId, "damage")) + weaponHitDamage);
+            lore.add(MessageFormat.format("§7  ➳ {0}: §c", this.languageService.getTranslation(playerCharacterId, "damage")) + weapon.getHitDamage());
+
+        } else if (item instanceof Potion potion) {
+
+            lore.add(MessageFormat.format("§7➥ §5§l{0}", this.languageService.getTranslation(playerCharacterId, "potion")));
+
+            for (PotionEffect effect : potion.getEffects()) {
+                var effectName = effect.getType().getName();
+                var effectNameTranslation = this.languageService.getTranslationOptional(playerCharacterId, "effect." + effectName, null);
+                var finalEffectName = effectNameTranslation == null ? effectName : effectNameTranslation;
+
+                if (effect.getDuration() != Potion.NULL_DURATION)
+                    lore.add(String.format("§7  ➳ §d%s §7(§d%sx§7): §d%st", finalEffectName, effect.getAmplifier(), effect.getDuration()));
+                else
+                    lore.add(String.format("§7  ➳ §d%s §7(§d%sx§7)", finalEffectName, effect.getAmplifier()));
+            }
+
         } else if (item instanceof Edible edible) {
-            var healthImpact = edible.getHealth();
-            var hungerImpact = edible.getHunger();
 
             lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(playerCharacterId, "edible")));
-            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "health-impact")) + healthImpact);
-            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "hunger-impact")) + hungerImpact);
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "health-impact")) + edible.getHealth());
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "hunger-impact")) + edible.getHunger());
+
         }
 
         return lore;
@@ -132,6 +154,12 @@ public class ItemService {
 
         // persistent data
         itemPersistentDataContainer.set(itemNamespacedKey, PersistentDataType.STRING, item.getIdentifier());
+
+        // potion?
+        if (item instanceof Potion potionItem) {
+            var potionMeta = (PotionMeta) itemMetaData;
+            potionMeta.setBasePotionData(new PotionData(potionItem.getPotionMaterial()));
+        }
 
         itemStack.setItemMeta(itemMetaData);
         return itemStack;

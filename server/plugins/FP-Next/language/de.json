@@ -7,6 +7,12 @@
     "item-name.TEST_SWORD": "Test Schwert",
     "item-desc.TEST_SWORD": "Ein sehr testiges schwert.",
     "item-name.TEST_AXE": "Test Axt",
+    "item-name.SPEED_POTION": "Geschwindigkeits Trank",
+    "item-name.HEALTH_POTION": "Heilungs Trank",
+
+    "--- EFFECT DEFINITIONS ---": "",
+    "effect.SPEED": "Geschwindigkeit",
+    "effect.HEAL": "Instant heilung",
 
     "--- LANGUAGE ---": "",
     "404": "Die Übersetzung wurde nicht gefunden!",
@@ -34,6 +40,7 @@
     "damage": "Schaden",
     "edible": "Nahrung",
     "health-impact": "Gesundheit",
-    "hunger-impact": "Hunger"
+    "hunger-impact": "Hunger",
+    "potion": "Trank"
   }
 }
