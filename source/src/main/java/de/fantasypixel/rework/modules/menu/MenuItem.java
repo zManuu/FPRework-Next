@@ -1,15 +1,19 @@
 package de.fantasypixel.rework.modules.menu;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Builder
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class MenuItem {
 
     private Material material;
@@ -19,8 +23,30 @@ public class MenuItem {
     private Integer amount;
     private boolean closesMenu;
     private Runnable onSelect;
+    @Nullable private ItemStack importedItemStack;
 
+    /**
+     * A menu that is opened by clicking this item. For example, back-buttons, page, ... or real sub-menus
+     */
+    @Nullable private Menu subMenu;
+
+    /**
+     * The import constructor.
+     * When this is used, {@link #toItemStack()} will return the passed item-stack.
+     * Note that when using this constructor, you can't override values on the item-stack,
+     * only slot, closesMenu and onSelect are overridable.
+     */
+    public MenuItem(ItemStack itemStack) {
+        this.importedItemStack = itemStack;
+    }
+
+    /**
+     * Builds the item-stack. If this instance was created with the import constructor (with ItemStack param), the imported item-stack will be returned.
+     */
     public ItemStack toItemStack() {
+        if (this.importedItemStack != null)
+            return this.importedItemStack;
+
         if (this.amount == null)
             this.amount = 1;
 

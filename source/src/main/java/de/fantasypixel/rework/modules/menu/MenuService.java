@@ -55,11 +55,29 @@ public class MenuService {
     }
 
     /**
+     * Opens a sub-menu to the specified player.
+     * A sub-menu is not a menu on the "second layer" but one that is opened from another one.
+     * The opening is delay 2 Ticks.
+     */
+    public void openSubMenu(@Nonnull Player player, @Nonnull Menu menu) {
+        this.serverUtils.runTaskLater(() -> {
+            if (this.hasOpenedMenu(player)) {
+                this.logger.warning("Player '" + player.getName() + "' tried to open menu '" + menu.getTitle() + "', another is open already: '" + this.getOpenedMenu(player).getTitle() + "'.");
+                return;
+            }
+
+            Inventory inventory = menu.toInventory();
+            player.openInventory(inventory);
+            this.openedMenus.put(player, menu);
+        }, 2);
+    }
+
+    /**
      * Closes the currently opened menu of the player.
      */
     public void closeMenu(@Nonnull Player player) {
         if (!this.hasOpenedMenu(player)) {
-            this.logger.warning("Player '" + player.getName() + "' tried close menu but none is opened currently.");
+            this.logger.warning("Tried to close menu for player \"{0}\" but none is opened currently.", player.getName());
             return;
         }
 
@@ -71,11 +89,22 @@ public class MenuService {
 
     protected void handleMenuItemSelect(@Nullable MenuItem item, @Nonnull Player player) {
         if (item != null) {
-            if (item.getOnSelect() != null)
-                item.getOnSelect().run();
+            Menu itemSubMenu = item.getSubMenu();
+            if (itemSubMenu != null) {
 
-            if (item.isClosesMenu())
                 this.closeMenu(player);
+                this.openSubMenu(player, itemSubMenu);
+
+            } else {
+
+                // close-menu and on-select are not available for items with a registered sub-menu
+                if (item.isClosesMenu())
+                    this.closeMenu(player);
+
+                if (item.getOnSelect() != null)
+                    item.getOnSelect().run();
+            }
+
         }
     }
 

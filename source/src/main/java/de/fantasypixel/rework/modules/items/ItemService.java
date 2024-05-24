@@ -35,44 +35,53 @@ public class ItemService {
     @Config private ItemsConfig itemsConfig;
 
     /**
-     * Gets the item (-type) of an itemStack.
-     * @param itemStack the item stack
-     * @return the inventory-item id
-     * @throws NullPointerException if no item-id was found on the item-stack or no item-stack was passed
+     * Gets the item-identifier from an itemStack.
+     * @throws NullPointerException if no item-identifier was found or no item-stack was passed
      */
-    @Nonnull
-    public Item getItemOf(@Nullable ItemStack itemStack) throws NullPointerException {
+    public String getItemIdentifier(@Nullable ItemStack itemStack) throws NullPointerException {
         Objects.requireNonNull(itemStack);
         var itemMeta = Objects.requireNonNull(itemStack.getItemMeta());
         var persistentDataContainer = itemMeta.getPersistentDataContainer();
         var itemIdentifierNamespacedKey = this.namespacedKeyUtils.getNamespacedKey(NamespacedKeyUtils.NamespacedKeyType.ITEM_IDENTIFIER);
-        var itemIdentifier = Objects.requireNonNull(persistentDataContainer.get(itemIdentifierNamespacedKey, PersistentDataType.STRING));
+        return Objects.requireNonNull(persistentDataContainer.get(itemIdentifierNamespacedKey, PersistentDataType.STRING));
+    }
 
-        return Items.getByIdentifier(itemIdentifier)
+    /**
+     * Gets the item (-type) of an itemStack.
+     * @throws NullPointerException if no item-identifier was found or no item-stack was passed
+     */
+    @Nonnull
+    public Item getItemOf(@Nullable ItemStack itemStack) throws NullPointerException {
+        return Items.getByIdentifier(this.getItemIdentifier(itemStack))
                 .orElseThrow(NullPointerException::new);
     }
 
     /**
      * @param itemIdentifier the item's identifier
-     * @param playerCharacterId the player's character id
+     * @param accountId the player's account id
      * @return the item's description (colored!) or null of no description is registered (in the player's language)
      */
     @Nullable
-    private String getItemDescription(@Nonnull String itemIdentifier, @Nullable Integer playerCharacterId) {
-        var description = this.languageService.getTranslationOptional(playerCharacterId, MessageFormat.format("item-desc.{0}", itemIdentifier), null);
+    private String getItemDescription(@Nonnull String itemIdentifier, @Nullable Integer accountId) {
+        var description = this.languageService.getTranslationOptional(accountId, MessageFormat.format("item-desc.{0}", itemIdentifier), null);
         return description == null
                 ? null
                 : "§7" + description;
     }
 
+    @Nonnull
+    public String getItemDisplayName(@Nonnull Item item, @Nullable Integer accountId) {
+        return this.languageService.getTranslation(accountId, MessageFormat.format("item-name.{0}", item.getIdentifier()));
+    }
+
     /**
      * @param item the item to get the display name of
-     * @param playerCharacterId the player's character id
+     * @param accountId the player's account id
      * @return the display name of the item (colored!)
      */
     @Nonnull
-    private String getItemDisplayName(@Nonnull Item item, @Nullable Integer playerCharacterId) {
-        var displayName = this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-name.{0}", item.getIdentifier()));
+    private String getColoredItemDisplayName(@Nonnull Item item, @Nullable Integer accountId) {
+        var displayName = this.getItemDisplayName(item, accountId);
         if (item instanceof Weapon)
             displayName = "§c" + displayName;
         else if (item instanceof Potion)
@@ -86,14 +95,26 @@ public class ItemService {
 
     /**
      * Builds a lore based on item and player-character.
+     * Only used by {@link #buildItem(Item, PlayerCharacter, int, Integer, boolean)}!
      */
     @Nonnull
-    private List<String> buildItemLore(@Nonnull Item item, @Nonnull PlayerCharacter playerCharacter) {
+    private List<String> buildItemLore(@Nonnull Item item, @Nonnull PlayerCharacter playerCharacter, @Nullable Integer price, boolean isDiscounted) {
         var lore = new ArrayList<String>();
-        var playerCharacterId = playerCharacter.getId();
+        var accountId = playerCharacter.getAccountId();
+
+        // price (if specified)
+        if (price != null) {
+            lore.add(MessageFormat.format("§7{0}: §8§l", this.languageService.getTranslation(accountId, "price")) + price);
+
+            if (isDiscounted)
+                lore.add("§7" + this.languageService.getTranslation(accountId, "shop-discount"));
+
+            lore.add(" ");
+            lore.add("§8" + this.itemsConfig.getLoreLine());
+        }
 
         // description
-        var itemDescription = this.getItemDescription(item.getIdentifier(), playerCharacterId);
+        var itemDescription = this.getItemDescription(item.getIdentifier(), accountId);
         if (itemDescription != null) {
             lore.add(itemDescription);
             lore.add("§8" + this.itemsConfig.getLoreLine());
@@ -102,16 +123,16 @@ public class ItemService {
         // type-specific lore
         if (item instanceof Weapon weapon) {
 
-            lore.add(MessageFormat.format("§7➥ §4§l{0}", this.languageService.getTranslation(playerCharacterId, "weapon")));
-            lore.add(MessageFormat.format("§7  ➳ {0}: §c", this.languageService.getTranslation(playerCharacterId, "damage")) + weapon.getHitDamage());
+            lore.add(MessageFormat.format("§7➥ §4§l{0}", this.languageService.getTranslation(accountId, "weapon")));
+            lore.add(MessageFormat.format("§7  ➳ {0}: §c", this.languageService.getTranslation(accountId, "damage")) + weapon.getHitDamage());
 
         } else if (item instanceof Potion potion) {
 
-            lore.add(MessageFormat.format("§7➥ §5§l{0}", this.languageService.getTranslation(playerCharacterId, "potion")));
+            lore.add(MessageFormat.format("§7➥ §5§l{0}", this.languageService.getTranslation(accountId, "potion")));
 
             for (PotionEffect effect : potion.getEffects()) {
                 var effectName = effect.getType().getName();
-                var effectNameTranslation = this.languageService.getTranslationOptional(playerCharacterId, "effect." + effectName, null);
+                var effectNameTranslation = this.languageService.getTranslationOptional(accountId, "effect." + effectName, null);
                 var finalEffectName = effectNameTranslation == null ? effectName : effectNameTranslation;
 
                 if (effect.getDuration() != Potion.NULL_DURATION)
@@ -122,14 +143,14 @@ public class ItemService {
 
         } else if (item instanceof Edible edible) {
 
-            lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(playerCharacterId, "edible")));
-            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "health-impact")) + edible.getHealth());
-            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "hunger-impact")) + edible.getHunger());
+            lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(accountId, "edible")));
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(accountId, "health-impact")) + edible.getHealth());
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(accountId, "hunger-impact")) + edible.getHunger());
 
         } else if (item instanceof CurrencyItem currency) {
 
-            lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(playerCharacterId, "currency")));
-            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "currency-worth")) + currency.getWorth());
+            lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(accountId, "currency")));
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(accountId, "currency-worth")) + currency.getWorth());
 
         }
 
@@ -140,11 +161,13 @@ public class ItemService {
      * Build an {@link Item} to an item-stack.
      * @param item the item (-type)
      * @param amount the amount of the item-stack
+     * @param price the price of the item-stack (only used for shops). Will be displayed in the lore.
+     * @param isDiscounted if the item is currently discounted (only used for shops). Will be displayed in the lore.
      * @return the built item-stack
      * @throws NullPointerException if one of the required data couldn't be determined
      */
     @Nonnull
-    private ItemStack buildItem(@Nullable Item item, @Nullable PlayerCharacter playerCharacter, int amount) throws NullPointerException {
+    public ItemStack buildItem(@Nullable Item item, @Nullable PlayerCharacter playerCharacter, int amount, @Nullable Integer price, boolean isDiscounted) throws NullPointerException {
         Objects.requireNonNull(item, "Item cannot be null");
         Objects.requireNonNull(playerCharacter, "Player-character cannot be null");
         Objects.requireNonNull(playerCharacter.getId(), "Player-character(id) cannot be null");
@@ -155,8 +178,8 @@ public class ItemService {
         var itemPersistentDataContainer = itemMetaData.getPersistentDataContainer();
 
         // meta data
-        itemMetaData.setDisplayName(this.getItemDisplayName(item, playerCharacter.getId()));
-        itemMetaData.setLore(this.buildItemLore(item, playerCharacter));
+        itemMetaData.setDisplayName(this.getColoredItemDisplayName(item, playerCharacter.getId()));
+        itemMetaData.setLore(this.buildItemLore(item, playerCharacter, price, isDiscounted));
         itemMetaData.setUnbreakable(true);
         itemMetaData.addItemFlags(ItemFlag.values());
 
@@ -174,7 +197,7 @@ public class ItemService {
     }
 
     /**
-     * Gives a player an item. Uses {@link #buildItem(Item, PlayerCharacter, int)} to build the item to an item-stack.
+     * Gives a player an item. Uses {@link #buildItem(Item, PlayerCharacter, int, Integer, boolean)} to build the item to an item-stack.
      * @param player the player to be given an item
      * @param item the item to be given
      * @param slot the slot to put the item in. if null is passed, the item will be placed somewhere where there is place
@@ -182,8 +205,81 @@ public class ItemService {
      */
     public void giveItem(@Nonnull Player player, @Nonnull Item item, @Nullable Integer slot, int amount) throws NullPointerException {
         var playerCharacter = this.playerCharacterService.getPlayerCharacter(player);
-        var itemStack = this.buildItem(item, playerCharacter, amount);
+        var itemStack = this.buildItem(item, playerCharacter, amount, null, false);
         player.getInventory().addItem(itemStack);
+    }
+
+    /**
+     * Checks if the player has the given amount of an item.
+     */
+    public boolean hasItemAmount(@Nonnull Player player, @Nonnull String itemIdentifier, int amount) {
+        var foundAmount = 0;
+
+        for (var inventoryItemStack : player.getInventory().getContents()) {
+            if (inventoryItemStack == null)
+                continue;
+
+            var inventoryItemMeta = inventoryItemStack.getItemMeta();
+
+            if (inventoryItemMeta == null)
+                continue;
+
+            String inventoryItemIdentifier;
+
+            try {
+                inventoryItemIdentifier = this.getItemIdentifier(inventoryItemStack);
+            } catch (NullPointerException ex) {
+                continue;
+            }
+
+            if (inventoryItemIdentifier.equalsIgnoreCase(itemIdentifier)) {
+                foundAmount += inventoryItemStack.getAmount();
+            }
+        }
+
+        // System.out.println("Found-Amount for item " + itemIdentifier + ": " + foundAmount + ", needed: " + amount);
+        // System.out.println(foundAmount >= amount);
+
+        return foundAmount >= amount;
+    }
+
+    /**
+     * Removes items from the player's inventory.
+     */
+    public void removeItem(@Nonnull Player player, @Nonnull String itemIdentifier, int amountToRemove) {
+        var remainingAmountToRemove = amountToRemove;
+
+        for (var inventoryItemStack : player.getInventory().getContents()) {
+            if (inventoryItemStack == null)
+                continue;
+
+            var inventoryItemMeta = inventoryItemStack.getItemMeta();
+
+            if (inventoryItemMeta == null)
+                continue;
+
+            String inventoryItemIdentifier;
+
+            try {
+                inventoryItemIdentifier = this.getItemIdentifier(inventoryItemStack);
+            } catch (NullPointerException ex) {
+                continue;
+            }
+
+            if (inventoryItemIdentifier.equalsIgnoreCase(itemIdentifier)) {
+                var inventoryItemAmount = inventoryItemStack.getAmount();
+
+                if (remainingAmountToRemove > inventoryItemAmount) {
+                    // remove item completely
+                    inventoryItemStack.setAmount(0);
+                    remainingAmountToRemove -= inventoryItemStack.getAmount();
+                } else {
+                    // remove amount from item
+                    inventoryItemStack.setAmount(inventoryItemStack.getAmount() - remainingAmountToRemove);
+                    return;
+                }
+            }
+        }
     }
 
 }

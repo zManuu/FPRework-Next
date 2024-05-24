@@ -78,6 +78,7 @@ public class PlayerCharacterService {
                 .locX(this.positionsConfig.getFirstSpawn().getX())
                 .locY(this.positionsConfig.getFirstSpawn().getY())
                 .locZ(this.positionsConfig.getFirstSpawn().getZ())
+                .foodLevel(20)
                 .active(autoActive)
                 .build();
 

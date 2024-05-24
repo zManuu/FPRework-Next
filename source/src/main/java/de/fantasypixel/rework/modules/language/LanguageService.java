@@ -7,13 +7,16 @@ import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.account.AccountService;
 import de.fantasypixel.rework.modules.account.options.AccountOptionsService;
 import de.fantasypixel.rework.modules.utils.FormatUtils;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Dictionary;
 import java.util.Map;
+import java.util.UUID;
 
 @ServiceProvider
 public class LanguageService {
@@ -23,6 +26,7 @@ public class LanguageService {
     @Auto private FPLogger logger;
     @Config private LanguageConfig languageConfig;
     @Service private FormatUtils formatUtils;
+    @Service private AccountService accountService;
 
     /**
      * Gets the dictionary of a language
@@ -56,6 +60,16 @@ public class LanguageService {
             return this.formatUtils.format(translation, args);
     }
 
+    /**
+     * @see de.fantasypixel.rework.modules.account.AccountService#getAccount(UUID)
+     * @see LanguageService#getTranslation(Integer, String, Map)
+     */
+    @Nonnull
+    public String getTranslation(@Nonnull Player player, @Nonnull String entryKey, @Nullable Map<String, Object> args) {
+        var account = this.accountService.getAccount(player.getUniqueId());
+        return this.getTranslation(account.getId(), entryKey, args);
+    }
+
     @Nonnull
     public String getTranslation(@Nullable Integer accountId, @Nonnull String entryKey, @Nullable Object... args) {
         var languageKey = accountId != null
@@ -70,6 +84,16 @@ public class LanguageService {
             return dictionary.get("404");
         } else
             return this.formatUtils.format(translation, args);
+    }
+
+    /**
+     * @see de.fantasypixel.rework.modules.account.AccountService#getAccount(UUID)
+     * @see LanguageService#getTranslation(Integer, String, Object...)
+     */
+    @Nonnull
+    public String getTranslation(@Nonnull Player player, @Nonnull String entryKey, @Nullable Object... args) {
+        var account = this.accountService.getAccount(player.getUniqueId());
+        return this.getTranslation(account.getId(), entryKey, args);
     }
 
     /**

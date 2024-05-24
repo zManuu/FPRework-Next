@@ -29,4 +29,9 @@ public class Apple extends Edible {
         return Material.APPLE;
     }
 
+    @Override
+    public int getDefaultPrice() {
+        return 1;
+    }
+
 }

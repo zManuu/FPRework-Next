@@ -230,13 +230,13 @@ public class JsonDataManager {
                 try {
                     var fileNameField = entry.getClass().getDeclaredField("name");
                     fileNameField.setAccessible(true);
-                    var fileNameValue = (String) fileNameField.get(entry);
-                    fileName = MessageFormat.format("gen/{0}.json", fileNameValue.replaceAll(" ", "_"));
+                    var fileNameValue = (String) Objects.requireNonNull(fileNameField.get(entry));
+                    fileName = MessageFormat.format("{0}.json", fileNameValue.replaceAll(" ", "_"));
                 } catch (IllegalAccessException ex) {
                     plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->create", ex);
                     return false;
-                } catch (NoSuchFieldException ex) {
-                    fileName = MessageFormat.format("gen/{0}.json", entryId);
+                } catch (NoSuchFieldException | NullPointerException ex) {
+                    fileName = MessageFormat.format("{0}.json", entryId);
                 }
 
                 // set id

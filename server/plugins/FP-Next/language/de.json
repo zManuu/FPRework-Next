@@ -46,6 +46,18 @@
     "hunger-impact": "Hunger",
     "potion": "Trank",
     "currency": "Währung",
-    "currency-worth": "Wert"
+    "currency-worth": "Wert",
+    "unknown-shop-type": "Ungültiger Shop-Typ. Erwartet: SELL, BUY, BOTH",
+    "unknown-shop": "Der Shop wurde nicht gefunden.",
+    "shop-create-success": "Der Shop wurde erfolgreich erstellt. ID: %SHOP_ID%",
+    "shop-create-error": "Der Shop konnte nicht erstellt werden!",
+    "shop-insufficient-funds": "Du kannst dir das nicht leisten!",
+    "shop-item-sold": "Du hast %AMOUNT%x %ITEM% verkauft (für %PRICE%).",
+    "shop-item-bought": "Du hast %AMOUNT%x %ITEM% gekauft (für %PRICE%).",
+    "shop-sell": "Items verkaufen",
+    "shop-buy": "Items kaufen",
+    "shop-discount": "Es gibt momentan einen Bonus / Rabatt!",
+    "btn-close-menu": "Menü schließen",
+    "price": "Preis"
   }
 }

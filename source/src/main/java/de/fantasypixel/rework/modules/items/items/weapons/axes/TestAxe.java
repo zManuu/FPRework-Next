@@ -25,4 +25,9 @@ public class TestAxe extends Weapon {
         return Material.IRON_AXE;
     }
 
+    @Override
+    public int getDefaultPrice() {
+        return 50;
+    }
+
 }

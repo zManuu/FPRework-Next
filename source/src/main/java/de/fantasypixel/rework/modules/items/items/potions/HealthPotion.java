@@ -36,4 +36,9 @@ public class HealthPotion extends Potion {
         return Material.POTION;
     }
 
+    @Override
+    public int getDefaultPrice() {
+        return 25;
+    }
+
 }

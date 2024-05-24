@@ -25,4 +25,9 @@ public class TestSword extends Weapon {
         return Material.WOODEN_SWORD;
     }
 
+    @Override
+    public int getDefaultPrice() {
+        return 10;
+    }
+
 }

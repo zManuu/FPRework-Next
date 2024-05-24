@@ -22,4 +22,10 @@ public class Currency100 extends CurrencyItem {
     public Material getMaterial() {
         return Material.EMERALD_BLOCK;
     }
+
+    @Override
+    public int getDefaultPrice() {
+        return -100;
+    }
+
 }

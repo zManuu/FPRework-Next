@@ -1,0 +1,35 @@
+{
+  "id": 1,
+  "name": "TEST_1",
+  "position": {
+    "world": "Ephesus",
+    "x": 1545.741326240129,
+    "y": 76.9375,
+    "z": 864.4698294256145,
+    "pitch": 4.1503754,
+    "yaw": 3.9020715
+  },
+  "sellItems": [
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "APPLE"
+    }
+  ],
+  "buyItems": [
+    {
+      "isCustomPrice": true,
+      "isDiscount": true,
+      "price": 10,
+      "itemIdentifier": "TEST_SWORD"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "TEST_AXE"
+    },
+    {
+      "isCustomPrice": true,
+      "price": 10,
+      "itemIdentifier": "SPEED_POTION"
+    }
+  ]
+}

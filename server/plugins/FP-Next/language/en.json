@@ -5,7 +5,7 @@
     "item-name.APPLE": "Apple",
     "item-desc.APPLE": "An apple",
     "item-name.TEST_SWORD": "Test Sword",
-    "item-desc.TEST_SWORD": "A fuckin TEST sword my man.",
+    "item-desc.TEST_SWORD": "A fucking TEST sword my man.",
     "item-name.TEST_AXE": "Test Axe",
     "item-desc.TEST_AXE": "A TEST AXT MAN!!!",
     "item-name.SPEED_POTION": "Speed potion",
@@ -47,6 +47,18 @@
     "hunger-impact": "Hunger",
     "potion": "Potion",
     "currency": "Currency",
-    "currency-worth": "Worth"
+    "currency-worth": "Worth",
+    "unknown-shop-type": "Invalid shop-type Expected: SELL, BUY, BOTH",
+    "unknown-shop": "The shop wasn't found!",
+    "shop-create-success": "The shop has been created successfully. ID: %SHOP_ID%",
+    "shop-create-error": "The shop could not be created!",
+    "shop-insufficient-funds": "You can't afford that!",
+    "shop-item-sold": "You have sold %AMOUNT%x %ITEM% (for %PRICE%).",
+    "shop-item-bought": "You have bought %AMOUNT%x %ITEM% (for %PRICE%).",
+    "shop-sell": "Sell items",
+    "shop-buy": "Buy items",
+    "shop-discount": "There currently is a bonus / discount!",
+    "btn-close-menu": "Close menu",
+    "price": "Price"
   }
 }
