@@ -5,6 +5,7 @@ import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.account.AccountService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
+import de.fantasypixel.rework.modules.notification.NotificationType;
 import org.bukkit.entity.Player;
 
 @Controller
@@ -32,23 +33,23 @@ public class AccountOptionsController {
                 var updateSuccess = this.accountOptionsService.updateOptions(accountId, optionKey, optionValue);
 
                 if (!updateSuccess) {
-                    this.notificationService.sendChatMessage(player, "options-update-error");
+                    this.notificationService.sendChatMessage(NotificationType.ERROR, player, "options-update-error");
                     throw new IllegalArgumentException("Options couldn't be updated properly.");
                 } else
-                    this.notificationService.sendChatMessage(player, "options-update-success");
+                    this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "options-update-success");
 
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage() == null) {
                     // invalid option
-                    this.notificationService.sendChatMessage(player, "options-invalid-option", this.accountOptionsService.getOptionDefinitionsText());
+                    this.notificationService.sendChatMessage(NotificationType.WARNING, player, "options-invalid-option", this.accountOptionsService.getOptionDefinitionsText());
                 } else {
                     // invalid value
-                    this.notificationService.sendChatMessage(player, "options-invalid-value", ex.getMessage());
+                    this.notificationService.sendChatMessage(NotificationType.WARNING, player, "options-invalid-value", ex.getMessage());
                 }
             }
 
         } else {
-            this.notificationService.sendChatMessage(player, "options-invalid-syntax");
+            this.notificationService.sendChatMessage(NotificationType.WARNING, player, "options-invalid-syntax");
         }
     }
 

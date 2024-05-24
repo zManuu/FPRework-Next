@@ -11,6 +11,7 @@ import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
+import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
 import de.fantasypixel.rework.modules.utils.ServerUtils;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
@@ -50,7 +51,7 @@ public class SavePointController {
             var character = this.characterService.getActivePlayerCharacter(account);
 
             if (!this.savePointService.isSavePointUnlocked(character.getId(), savePointInRange.getId())) {
-                this.notificationService.sendChatMessage(onlinePlayer, "savepoint-unlocked", Map.of("NAME", savePointInRange.getName()));
+                this.notificationService.sendChatMessage(NotificationType.SUCCESS, onlinePlayer, "savepoint-unlocked", Map.of("NAME", savePointInRange.getName()));
                 this.savePointService.unlockSavePoint(character.getId(), savePointInRange.getId());
             }
         }
@@ -110,13 +111,13 @@ public class SavePointController {
             try {
                 savePointId = Integer.parseInt(args[1]);
             } catch (NumberFormatException ex) {
-                this.notificationService.sendChatMessage(player, "savepoint-delete-expected-number");
+                this.notificationService.sendChatMessage(NotificationType.WARNING, player, "savepoint-delete-expected-number");
                 return;
             }
             if (this.savePointService.deleteSavePoint(savePointId)) {
-                this.notificationService.sendChatMessage(player, "savepoint-delete-success", Map.of("ID", savePointId));
+                this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-delete-success", Map.of("ID", savePointId));
             } else {
-                this.notificationService.sendChatMessage(player, "savepoint-delete-error", Map.of("ID", savePointId));
+                this.notificationService.sendChatMessage(NotificationType.ERROR, player, "savepoint-delete-error", Map.of("ID", savePointId));
             }
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
@@ -136,9 +137,9 @@ public class SavePointController {
             );
 
             if (success) {
-                this.notificationService.sendChatMessage(player, "savepoint-create-success");
+                this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-create-success");
             } else {
-                this.notificationService.sendChatMessage(player, "savepoint-create-error");
+                this.notificationService.sendChatMessage(NotificationType.ERROR, player, "savepoint-create-error");
             }
 
         }

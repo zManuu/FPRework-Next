@@ -6,6 +6,7 @@ import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.items.items.edible.Edible;
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
 import de.fantasypixel.rework.modules.notification.NotificationService;
+import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
 import org.bukkit.entity.Player;
@@ -104,19 +105,19 @@ public class ItemsController implements Listener {
             try {
                 item = Items.getByIdentifier(args[0]).orElseThrow(IllegalArgumentException::new);
             } catch (IllegalArgumentException ex) {
-                this.notificationService.sendChatMessage(player, "unknown-item-identifier", args[0]);
+                this.notificationService.sendChatMessage(NotificationType.WARNING, player, "unknown-item-identifier", args[0]);
                 return;
             }
 
             try {
                 itemAmount = Integer.parseInt(args.length == 2 ? args[1] : "1");
             } catch (NumberFormatException ex) {
-                this.notificationService.sendChatMessage(player, "invalid-amount");
+                this.notificationService.sendChatMessage(NotificationType.WARNING, player, "invalid-amount");
                 return;
             }
 
             this.itemService.giveItem(player, item, null, itemAmount);
-            this.notificationService.sendChatMessage(player, "item-given");
+            this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "item-given");
         }
     }
 

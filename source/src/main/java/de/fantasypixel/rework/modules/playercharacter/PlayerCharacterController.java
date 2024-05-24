@@ -11,6 +11,7 @@ import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
+import de.fantasypixel.rework.modules.notification.NotificationType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -86,7 +87,7 @@ public class PlayerCharacterController implements Listener {
         this.notificationService.sendChatMessage(player, "login-start");
         player.teleport(playerCharacter.getLocation());
         player.setFoodLevel(playerCharacter.getFoodLevel());
-        this.notificationService.sendChatMessage(player, "login-success");
+        this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "login-success");
     }
 
     @Timer(interval = 100, type = TimerManager.TimerType.ASYNC)

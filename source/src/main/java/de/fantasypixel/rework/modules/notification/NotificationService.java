@@ -53,27 +53,44 @@ public class NotificationService {
     @Service private LanguageService languageService;
     @Service private AccountService accountService;
 
-    private void sendChatMessage(@Nonnull Player player, @Nonnull String message) {
+    private void sendChatMessage(@Nonnull NotificationType type, @Nonnull Player player, @Nonnull String message) {
+        var messageColor = switch (type) {
+            case UNKNOWN -> ChatColor.GRAY;
+            case SUCCESS -> ChatColor.GREEN;
+            case WARNING -> ChatColor.YELLOW;
+            case ERROR -> ChatColor.RED;
+        };
+
         player.sendMessage(
                 ChatColor.translateAlternateColorCodes(
                     '&',
                     String.format(
                             "%s %s",
                             this.notificationConfig.getChatPluginPrefix(),
-                            message
+                            messageColor + message
                     )
                 )
         );
     }
 
+    public void sendChatMessage(@Nonnull NotificationType type, @Nonnull Player player, @Nonnull String languageKey, @Nullable Object... args) {
+        var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
+        this.sendChatMessage(type, player, this.languageService.getTranslation(accountId, languageKey, args));
+    }
+
+    public void sendChatMessage(@Nonnull NotificationType type, @Nonnull Player player, @Nonnull String languageKey, @Nonnull Map<String, Object> args) {
+        var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
+        this.sendChatMessage(type, player, this.languageService.getTranslation(accountId, languageKey, args));
+    }
+
     public void sendChatMessage(@Nonnull Player player, @Nonnull String languageKey, @Nullable Object... args) {
         var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
-        this.sendChatMessage(player, this.languageService.getTranslation(accountId, languageKey, args));
+        this.sendChatMessage(NotificationType.UNKNOWN, player, this.languageService.getTranslation(accountId, languageKey, args));
     }
 
     public void sendChatMessage(@Nonnull Player player, @Nonnull String languageKey, @Nonnull Map<String, Object> args) {
         var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
-        this.sendChatMessage(player, this.languageService.getTranslation(accountId, languageKey, args));
+        this.sendChatMessage(NotificationType.UNKNOWN, player, this.languageService.getTranslation(accountId, languageKey, args));
     }
 
 }
