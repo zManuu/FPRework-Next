@@ -50,11 +50,14 @@ public class ItemService {
     /**
      * @param itemIdentifier the item's identifier
      * @param playerCharacterId the player's character id
-     * @return the item's description (colored!)
+     * @return the item's description (colored!) or null of no description is registered (in the player's language)
      */
-    @Nonnull
+    @Nullable
     private String getItemDescription(@Nonnull String itemIdentifier, @Nullable Integer playerCharacterId) {
-        return "§7" + this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-desc.{0}", itemIdentifier));
+        var description = this.languageService.getTranslationOptional(playerCharacterId, MessageFormat.format("item-desc.{0}", itemIdentifier), null);
+        return description == null
+                ? null
+                : "§7" + description;
     }
 
     /**
@@ -64,11 +67,11 @@ public class ItemService {
      */
     @Nonnull
     private String getItemDisplayName(@Nonnull Item item, @Nullable Integer playerCharacterId) {
-        String displayName = this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-name.{0}", item.getIdentifier()));
+        var displayName = this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-name.{0}", item.getIdentifier()));
         if (item instanceof Weapon)
-            displayName = "§4" + displayName;
+            displayName = "§c" + displayName;
         else if (item instanceof Edible)
-            displayName = "§2" + displayName;
+            displayName = "§a" + displayName;
         return displayName;
     }
 
@@ -80,19 +83,22 @@ public class ItemService {
         var lore = new ArrayList<String>();
         var playerCharacterId = playerCharacter.getId();
 
-        lore.add(this.getItemDescription(item.getIdentifier(), playerCharacterId));
-        lore.add("§8" + this.itemsConfig.getLoreLine());
+        var itemDescription = this.getItemDescription(item.getIdentifier(), playerCharacterId);
+        if (itemDescription != null) {
+            lore.add(itemDescription);
+            lore.add("§8" + this.itemsConfig.getLoreLine());
+        }
 
         if (item instanceof Weapon weaponItem) {
             var weaponHitDamage = weaponItem.getHitDamage();
 
-            lore.add(MessageFormat.format("§7➥ §4{0}", this.languageService.getTranslation(playerCharacterId, "weapon")));
+            lore.add(MessageFormat.format("§7➥ §4§l{0}", this.languageService.getTranslation(playerCharacterId, "weapon")));
             lore.add(MessageFormat.format("§7  ➳ {0}: §c", this.languageService.getTranslation(playerCharacterId, "damage")) + weaponHitDamage);
         } else if (item instanceof Edible edible) {
             var healthImpact = edible.getHealth();
             var hungerImpact = edible.getHunger();
 
-            lore.add(MessageFormat.format("§7➥ §2{0}", this.languageService.getTranslation(playerCharacterId, "edible")));
+            lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(playerCharacterId, "edible")));
             lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "health-impact")) + healthImpact);
             lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "hunger-impact")) + hungerImpact);
         }

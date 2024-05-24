@@ -72,4 +72,25 @@ public class LanguageService {
             return this.formatUtils.format(translation, args);
     }
 
+    /**
+     * Gets an optional translation.
+     * @param accountId the account's id
+     * @param entryKey the key of the dictionary entry
+     * @param args possible arguments
+     * @return the translation or null if no translation was found for the language the account id using
+     */
+    @Nullable
+    public String getTranslationOptional(@Nullable Integer accountId, @Nonnull String entryKey, @Nullable Map<String, Object> args) {
+        var languageKey = accountId != null
+                ? this.accountOptionsService.getOptions(accountId).getLanguageKey()
+                : this.languageConfig.getDefaultLanguageKey();
+
+        var dictionary = this.getDictionary(languageKey);
+        var translation = dictionary.get(entryKey);
+
+        return translation == null
+                ? null
+                : this.formatUtils.format(translation, args);
+    }
+
 }
