@@ -9,6 +9,9 @@
     "item-name.TEST_AXE": "Test Axt",
     "item-name.SPEED_POTION": "Geschwindigkeits Trank",
     "item-name.HEALTH_POTION": "Heilungs Trank",
+    "item-name.CURRENCY_1": "Emerald (1)",
+    "item-name.CURRENCY_100": "Emerald-Block (100)",
+    "item-name.CURRENCY_1000": "Emerald-Block (1000)",
 
     "--- EFFECT DEFINITIONS ---": "",
     "effect.SPEED": "Geschwindigkeit",
@@ -41,6 +44,8 @@
     "edible": "Nahrung",
     "health-impact": "Gesundheit",
     "hunger-impact": "Hunger",
-    "potion": "Trank"
+    "potion": "Trank",
+    "currency": "Währung",
+    "currency-worth": "Wert"
   }
 }

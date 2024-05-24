@@ -1,5 +1,8 @@
 package de.fantasypixel.rework.modules.items;
 
+import de.fantasypixel.rework.modules.items.items.currency.Currency100;
+import de.fantasypixel.rework.modules.items.items.currency.Currency1000;
+import de.fantasypixel.rework.modules.items.items.currency.Currency1;
 import de.fantasypixel.rework.modules.items.items.edible.Apple;
 import de.fantasypixel.rework.modules.items.items.potions.HealthPotion;
 import de.fantasypixel.rework.modules.items.items.potions.SpeedPotion;
@@ -13,12 +16,16 @@ import java.util.Set;
 
 public class Items {
 
+    // todo: automatically load (implementation in framework)
     public static Set<Item> ITEMS = Set.of(
             new TestSword(),
             new TestAxe(),
             new Apple(),
             new SpeedPotion(),
-            new HealthPotion()
+            new HealthPotion(),
+            new Currency1(),
+            new Currency100(),
+            new Currency1000()
     );
 
     @Nonnull

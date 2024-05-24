@@ -3,6 +3,7 @@ package de.fantasypixel.rework.modules.items;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.items.items.currency.CurrencyItem;
 import de.fantasypixel.rework.modules.items.items.edible.Edible;
 import de.fantasypixel.rework.modules.items.items.potions.Potion;
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
@@ -78,6 +79,8 @@ public class ItemService {
             displayName = "§d" + displayName;
         else if (item instanceof Edible)
             displayName = "§a" + displayName;
+        else if (item instanceof CurrencyItem)
+            displayName = "§a" + displayName;
         return displayName;
     }
 
@@ -122,6 +125,11 @@ public class ItemService {
             lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(playerCharacterId, "edible")));
             lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "health-impact")) + edible.getHealth());
             lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "hunger-impact")) + edible.getHunger());
+
+        } else if (item instanceof CurrencyItem currency) {
+
+            lore.add(MessageFormat.format("§7➥ §2§l{0}", this.languageService.getTranslation(playerCharacterId, "currency")));
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "currency-worth")) + currency.getWorth());
 
         }
 
