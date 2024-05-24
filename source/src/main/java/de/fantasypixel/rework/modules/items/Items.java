@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.items;
 
+import de.fantasypixel.rework.modules.items.items.edible.Apple;
 import de.fantasypixel.rework.modules.items.items.weapons.axes.TestAxe;
 import de.fantasypixel.rework.modules.items.items.weapons.swords.TestSword;
 
@@ -12,7 +13,8 @@ public class Items {
 
     public static Set<Item> ITEMS = Set.of(
             new TestSword(),
-            new TestAxe()
+            new TestAxe(),
+            new Apple()
     );
 
     @Nonnull

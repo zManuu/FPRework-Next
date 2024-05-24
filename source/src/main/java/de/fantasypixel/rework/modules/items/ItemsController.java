@@ -3,15 +3,22 @@ package de.fantasypixel.rework.modules.items;
 import de.fantasypixel.rework.framework.command.Command;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
+import de.fantasypixel.rework.modules.items.items.edible.Edible;
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Objects;
 
 @Controller
 public class ItemsController implements Listener {
@@ -51,6 +58,41 @@ public class ItemsController implements Listener {
 
         var damage = weapon.getHitDamage();
         event.setDamage(damage);
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        if (!event.hasItem())
+            return;
+
+        Player player = event.getPlayer();
+        Action action = event.getAction();
+        ItemStack itemStack = event.getItem();
+        Item item;
+
+        try {
+            Objects.requireNonNull(itemStack);
+            item = this.itemService.getItemOf(itemStack);
+        } catch (NullPointerException ex) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
+            if ((item instanceof Edible edible)) {
+                player.setHealth(player.getHealth() + edible.getHealth());
+                player.setFoodLevel(player.getFoodLevel() + edible.getHunger());
+                itemStack.setAmount(itemStack.getAmount() - 1);
+                event.setCancelled(true);
+            }
+        }
+
+    }
+
+    // disable default eating
+    @EventHandler
+    public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
+        event.setCancelled(true);
     }
 
     @Command(name = "item")

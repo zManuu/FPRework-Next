@@ -21,18 +21,8 @@ public class TestSword extends Weapon {
     }
 
     @Override
-    public String getDescription() {
-        return "a nigga's sword!";
-    }
-
-    @Override
     public Material getMaterial() {
         return Material.WOODEN_SWORD;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "§cTest Schwert";
     }
 
 }

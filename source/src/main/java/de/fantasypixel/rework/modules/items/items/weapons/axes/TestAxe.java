@@ -21,17 +21,8 @@ public class TestAxe extends Weapon {
     }
 
     @Override
-    public String getDescription() {
-        return "a fucking test!";
-    }
-
-    @Override
     public Material getMaterial() {
         return Material.IRON_AXE;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "§cTest Axt";
-    }
 }

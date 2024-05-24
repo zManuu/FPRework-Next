@@ -88,8 +88,8 @@ public class PlayerCharacterService {
         return playerCharacter;
     }
 
-    public void savePlayerCharacterPosition(@Nonnull PlayerCharacter character, @Nonnull Location location) {
-        this.logger.debug("Saving the character-position of {0}...", character.getId());
+    public void savePlayerCharacter(@Nonnull PlayerCharacter character, @Nonnull Location location, int foodLevel) {
+        this.logger.debug("Saving the character {0}...", character.getId());
 
         if (location.getWorld() == null) {
             this.logger.error(CLASS_NAME, "savePlayerCharacterPosition", "Tried to save character position, no world found on the location object!");
@@ -102,8 +102,9 @@ public class PlayerCharacterService {
         character.setLocZ(location.getZ());
         character.setLocYaw(location.getYaw());
         character.setLocPitch(location.getPitch());
+        character.setFoodLevel(foodLevel);
 
         this.playerCharacterRepo.update(character);
-        this.logger.debug("Successfully saved the character-position of {0}.", character.getId());
+        this.logger.debug("Successfully saved the character {0}.", character.getId());
     }
 }

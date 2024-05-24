@@ -85,11 +85,12 @@ public class PlayerCharacterController implements Listener {
     private void login(Player player, PlayerCharacter playerCharacter) {
         this.notificationService.sendChatMessage(player, "login-start");
         player.teleport(playerCharacter.getLocation());
+        player.setFoodLevel(playerCharacter.getFoodLevel());
         this.notificationService.sendChatMessage(player, "login-success");
     }
 
     @Timer(interval = 100, type = TimerManager.TimerType.ASYNC)
-    public void positionSaveTimer() {
+    public void characterSaveTimer() {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             var account = this.accountService.getAccount(onlinePlayer.getUniqueId());
             var character = this.playerCharacterService.getActivePlayerCharacter(account);
@@ -97,7 +98,11 @@ public class PlayerCharacterController implements Listener {
             if (character == null)
                 continue;
 
-            this.playerCharacterService.savePlayerCharacterPosition(character, onlinePlayer.getLocation());
+            this.playerCharacterService.savePlayerCharacter(
+                    character,
+                    onlinePlayer.getLocation(),
+                    onlinePlayer.getFoodLevel()
+            );
         }
     }
 

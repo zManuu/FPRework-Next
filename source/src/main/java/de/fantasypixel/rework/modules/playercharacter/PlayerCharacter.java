@@ -27,6 +27,7 @@ public class PlayerCharacter extends Locatable {
     private float locYaw;
     private float locPitch;
     private boolean active;
+    private int foodLevel;
 
     /**
      * The CHARACTER CLASS's unique identifier

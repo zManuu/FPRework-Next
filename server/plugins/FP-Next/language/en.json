@@ -1,6 +1,15 @@
 {
   "key": "en",
   "dictionary": {
+    "--- ITEM DEFINITIONS ---": "",
+    "item-name.APPLE": "Apple",
+    "item-desc.APPLE": "An apple",
+    "item-name.TEST_SWORD": "Test Sword",
+    "item-desc.TEST_SWORD": "A fuckin TEST sword my man.",
+    "item-name.TEST_AXE": "Test Axe",
+    "item-desc.TEST_AXE": "A TEST AXT MAN!!!",
+
+    "--- LANGUAGE ---": "",
     "404": "The translation couldn't be found!",
     "welcome": "-----------------------------\nWelcome to the server, {0}!You are the {1}. player.\n-----------------------------",
     "login-start": "The login process is starting...",
@@ -21,6 +30,11 @@
     "savepoint-distance": "Distance: {0} blocks",
     "unknown-item-identifier": "No item was found with the identifier {0}.",
     "invalid-amount": "Your given amount is invalid (input a number!)",
-    "item-given": "You have received the item."
+    "item-given": "You have received the item.",
+    "weapon": "Weapon",
+    "damage": "Damage",
+    "edible": "Food",
+    "health-impact": "Health",
+    "hunger-impact": "Hunger"
   }
 }

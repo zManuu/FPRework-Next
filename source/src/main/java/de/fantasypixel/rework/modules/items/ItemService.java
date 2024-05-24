@@ -3,16 +3,20 @@ package de.fantasypixel.rework.modules.items;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.items.items.edible.Edible;
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
+import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
 import de.fantasypixel.rework.modules.utils.NamespacedKeyUtils;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,6 +24,7 @@ import java.util.Objects;
 @ServiceProvider
 public class ItemService {
 
+    @Service private LanguageService languageService;
     @Service private NamespacedKeyUtils namespacedKeyUtils;
     @Service private PlayerCharacterService playerCharacterService;
     @Config private ItemsConfig itemsConfig;
@@ -43,27 +48,53 @@ public class ItemService {
     }
 
     /**
+     * @param itemIdentifier the item's identifier
+     * @param playerCharacterId the player's character id
+     * @return the item's description (colored!)
+     */
+    @Nonnull
+    private String getItemDescription(@Nonnull String itemIdentifier, @Nullable Integer playerCharacterId) {
+        return "§7" + this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-desc.{0}", itemIdentifier));
+    }
+
+    /**
+     * @param item the item to get the display name of
+     * @param playerCharacterId the player's character id
+     * @return the display name of the item (colored!)
+     */
+    @Nonnull
+    private String getItemDisplayName(@Nonnull Item item, @Nullable Integer playerCharacterId) {
+        String displayName = this.languageService.getTranslation(playerCharacterId, MessageFormat.format("item-name.{0}", item.getIdentifier()));
+        if (item instanceof Weapon)
+            displayName = "§4" + displayName;
+        else if (item instanceof Edible)
+            displayName = "§2" + displayName;
+        return displayName;
+    }
+
+    /**
      * Builds a lore based on item and player-character.
-     * <br><br>
-     * <b>Lore format:</b>
-     * <br><br>
-     * {@code {DESCRIPTION}}<br>
-     * --------------------<br>
-     * ⚔ Schwert<br>
-     * Schaden: {@code {WEAPON_DAMAGE}]</pre>
      */
     @Nonnull
     private List<String> buildItemLore(@Nonnull Item item, @Nonnull PlayerCharacter playerCharacter) {
         var lore = new ArrayList<String>();
+        var playerCharacterId = playerCharacter.getId();
 
-        lore.add("§7" + item.getDescription());
-        lore.add(this.itemsConfig.getLoreLine());
+        lore.add(this.getItemDescription(item.getIdentifier(), playerCharacterId));
+        lore.add("§8" + this.itemsConfig.getLoreLine());
 
         if (item instanceof Weapon weaponItem) {
             var weaponHitDamage = weaponItem.getHitDamage();
 
-            lore.add("§7➥ §4Waffe");
-            lore.add("§7  ➳ Schaden: §c" + weaponHitDamage);
+            lore.add(MessageFormat.format("§7➥ §4{0}", this.languageService.getTranslation(playerCharacterId, "weapon")));
+            lore.add(MessageFormat.format("§7  ➳ {0}: §c", this.languageService.getTranslation(playerCharacterId, "damage")) + weaponHitDamage);
+        } else if (item instanceof Edible edible) {
+            var healthImpact = edible.getHealth();
+            var hungerImpact = edible.getHunger();
+
+            lore.add(MessageFormat.format("§7➥ §2{0}", this.languageService.getTranslation(playerCharacterId, "edible")));
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "health-impact")) + healthImpact);
+            lore.add(MessageFormat.format("§7  ➳ {0}: §a", this.languageService.getTranslation(playerCharacterId, "hunger-impact")) + hungerImpact);
         }
 
         return lore;
@@ -74,12 +105,13 @@ public class ItemService {
      * @param item the item (-type)
      * @param amount the amount of the item-stack
      * @return the built item-stack
-     * @throws NullPointerException if no item is passed
+     * @throws NullPointerException if one of the required data couldn't be determined
      */
     @Nonnull
     private ItemStack buildItem(@Nullable Item item, @Nullable PlayerCharacter playerCharacter, int amount) throws NullPointerException {
         Objects.requireNonNull(item, "Item cannot be null");
         Objects.requireNonNull(playerCharacter, "Player-character cannot be null");
+        Objects.requireNonNull(playerCharacter.getId(), "Player-character(id) cannot be null");
 
         var itemNamespacedKey = this.namespacedKeyUtils.getNamespacedKey(NamespacedKeyUtils.NamespacedKeyType.ITEM_IDENTIFIER);
         var itemStack = new ItemStack(item.getMaterial(), amount);
@@ -87,9 +119,10 @@ public class ItemService {
         var itemPersistentDataContainer = itemMetaData.getPersistentDataContainer();
 
         // meta data
-        itemMetaData.setDisplayName(item.getDisplayName());
+        itemMetaData.setDisplayName(this.getItemDisplayName(item, playerCharacter.getId()));
         itemMetaData.setLore(this.buildItemLore(item, playerCharacter));
         itemMetaData.setUnbreakable(true);
+        itemMetaData.addItemFlags(ItemFlag.values());
 
         // persistent data
         itemPersistentDataContainer.set(itemNamespacedKey, PersistentDataType.STRING, item.getIdentifier());

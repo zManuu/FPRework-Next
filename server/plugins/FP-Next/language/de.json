@@ -1,6 +1,15 @@
 {
   "key": "de",
   "dictionary": {
+    "--- ITEM DEFINITIONS ---": "",
+    "item-name.APPLE": "Apfel",
+    "item-desc.APPLE": "Ein apfel",
+    "item-name.TEST_SWORD": "Test Schwert",
+    "item-desc.TEST_SWORD": "Ein sehr testiges schwert.",
+    "item-name.TEST_AXE": "Test Axt",
+    "item-desc.TEST_AXE": "Eine test axt....",
+
+    "--- LANGUAGE ---": "",
     "404": "Die Übersetzung wurde nicht gefunden!",
     "welcome": "-----------------------------\nWillkommen auf dem Server, {0}!Du bist der {1}. Spieler.\n-----------------------------",
     "login-start": "Du wirst eingeloggt...",
@@ -21,6 +30,11 @@
     "savepoint-distance": "Distanz: {0} Blöcke",
     "unknown-item-identifier": "Es wurde kein Item mit dem identifier {0} gefunden.",
     "invalid-amount": "Der eingegebene Wert ist ungültig (es muss eine Zahl sein!)",
-    "item-given": "Du hast das Item erhalten."
+    "item-given": "Du hast das Item erhalten.",
+    "weapon": "Waffe",
+    "damage": "Schaden",
+    "edible": "Nahrung",
+    "health-impact": "Gesundheit",
+    "hunger-impact": "Hunger"
   }
 }
