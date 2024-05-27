@@ -1,6 +1,8 @@
 package de.fantasypixel.rework.modules.items;
 
 import de.fantasypixel.rework.framework.command.Command;
+import de.fantasypixel.rework.framework.log.FPLogger;
+import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.items.items.edible.Edible;
@@ -10,6 +12,7 @@ import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,6 +30,7 @@ public class ItemsController implements Listener {
     @Service private ItemService itemService;
     @Service private PlayerCharacterService playerCharacterService;
     @Service private NotificationService notificationService;
+    @Auto private FPLogger logger;
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
@@ -88,7 +92,14 @@ public class ItemsController implements Listener {
 
             } else if ((item instanceof Edible edible)) {
 
-                player.setHealth(player.getHealth() + edible.getHealth());
+                var playerMaxHealthAttribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+
+                if (playerMaxHealthAttribute == null) {
+                    this.logger.warning("Player {0} has no health attribute!", player.getName());
+                    return;
+                }
+
+                player.setHealth(Math.max(player.getHealth() + edible.getHealth(), playerMaxHealthAttribute.getValue()));
                 player.setFoodLevel(player.getFoodLevel() + edible.getHunger());
                 itemStack.setAmount(itemStack.getAmount() - 1);
                 event.setCancelled(true);
