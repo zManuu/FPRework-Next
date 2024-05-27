@@ -99,7 +99,7 @@ public class ItemsController implements Listener {
                     return;
                 }
 
-                player.setHealth(Math.max(player.getHealth() + edible.getHealth(), playerMaxHealthAttribute.getValue()));
+                player.setHealth(Math.min(player.getHealth() + edible.getHealth(), playerMaxHealthAttribute.getValue()));
                 player.setFoodLevel(player.getFoodLevel() + edible.getHunger());
                 itemStack.setAmount(itemStack.getAmount() - 1);
                 event.setCancelled(true);
