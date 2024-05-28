@@ -19,10 +19,8 @@ public class FPLogger {
 
     public enum LogLevel { ERROR, WARNING, INFO, ENTERING, EXITING, DEBUG }
 
-    private final static String CLASS_NAME = FPLogger.class.getSimpleName();
-
     private final PrintStream printStream;
-    private FPLoggerConfig config = new FPLoggerConfig(25, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
+    private FPLoggerConfig config = new FPLoggerConfig(25, false, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
 
     /**
      * Constructs a logger. Gson is used to load the configuration from resources.
@@ -35,20 +33,21 @@ public class FPLogger {
                 var configResource = FPRework.class.getResourceAsStream("logging.json")
         ) {
             if (configResource == null)
-                throw new RuntimeException();
+                throw new RuntimeException("Config file not found.");
 
             var configReader = new InputStreamReader(configResource);
             this.config = gson.fromJson(configReader, FPLoggerConfig.class);
             configReader.close();
-        } catch (IOException | RuntimeException ex) {
-            this.warning("Couldn't load logging.json! Using fallback configuration.");
+        } catch (IOException ex) {
+            this.warning("Couldn't load logging.json (read error). Using fallback configuration.");
+        } catch (RuntimeException ex) {
+            this.warning("Couldn't load logging.json (doesn't exist). Using fallback configuration.");
         }
 
     }
 
     private boolean isGroupActive(String group) {
-        return this.config.getGroups().containsKey(group)
-                && this.config.getGroups().get(group);
+        return this.config.isAllGroups() || (this.config.getGroups().containsKey(group) && this.config.getGroups().get(group));
     }
 
     public void info(@Nonnull String message) {

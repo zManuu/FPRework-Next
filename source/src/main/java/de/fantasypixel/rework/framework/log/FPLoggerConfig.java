@@ -10,6 +10,7 @@ import java.util.Map;
 public class FPLoggerConfig {
 
     private int sectionIndentation;
+    private boolean allGroups;
     private Map<String, Boolean> groups;
 
 }

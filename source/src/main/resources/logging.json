@@ -1,5 +1,6 @@
 {
   "sectionIndentation": 25,
+  "allGroups": true,
   "groups": {
     "DATABASE_QUERY": false,
     "DATABASE_CACHE": false
