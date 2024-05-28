@@ -14,7 +14,8 @@ import java.lang.annotation.Target;
  * - {@link com.google.gson.Gson}<br>
  * - {@link FPLogger}<br>
  * - {@link org.bukkit.Server}<br>
- * - {@link org.bukkit.plugin.Plugin}
+ * - {@link org.bukkit.plugin.Plugin}<br>
+ * - {@link ReloadManager}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

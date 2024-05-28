@@ -439,6 +439,15 @@ public class DataRepoProvider<E> {
         }
     }
 
+    /**
+     * Clears the {@link #cache}.
+     */
+    public void clearCache() {
+        this.plugin.getFpLogger().debugGrouped("DATABASE_CACHE", "Clearing cache of DataRepoProvider<{0}>.", this.typeParameterClass.getSimpleName());
+        this.cache.clear();
+    }
+
+
     private void logSqlStatement(@Nonnull String statementStr, @Nonnull Object... args) {
         for (var arg : args)
             statementStr = statementStr.replaceFirst("\\?", arg == null ? "NULL" : arg.toString());

@@ -45,6 +45,7 @@ public class ProviderManager {
     private final CommandManager commandManager;
     private final WebManager webManager;
     private final JsonDataManager jsonDataManager;
+    private final ReloadManager reloadManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -83,13 +84,32 @@ public class ProviderManager {
         this.initWebHandlers(WebManager.HttpMethod.DELETE, WebDelete.class);
         this.plugin.getFpLogger().sectionEnd("Web");
 
+        // reload
+        this.reloadManager = () -> {
+            this.plugin.getFpLogger().sectionStart("Reload");
+
+            // config
+            this.loadConfigs();
+            this.hookConfigs();
+
+            // json-data
+            this.loadJsonData();
+            this.hookJsonData();
+
+            // data-repos
+            this.dataProviders.values().forEach(DataRepoProvider::clearCache);
+
+            this.plugin.getFpLogger().sectionEnd("Reload");
+        };
+
         // auto rigging
         this.plugin.getFpLogger().sectionStart("Auto-Rigging");
         this.initAutoRigging(Set.of(
                 this.plugin.getFpLogger(),
                 this.plugin.getGson(),
                 this.plugin.getServer(),
-                this.plugin
+                this.plugin,
+                this.reloadManager
         ));
         this.plugin.getFpLogger().sectionEnd("Auto-Rigging");
 

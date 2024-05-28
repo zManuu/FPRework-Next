@@ -67,7 +67,9 @@
     "btn-close-menu": "Menü schließen",
     "price": "Preis",
     "menu-not-closable": "Du kannst dieses Menü nicht schließen.",
-    "menu-previous-page": "Vorherige Seite (%PAGE%)",
-    "menu-next-page": "Nächste Seite (%PAGE%)"
+    "menu-previous-page": "Vorherige Seite",
+    "menu-next-page": "Nächste Seite",
+    "admin-reload-start": "Der server-reload wurde gestartet.",
+    "admin-reload-end": "Der server-reload wurde beended. "
   }
 }

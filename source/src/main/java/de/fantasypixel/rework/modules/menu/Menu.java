@@ -137,7 +137,7 @@ public class Menu {
                         MenuItem.builder()
                                 .subMenu(() -> new Menu(title, closable, design, items, onClose, specialItems, pages, previousPageIndex, closeButton))
                                 .material(Material.ARROW)
-                                .displayName("§8" + languageService.getTranslation(player, "menu-previous-page", Map.of("PAGE", previousPageIndex + 1)))
+                                .displayName("§8" + languageService.getTranslation(player, "menu-previous-page") + " (" + (previousPageIndex + 1) + ")")
                                 .disposable(true)
                                 .build()
                 );
@@ -157,7 +157,7 @@ public class Menu {
                         MenuItem.builder()
                                 .subMenu(() -> new Menu(title, closable, design, items, onClose, specialItems, pages, nextPageIndex, closeButton))
                                 .material(Material.ARROW)
-                                .displayName("§8" + languageService.getTranslation(player, "menu-next-page", Map.of("PAGE", nextPageIndex + 1)))
+                                .displayName("§8" + languageService.getTranslation(player, "menu-next-page") + " (" + (nextPageIndex + 1) + ")")
                                 .disposable(true)
                                 .build()
                 );
