@@ -6,7 +6,7 @@ import de.fantasypixel.rework.framework.log.FPLogger;
 public class Constants {
 
     public static final Gson gson = new Gson();
-    public static final FPLogger logger = new FPLogger(System.out, gson);
+    public static final FPLogger logger = new FPLogger(System.out, gson, null);
 
     private static boolean initialized;
     public static void beforeOnce() {

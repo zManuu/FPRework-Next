@@ -1,7 +1,10 @@
 package de.fantasypixel.rework.framework.log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonParseException;
 import de.fantasypixel.rework.FPRework;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,25 +26,28 @@ public class FPLogger {
     private FPLoggerConfig config = new FPLoggerConfig(25, false, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
 
     /**
-     * Constructs a logger. Gson is used to load the configuration from resources.
+     * Constructs a logger. Gson is used to load the configuration from plugins/FP-Next/config/logging.json (if a plugin is passed).
      */
-    public FPLogger(@Nonnull PrintStream printStream, @Nonnull Gson gson) {
+    public FPLogger(@Nonnull PrintStream printStream, @Nonnull Gson gson, @Nullable JavaPlugin plugin) {
         this.printStream = printStream;
 
         // load config
-        try (
-                var configResource = FPRework.class.getResourceAsStream("logging.json")
-        ) {
-            if (configResource == null)
-                throw new RuntimeException("Config file not found.");
+        if (plugin != null) {
+            var configFile = new File(plugin.getDataFolder(), "config/logging.json");
+            try (
+                    var configResource = new FileInputStream(configFile)
+            ) {
 
-            var configReader = new InputStreamReader(configResource);
-            this.config = gson.fromJson(configReader, FPLoggerConfig.class);
-            configReader.close();
-        } catch (IOException ex) {
-            this.warning("Couldn't load logging.json (read error). Using fallback configuration.");
-        } catch (RuntimeException ex) {
-            this.warning("Couldn't load logging.json (doesn't exist). Using fallback configuration.");
+                var configReader = new InputStreamReader(configResource);
+                this.config = gson.fromJson(configReader, FPLoggerConfig.class);
+                configReader.close();
+            } catch (FileNotFoundException ex) {
+                this.warning("Couldn't load logging.json (doesn't exist). Using fallback configuration.");
+            } catch (JsonParseException | IOException ex) {
+                this.warning("Couldn't load logging.json (read error). Using fallback configuration.");
+            }
+        } else {
+            this.info("Using fallback configuration for logger (test environment).");
         }
 
     }
