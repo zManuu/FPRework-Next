@@ -1,33 +1,28 @@
-package de.fantasypixel.rework.modules.items.items.weapons.axes;
+package de.fantasypixel.rework.modules.items.items.weapons.swords;
 
 import de.fantasypixel.rework.modules.items.items.weapons.Weapon;
 import org.bukkit.Material;
 
-public class TestAxe extends Weapon {
+public class StoneSword extends Weapon {
 
     @Override
     public int getHitDamage() {
-        return 3;
+        return 4;
     }
 
     @Override
     public String getIdentifier() {
-        return "TEST_AXE";
-    }
-
-    @Override
-    public String getName() {
-        return "test axe";
+        return "STONE_SWORD";
     }
 
     @Override
     public Material getMaterial() {
-        return Material.IRON_AXE;
+        return Material.STONE_SWORD;
     }
 
     @Override
     public int getDefaultPrice() {
-        return 50;
+        return 15;
     }
 
 }

@@ -8,6 +8,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Builder
 @Getter
@@ -24,11 +25,12 @@ public class MenuItem {
     private boolean closesMenu;
     private Runnable onSelect;
     @Nullable private ItemStack importedItemStack;
+    private boolean disposable;
 
     /**
      * A menu that is opened by clicking this item. For example, back-buttons, page, ... or real sub-menus
      */
-    @Nullable private Menu subMenu;
+    @Nullable private Supplier<Menu> subMenu;
 
     /**
      * The import constructor.
@@ -36,7 +38,7 @@ public class MenuItem {
      * Note that when using this constructor, you can't override values on the item-stack,
      * only slot, closesMenu and onSelect are overridable.
      */
-    public MenuItem(ItemStack itemStack) {
+    public MenuItem(@Nullable ItemStack itemStack) {
         this.importedItemStack = itemStack;
     }
 

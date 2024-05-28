@@ -2,8 +2,7 @@ package de.fantasypixel.rework.modules.items.items.edible;
 
 import org.bukkit.Material;
 
-public class Apple extends Edible {
-
+public class Carrot extends Edible {
     @Override
     public double getHealth() {
         return 0;
@@ -11,22 +10,21 @@ public class Apple extends Edible {
 
     @Override
     public int getHunger() {
-        return 1;
+        return 2;
     }
 
     @Override
     public String getIdentifier() {
-        return "APPLE";
+        return "CARROT";
     }
 
     @Override
     public Material getMaterial() {
-        return Material.APPLE;
+        return Material.CARROT;
     }
 
     @Override
     public int getDefaultPrice() {
-        return 1;
+        return 2;
     }
-
 }

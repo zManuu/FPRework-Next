@@ -10,6 +10,7 @@ import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
+import de.fantasypixel.rework.modules.menu.design.SimpleMenuDesign;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
@@ -21,10 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -67,8 +65,7 @@ public class SavePointController {
             var unlockedSavePoints = this.savePointService.getUnlockedSavePoints(character.getId());
             var lockedSavePoints = this.savePointService.getLockedSavePoints(character.getId());
 
-            var itemSlotIndex = new AtomicInteger(0);
-            var items = new HashSet<MenuItem>();
+            var items = new LinkedHashSet<MenuItem>();
 
             items.addAll(
                     unlockedSavePoints.stream()
@@ -77,7 +74,6 @@ public class SavePointController {
                                     .displayName(savePoint.getName())
                                     .lore(List.of(this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
                                     .material(Material.getMaterial(savePoint.getIconMaterial()))
-                                    .slot(itemSlotIndex.getAndIncrement())
                                     .onSelect(() -> player.teleport(savePoint.getPosition().toLocation()))
                                     .build())
                             .collect(Collectors.toSet())
@@ -90,15 +86,14 @@ public class SavePointController {
                                     .displayName(savePoint.getName())
                                     .lore(List.of(this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
                                     .material(Material.GRAY_DYE)
-                                    .slot(itemSlotIndex.getAndIncrement())
                                     .build())
                             .collect(Collectors.toSet())
             );
 
             var menu = Menu.builder()
-                    .closable(true)
+                    .closeButton(true)
                     .title("Save Points")
-                    .type(InventoryType.CHEST)
+                    .design(new SimpleMenuDesign())
                     .items(items)
                     .build();
 

@@ -4,6 +4,9 @@ import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.language.LanguageService;
+import de.fantasypixel.rework.modules.notification.NotificationService;
+import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.utils.ServerUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -18,6 +21,8 @@ public class MenuService {
 
     @Auto private FPLogger logger;
     @Service private ServerUtils serverUtils;
+    @Service private LanguageService languageService;
+    @Service private NotificationService notificationService;
     private final Map<Player, Menu> openedMenus;
     private final Map<Player, Boolean> menuClosedManually;
 
@@ -45,11 +50,11 @@ public class MenuService {
      */
     public void openMenu(@Nonnull Player player, @Nonnull Menu menu) {
         if (this.hasOpenedMenu(player)) {
-            this.logger.warning("Player '" + player.getName() + "' tried to open menu '" + menu.getTitle() + "', another is open already: '" + this.getOpenedMenu(player).getTitle() + "'.");
+            this.logger.warning("Player \"{0}\" tried to open menu \"{1}\", another menu is open already: \"{2}\".", player.getName(), menu.getTitle(), this.getOpenedMenu(player).getTitle());
             return;
         }
 
-        Inventory inventory = menu.toInventory();
+        Inventory inventory = menu.toInventory(this.languageService, player);
         player.openInventory(inventory);
         this.openedMenus.put(player, menu);
     }
@@ -57,18 +62,18 @@ public class MenuService {
     /**
      * Opens a sub-menu to the specified player.
      * A sub-menu is not a menu on the "second layer" but one that is opened from another one.
-     * The opening is delay 2 Ticks.
+     * The opening is delayed 2 Ticks.
      */
     public void openSubMenu(@Nonnull Player player, @Nonnull Menu menu) {
         this.serverUtils.runTaskLater(() -> {
             if (this.hasOpenedMenu(player)) {
-                this.logger.warning("Player '" + player.getName() + "' tried to open menu '" + menu.getTitle() + "', another is open already: '" + this.getOpenedMenu(player).getTitle() + "'.");
+                this.logger.warning("Player \"{0}\" tried to open menu \"{1}\", another menu is open already: \"{2}\".", player.getName(), menu.getTitle(), this.getOpenedMenu(player).getTitle());
                 return;
             }
 
-            Inventory inventory = menu.toInventory();
-            player.openInventory(inventory);
             this.openedMenus.put(player, menu);
+            Inventory inventory = menu.toInventory(this.languageService, player);
+            player.openInventory(inventory);
         }, 2);
     }
 
@@ -81,7 +86,7 @@ public class MenuService {
             return;
         }
 
-        this.menuClosedManually.put(player, false);
+        this.menuClosedManually.remove(player);
         this.openedMenus.remove(player);
 
         this.serverUtils.runTaskLater(player::closeInventory, 1);
@@ -89,8 +94,14 @@ public class MenuService {
 
     protected void handleMenuItemSelect(@Nullable MenuItem item, @Nonnull Player player) {
         if (item != null) {
-            Menu itemSubMenu = item.getSubMenu();
-            if (itemSubMenu != null) {
+            var itemSubMenuSupplier = item.getSubMenu();
+            if (itemSubMenuSupplier != null) {
+                var itemSubMenu = itemSubMenuSupplier.get();
+
+                if (itemSubMenu == null) {
+                    this.logger.warning("Tried to open a sub-menu for player {0}, but the supplier returned null. Item-Name: {1}", player.getName(), item.getDisplayName());
+                    return;
+                }
 
                 this.closeMenu(player);
                 this.openSubMenu(player, itemSubMenu);
@@ -111,10 +122,12 @@ public class MenuService {
     protected void handleMenuClose(@Nonnull Player player, @Nonnull Menu menu) {
         var manually = this.menuClosedManually.getOrDefault(player, true);
 
-        if (!menu.isClosable() && manually) {
+        if (!menu.getClosable() && manually) {
             this.menuClosedManually.remove(player);
 
-            this.serverUtils.runTaskLater(() -> player.openInventory(menu.toInventory()), 1);
+            this.notificationService.sendChatMessage(NotificationType.WARNING, player, "menu-not-closable");
+
+            this.serverUtils.runTaskLater(() -> player.openInventory(menu.toInventory(this.languageService, player)), 1);
             return;
         }
 

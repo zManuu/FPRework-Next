@@ -2,6 +2,7 @@ package de.fantasypixel.rework.modules.playercharacter;
 
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
+import de.fantasypixel.rework.modules.character.Character;
 import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
@@ -10,6 +11,8 @@ import de.fantasypixel.rework.modules.character.Characters;
 import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
 import de.fantasypixel.rework.modules.menu.MenuService;
+import de.fantasypixel.rework.modules.menu.design.MenuDesign;
+import de.fantasypixel.rework.modules.menu.design.SimpleMenuDesign;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import org.bukkit.Bukkit;
@@ -19,7 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryType;
 
 import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 
 @Controller
@@ -58,23 +61,23 @@ public class PlayerCharacterController implements Listener {
 
         player.teleport(this.playerCharacterService.getBlackBoxLocation());
 
-        var characterSlotIndex = new AtomicInteger(0);
+        var menuItems = new LinkedHashSet<MenuItem>();
+        for (Character character : Characters.CHARACTERS) {
+            menuItems.add(
+                    MenuItem.builder()
+                            .material(character.getIconMaterial())
+                            .displayName(character.getName())
+                            .closesMenu(true)
+                            .onSelect(() -> this.login(player, this.playerCharacterService.createPlayerCharacter(finalAccountId, String.valueOf(accountId), character, firstCharacter)))
+                            .build()
+            );
+        }
+
         Menu menu = Menu.builder()
-                .type(InventoryType.HOPPER)
                 .title("Character Creation")
                 .closable(false)
-                .items(
-                        Characters.CHARACTERS.stream()
-                                .map((character) -> MenuItem.builder()
-                                        .slot(characterSlotIndex.getAndIncrement())
-                                        .material(character.getIconMaterial())
-                                        .displayName(character.getName())
-                                        .closesMenu(true)
-                                        .onSelect(() -> this.login(player, this.playerCharacterService.createPlayerCharacter(finalAccountId, String.valueOf(accountId), character, firstCharacter)))
-                                        .build()
-                                )
-                                .collect(Collectors.toSet())
-                )
+                .design(new SimpleMenuDesign(InventoryType.HOPPER, true))
+                .items(menuItems)
                 .build();
 
         this.menuService.openMenu(player, menu);

@@ -17,11 +17,6 @@ public class Currency1 extends CurrencyItem {
     }
 
     @Override
-    public String getName() {
-        return "Currency one";
-    }
-
-    @Override
     public Material getMaterial() {
         return Material.EMERALD;
     }

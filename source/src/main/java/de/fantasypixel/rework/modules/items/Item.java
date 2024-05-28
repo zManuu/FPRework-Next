@@ -10,7 +10,6 @@ abstract public class Item {
 
     // required configuration
     public abstract String getIdentifier();
-    public abstract String getName();
     public abstract Material getMaterial();
     public abstract int getDefaultPrice();
 

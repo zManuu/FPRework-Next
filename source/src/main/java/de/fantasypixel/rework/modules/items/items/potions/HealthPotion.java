@@ -5,6 +5,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class HealthPotion extends Potion {
@@ -16,19 +17,14 @@ public class HealthPotion extends Potion {
 
     @Override
     public Set<PotionEffect> getEffects() {
-        return Set.of(
-                new PotionEffect(PotionEffectType.HEAL, Potion.NULL_DURATION, 2)
-        );
+        return new LinkedHashSet<>(Set.of(
+                new PotionEffect(PotionEffectType.HEAL, Potion.NULL_DURATION, 1)
+        ));
     }
 
     @Override
     public String getIdentifier() {
         return "HEALTH_POTION";
-    }
-
-    @Override
-    public String getName() {
-        return "Health potion";
     }
 
     @Override

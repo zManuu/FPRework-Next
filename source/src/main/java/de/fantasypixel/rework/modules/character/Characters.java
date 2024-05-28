@@ -7,6 +7,7 @@ import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -15,10 +16,10 @@ import java.util.Set;
  */
 public class Characters {
 
-    public static Set<Character> CHARACTERS = Set.of(
+    public static Set<Character> CHARACTERS = new LinkedHashSet<>(Set.of(
             new CharacterWarrior(),
             new CharacterArcher()
-    );
+    ));
 
     /**
      * Returns an optional. For a Nonnull result, use {@link PlayerCharacter#getCharacter()}

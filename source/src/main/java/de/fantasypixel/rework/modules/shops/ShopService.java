@@ -14,6 +14,8 @@ import de.fantasypixel.rework.modules.items.items.currency.Currency1;
 import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.menu.Menu;
 import de.fantasypixel.rework.modules.menu.MenuItem;
+import de.fantasypixel.rework.modules.menu.design.MenuDesign;
+import de.fantasypixel.rework.modules.menu.design.SimpleMenuDesign;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
@@ -25,7 +27,6 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.text.MessageFormat;
 import java.util.*;
 
 @ServiceProvider
@@ -93,37 +94,32 @@ public class ShopService {
      */
     public Menu buildShopMenu(@Nonnull Player player, @Nonnull PlayerCharacter playerCharacter, @Nonnull ShopMenuType shopMenuType, @Nonnull Shop shop) {
         int playerCharacterId = playerCharacter.getId();
-        Set<MenuItem> menuItems = new HashSet<>();
+        Set<MenuItem> menuItems = new LinkedHashSet<>();
+        Set<MenuItem> menuSpecialItems = new LinkedHashSet<>();
         String menuTitle = null;
-        InventoryType menuType = null;
+        MenuDesign menuDesign = null;
+        boolean pagedMenu = false;
+
+        MenuItem sellNavItem = MenuItem.builder()
+                .material(Material.EMERALD)
+                .displayName("§a" + this.languageService.getTranslation(playerCharacterId, "shop-sell"))
+                .subMenu(() -> this.buildShopMenu(player, playerCharacter, ShopMenuType.SELL, shop))
+                .build();
+
+        MenuItem buyNavItem = MenuItem.builder()
+                .material(Material.EMERALD)
+                .displayName("§a" + this.languageService.getTranslation(playerCharacterId, "shop-buy"))
+                .subMenu(() -> this.buildShopMenu(player, playerCharacter, ShopMenuType.BUY, shop))
+                .build();
 
         if (shopMenuType == ShopMenuType.LOBBY) {
-            menuType = InventoryType.HOPPER;
-            menuItems = Set.of(
-                    MenuItem.builder()
-                            .slot(1)
-                            .material(Material.EMERALD)
-                            .displayName(this.languageService.getTranslation(playerCharacterId, "shop-sell"))
-                            .subMenu(this.buildShopMenu(player, playerCharacter, ShopMenuType.SELL, shop))
-                            .build(),
-                    MenuItem.builder()
-                            .slot(2)
-                            .material(Material.EMERALD)
-                            .displayName(this.languageService.getTranslation(playerCharacterId, "shop-buy"))
-                            .subMenu(this.buildShopMenu(player, playerCharacter, ShopMenuType.BUY, shop))
-                            .build(),
-                    MenuItem.builder()
-                            .slot(3)
-                            .material(Material.BARRIER)
-                            .displayName("§c" + this.languageService.getTranslation(playerCharacterId, "btn-close-menu"))
-                            .closesMenu(true)
-                            .build()
-            );
+            menuDesign = new SimpleMenuDesign(InventoryType.HOPPER);
+            menuItems = Set.of(sellNavItem, buyNavItem);
         } else if (shopMenuType == ShopMenuType.SELL) {
-            menuType = InventoryType.CHEST;
+            menuDesign = new SimpleMenuDesign(InventoryType.CHEST);
             menuTitle = (shop.getName() != null ? shop.getName() : "Shop") + " §3(" + this.languageService.getTranslation(playerCharacterId, "shop-sell") + ")";
+            pagedMenu = true;
 
-            int sellItemIndex = 0;
             for (Shop.ShopItem sellItem : shop.getSellItems()) {
                 Item sellItemItem = Items.getByIdentifier(sellItem.getItemIdentifier()).orElse(null);
 
@@ -146,14 +142,15 @@ public class ShopService {
                 ItemStack sellItemStack = this.itemService.buildItem(sellItemItem, playerCharacter, 1, itemPrice, isDiscount);
                 MenuItem sellMenuItem = new MenuItem(sellItemStack);
                 sellMenuItem.setOnSelect(() -> this.tryBuyItem(player, shopMenuType, sellItemItem, itemPrice));
-                sellMenuItem.setSlot(sellItemIndex++);
                 menuItems.add(sellMenuItem);
             }
-        } else if (shopMenuType == ShopMenuType.BUY) {
-            menuType = InventoryType.CHEST;
-            menuTitle = (shop.getName() != null ? shop.getName() : "Shop") + " §3(" + this.languageService.getTranslation(playerCharacterId, "shop-buy") + ")";
 
-            int buyItemIndex = 0;
+            menuSpecialItems.add(buyNavItem);
+        } else if (shopMenuType == ShopMenuType.BUY) {
+            menuDesign = new SimpleMenuDesign(InventoryType.CHEST);
+            menuTitle = (shop.getName() != null ? shop.getName() : "Shop") + " §3(" + this.languageService.getTranslation(playerCharacterId, "shop-buy") + ")";
+            pagedMenu = true;
+
             for (Shop.ShopItem buyItem : shop.getBuyItems()) {
                 Item buyItemItem = Items.getByIdentifier(buyItem.getItemIdentifier()).orElse(null);
 
@@ -176,20 +173,31 @@ public class ShopService {
                 ItemStack buyItemStack = this.itemService.buildItem(buyItemItem, playerCharacter, 1, itemPrice, isDiscount);
                 MenuItem buyMenuItem = new MenuItem(buyItemStack);
                 buyMenuItem.setOnSelect(() -> this.tryBuyItem(player, shopMenuType, buyItemItem, itemPrice));
-                buyMenuItem.setSlot(buyItemIndex++);
                 menuItems.add(buyMenuItem);
             }
+
+            menuSpecialItems.add(sellNavItem);
         }
 
         String finalMenuTitle = "§3§l" + (menuTitle != null ? menuTitle : (shop.getName() != null ? shop.getName() : "Shop"));
 
         return Menu.builder()
                 .title(finalMenuTitle)
-                .type(menuType)
+                .design(menuDesign)
+                .closeButton(true)
+                .pages(pagedMenu)
                 .items(menuItems)
+                .specialItems(menuSpecialItems)
                 .build();
     }
 
+    /**
+     * Make a player buy an item.
+     * @param player the player
+     * @param shopMenuType the type of buy (buy or sell)
+     * @param item the bought / sold item
+     * @param itemPrice the price
+     */
     public void tryBuyItem(@Nonnull Player player, @Nonnull ShopMenuType shopMenuType, @Nonnull Item item, int itemPrice) {
         var itemIdentifier = item.getIdentifier();
         var accountId = this.accountService.getAccount(player.getUniqueId()).getId();

@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.modules.items.items.potions;
 
 import de.fantasypixel.rework.modules.items.Item;
+import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
@@ -16,5 +17,10 @@ public abstract class Potion extends Item {
 
     public abstract PotionType getPotionMaterial();
     public abstract Set<PotionEffect> getEffects();
+
+    @Override
+    public Material getMaterial() {
+        return Material.POTION;
+    }
 
 }

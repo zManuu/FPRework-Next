@@ -4,11 +4,17 @@
     "--- ITEM DEFINITIONS ---": "",
     "item-name.APPLE": "Apfel",
     "item-desc.APPLE": "Ein apfel",
-    "item-name.TEST_SWORD": "Test Schwert",
-    "item-desc.TEST_SWORD": "Ein sehr testiges schwert.",
-    "item-name.TEST_AXE": "Test Axt",
+    "item-name.BAKED_POTATO": "Ofenkartoffel",
+    "item-name.BREAD": "Brot",
+    "item-name.CARROT": "Karotte",
+    "item-name.STEAK": "Steak",
+    "item-name.STONE_AXE": "Stein Axt",
+    "item-name.IRON_AXE": "Eisen Axt",
+    "item-name.STONE_SWORD": "Stein Schwert",
+    "item-name.IRON_SWORD": "Eisen Schwert",
     "item-name.SPEED_POTION": "Geschwindigkeits Trank",
     "item-name.HEALTH_POTION": "Heilungs Trank",
+    "item-name.NIGHT_VISION_POTION": "Nachtsicht Trank",
     "item-name.CURRENCY_1": "Emerald (1)",
     "item-name.CURRENCY_100": "Emerald-Block (100)",
     "item-name.CURRENCY_1000": "Emerald-Block (1000)",
@@ -16,6 +22,7 @@
     "--- EFFECT DEFINITIONS ---": "",
     "effect.SPEED": "Geschwindigkeit",
     "effect.HEAL": "Instant heilung",
+    "effect.NIGHT_VISION": "Nachtsicht",
 
     "--- LANGUAGE ---": "",
     "404": "Die Übersetzung wurde nicht gefunden!",
@@ -58,6 +65,9 @@
     "shop-buy": "Items kaufen",
     "shop-discount": "Es gibt momentan einen Bonus / Rabatt!",
     "btn-close-menu": "Menü schließen",
-    "price": "Preis"
+    "price": "Preis",
+    "menu-not-closable": "Du kannst dieses Menü nicht schließen.",
+    "menu-previous-page": "Vorherige Seite (%PAGE%)",
+    "menu-next-page": "Nächste Seite (%PAGE%)"
   }
 }

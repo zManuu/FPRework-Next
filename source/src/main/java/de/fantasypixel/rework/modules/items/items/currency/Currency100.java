@@ -14,11 +14,6 @@ public class Currency100 extends CurrencyItem {
     }
 
     @Override
-    public String getName() {
-        return "Currency 100";
-    }
-
-    @Override
     public Material getMaterial() {
         return Material.EMERALD_BLOCK;
     }

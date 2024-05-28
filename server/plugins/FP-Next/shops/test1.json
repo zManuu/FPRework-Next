@@ -9,27 +9,121 @@
     "pitch": 4.1503754,
     "yaw": 3.9020715
   },
-  "sellItems": [
-    {
-      "isCustomPrice": false,
-      "itemIdentifier": "APPLE"
-    }
-  ],
+  "sellItems": [],
   "buyItems": [
     {
       "isCustomPrice": true,
       "isDiscount": true,
       "price": 10,
-      "itemIdentifier": "TEST_SWORD"
+      "itemIdentifier": "STONE_AXE"
     },
     {
       "isCustomPrice": false,
-      "itemIdentifier": "TEST_AXE"
+      "itemIdentifier": "IRON_AXE"
     },
     {
-      "isCustomPrice": true,
-      "price": 10,
+      "isCustomPrice": false,
+      "itemIdentifier": "STONE_SWORD"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "IRON_SWORD"
+    },
+    {
+      "isCustomPrice": false,
       "itemIdentifier": "SPEED_POTION"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "NIGHT_VISION_POTION"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "HEALTH_POTION"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "APPLE"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "BAKED_POTATO"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "BREAD"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "CARROT"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
+    },
+    {
+      "isCustomPrice": false,
+      "itemIdentifier": "STEAK"
     }
   ]
 }

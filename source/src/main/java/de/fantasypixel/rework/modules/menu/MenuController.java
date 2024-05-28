@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Controller
@@ -29,9 +30,9 @@ public class MenuController implements Listener {
         event.setResult(Event.Result.DENY);
 
         Menu menu = this.menuService.getOpenedMenu(player);
-        MenuItem menuItem = menu.getItems()
+        MenuItem menuItem = menu.getAllItems()
                 .stream()
-                .filter(e -> e.getSlot() == event.getSlot())
+                .filter(e -> Objects.equals(e.getSlot(), event.getSlot()))
                 .findFirst()
                 .orElse(null);
 
