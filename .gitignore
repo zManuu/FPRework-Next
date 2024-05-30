@@ -7,7 +7,7 @@ crash-reports/
 server/Ephesus/
 server/plugins/
 !server/plugins/FP-Next
-server/spigot-1.19.2.jar
+server/spigot-1.19.4.jar
 server/bundler/
 
 # Source
