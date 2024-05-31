@@ -18,6 +18,8 @@ import de.fantasypixel.rework.modules.menu.design.MenuDesign;
 import de.fantasypixel.rework.modules.menu.design.SimpleMenuDesign;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
+import de.fantasypixel.rework.modules.npc.NpcService;
+import de.fantasypixel.rework.modules.npc.npcs.Villager;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.Material;
@@ -39,6 +41,7 @@ public class ShopService {
     @Service private ItemService itemService;
     @Service private NotificationService notificationService;
     @Service private AccountService accountService;
+    @Service private NpcService npcService;
     @Auto private FPLogger logger;
 
     /**
@@ -48,11 +51,25 @@ public class ShopService {
      * @return the id of the created shop
      * @throws NullPointerException if the shop could not be created
      */
-    public int createShop(@Nonnull JsonPosition jsonPosition, @Nullable String name) throws NullPointerException {
+    public int createShop(@Nonnull JsonPosition jsonPosition, @Nullable String name, @Nullable String professionName) throws NullPointerException {
+        org.bukkit.entity.Villager.Profession profession;
+
+        try {
+            profession = org.bukkit.entity.Villager.Profession.valueOf(
+                    professionName != null
+                        ? professionName
+                        : org.bukkit.entity.Villager.Profession.NONE.name()
+            );
+        } catch (IllegalArgumentException ex) {
+            this.logger.warning("Someone tried to create a shop with non-existent villager profession {0}.", professionName);
+            throw new NullPointerException("Invalid professionName.");
+        }
+
         var shop = new Shop(
                 null,
                 name,
                 jsonPosition,
+                profession,
                 Collections.emptySet(),
                 Collections.emptySet()
         );
@@ -93,6 +110,8 @@ public class ShopService {
      * @param shopMenuType the type of the shop menu (selecting, buy, sell)
      */
     public Menu buildShopMenu(@Nonnull Player player, @Nonnull PlayerCharacter playerCharacter, @Nonnull ShopMenuType shopMenuType, @Nonnull Shop shop) {
+        this.logger.debug("Building shop menu. Player: {0}, Shop-ID: {1}, Menu-Type: {2}", player.getName(), shop.getId(), shopMenuType);
+
         int playerCharacterId = playerCharacter.getId();
         Set<MenuItem> menuItems = new LinkedHashSet<>();
         Set<MenuItem> menuSpecialItems = new LinkedHashSet<>();
@@ -199,6 +218,8 @@ public class ShopService {
      * @param itemPrice the price
      */
     public void tryBuyItem(@Nonnull Player player, @Nonnull ShopMenuType shopMenuType, @Nonnull Item item, int itemPrice) {
+        this.logger.debug("Player {0} tries to {1} the item {2} for {3}.", player.getName(), shopMenuType, item.getIdentifier(), itemPrice);
+
         var itemIdentifier = item.getIdentifier();
         var accountId = this.accountService.getAccount(player.getUniqueId()).getId();
 
@@ -230,6 +251,28 @@ public class ShopService {
             this.itemService.removeItem(player, Currency1.IDENTIFIER, itemPrice);
             this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "shop-item-bought", Map.of("AMOUNT", 1, "ITEM", translatedItemName, "PRICE", itemPrice));
         }
+    }
+
+    /**
+     * Creates all NPCs for the shops.
+     */
+    public void createShopNPCs() {
+        this.logger.debug("Creating all shop NPCs...");
+
+        for (Shop shop : this.shops.getEntries()) {
+            var npcName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
+
+            var npc = new Villager(
+                    npcName,
+                    true,
+                    shop.getVillagerProfession(),
+                    new ShopNpcMetaData(shop.getId())
+            );
+
+            this.npcService.createNpc(npc, shop.getPosition().toLocation());
+        }
+
+        this.logger.debug("Successfully created all shop NPCs.");
     }
 
 }

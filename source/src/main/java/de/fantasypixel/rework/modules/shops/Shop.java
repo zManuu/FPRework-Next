@@ -5,6 +5,7 @@ import de.fantasypixel.rework.modules.items.Item;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.bukkit.entity.Villager;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -17,6 +18,7 @@ public class Shop {
     @Nullable private Integer id;
     @Nullable private String name;
     private JsonPosition position;
+    private Villager.Profession villagerProfession;
     private Set<ShopItem> sellItems;
     private Set<ShopItem> buyItems;
 

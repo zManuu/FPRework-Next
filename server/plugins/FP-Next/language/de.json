@@ -24,8 +24,11 @@
     "effect.HEAL": "Instant heilung",
     "effect.NIGHT_VISION": "Nachtsicht",
 
-    "--- LANGUAGE ---": "",
+    "--- ERROR CODES ---": "",
     "404": "Die Übersetzung wurde nicht gefunden!",
+    "500": "Es gab einen internen Fehler. Bitte kontaktiere den Support.",
+
+    "--- LANGUAGE ---": "",
     "welcome": "-----------------------------\nWillkommen auf dem Server, {0}!Du bist der {1}. Spieler.\n-----------------------------",
     "login-start": "Du wirst eingeloggt...",
     "login-success": "Du wurdest erfolgreich eingeloggt.",

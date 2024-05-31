@@ -4,6 +4,8 @@ import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.command.CommandManager;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.events.AfterReload;
+import de.fantasypixel.rework.framework.events.BeforeReload;
 import de.fantasypixel.rework.framework.events.OnDisable;
 import de.fantasypixel.rework.framework.events.OnEnable;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
@@ -23,6 +25,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.text.MessageFormat;
 import java.util.*;
@@ -45,7 +48,10 @@ public class ProviderManager {
     private final CommandManager commandManager;
     private final WebManager webManager;
     private final JsonDataManager jsonDataManager;
-    private final ReloadManager reloadManager;
+    private ReloadManager reloadManager;
+    private Map<Method, Object> beforeReloadHooks;
+    private Map<Method, Object> afterReloadHooks;
+    private final CitizensManager citizensManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -85,22 +91,14 @@ public class ProviderManager {
         this.plugin.getFpLogger().sectionEnd("Web");
 
         // reload
-        this.reloadManager = () -> {
-            this.plugin.getFpLogger().sectionStart("Reload");
+        this.plugin.getFpLogger().sectionStart("Reload-Manager");
+        this.initReloadManager();
+        this.initReloadHooks();
+        this.plugin.getFpLogger().sectionEnd("Reload-Manager");
 
-            // config
-            this.loadConfigs();
-            this.hookConfigs();
-
-            // json-data
-            this.loadJsonData();
-            this.hookJsonData();
-
-            // data-repos
-            this.dataProviders.values().forEach(DataRepoProvider::clearCache);
-
-            this.plugin.getFpLogger().sectionEnd("Reload");
-        };
+        // citizens
+        this.citizensManager = new CitizensManager(false, this.plugin.getFpLogger());
+        Bukkit.getPluginManager().registerEvents(this.citizensManager, this.plugin);
 
         // auto rigging
         this.plugin.getFpLogger().sectionStart("Auto-Rigging");
@@ -242,6 +240,72 @@ public class ProviderManager {
                 this.webManager.registerRoute(name, route, httpMethod, timeout, handler, controller);
             });
         });
+    }
+
+    /**
+     * Creates the reload-manager (with implementation).
+     */
+    private void initReloadManager() {
+        this.reloadManager = () -> {
+            this.plugin.getFpLogger().sectionStart("Reload");
+
+            // before
+            this.plugin.getFpLogger().debug("Executing {0} before-reload hooks...", this.beforeReloadHooks.size());
+            this.beforeReloadHooks.forEach((method, object) -> {
+                try {
+                    method.invoke(object);
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    this.plugin.getFpLogger().warning("There was an exception while executing a before-reload hook. Error following...");
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initReloadManager->before", ex);
+                }
+            });
+
+            // config
+            this.loadConfigs();
+            this.hookConfigs();
+
+            // json-data
+            this.loadJsonData();
+            this.hookJsonData();
+
+            // data-repos
+            this.dataProviders.values().forEach(DataRepoProvider::clearCache);
+
+            // after
+            this.plugin.getFpLogger().debug("Executing {0} after-reload hooks...", this.afterReloadHooks.size());
+            this.afterReloadHooks.forEach((method, object) -> {
+                try {
+                    method.invoke(object);
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    this.plugin.getFpLogger().warning("There was an exception while executing a after-reload hook. Error following...");
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initReloadManager->after", ex);
+                }
+            });
+
+            this.plugin.getFpLogger().sectionEnd("Reload");
+        };
+        this.plugin.getFpLogger().debug("Reload-Manager was created.");
+    }
+
+    /**
+     * Populates the maps {@link #beforeReloadHooks} and {@link #afterReloadHooks}.
+     */
+    private void initReloadHooks() {
+        this.plugin.getFpLogger().debug("Initializing reload hooks...");
+        this.beforeReloadHooks = new HashMap<>();
+        this.afterReloadHooks = new HashMap<>();
+
+        this.controllers.forEach(controller -> {
+            var controllerClass = controller.getClass();
+
+            var beforeReloadMethods = this.plugin.getFpUtils().getMethodsAnnotatedWith(BeforeReload.class, controllerClass);
+            beforeReloadMethods.forEach(beforeReloadMethod -> this.beforeReloadHooks.put(beforeReloadMethod, controller));
+
+            var afterReloadMethods = this.plugin.getFpUtils().getMethodsAnnotatedWith(AfterReload.class, controllerClass);
+            afterReloadMethods.forEach(afterReloadMethod -> this.afterReloadHooks.put(afterReloadMethod, controller));
+        });
+
+        this.plugin.getFpLogger().debug("Initialized {0} before- and {1} after-reload hooks.", this.beforeReloadHooks.size(), this.afterReloadHooks.size());
     }
 
     /**
@@ -457,8 +521,13 @@ public class ProviderManager {
 
     /**
      * Calls onEnable on all controllers, registers listeners & commands and starts the timers.
+     * <b>Note:</b> This method waits for the {@link net.citizensnpcs.api.event.CitizensEnableEvent} so that NPCs are available.
      */
     private void enableControllers() {
+        this.plugin.getFpLogger().debug("Enabling controllers, waiting for CitizensEnableEvent if necessary.");
+
+        while (!this.citizensManager.isEnabled()) {}
+
         this.controllers.forEach(controller -> {
             var controllerClass = controller.getClass();
 

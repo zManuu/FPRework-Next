@@ -51,6 +51,14 @@ public class ServerUtils {
     }
 
     /**
+     * Runs a task synchronously.
+     * @param task the given task to run
+     */
+    public void runTaskSynchronously(@Nonnull Runnable task) {
+        this.server.getScheduler().runTask(this.plugin, task);
+    }
+
+    /**
      * Calls the given event. If an error occurs, it is handled internally.
      */
     public void callEvent(@Nonnull Event event) {
