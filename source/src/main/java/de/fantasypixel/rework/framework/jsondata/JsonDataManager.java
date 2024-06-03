@@ -231,12 +231,12 @@ public class JsonDataManager {
                     var fileNameField = entry.getClass().getDeclaredField("name");
                     fileNameField.setAccessible(true);
                     var fileNameValue = (String) Objects.requireNonNull(fileNameField.get(entry));
-                    fileName = MessageFormat.format("{0}.json", fileNameValue.replaceAll(" ", "_"));
+                    fileName = fileNameValue.replaceAll(" ", "_") + ".json";
                 } catch (IllegalAccessException ex) {
                     plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->create", ex);
                     return false;
                 } catch (NoSuchFieldException | NullPointerException ex) {
-                    fileName = MessageFormat.format("{0}.json", entryId);
+                    fileName = entryId + ".json";
                 }
 
                 // set id

@@ -34,12 +34,12 @@ public class ShopController implements Listener {
 
     @Command(name = "shop")
     public void onShopCommand(Player player, String[] args) {
-        if ((args.length == 2 || args.length == 3 || args.length == 4) && args[0].equalsIgnoreCase("create")) {
+        if ((args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("create")) {
 
             // create shop
             JsonPosition jsonPosition = new JsonPosition(player.getLocation());
-            String shopName = args.length == 3 ? args[2] : null;
-            String professionName = args.length == 4 ? args[3] : null;
+            String shopName = args.length == 2 ? args[1] : null;
+            String professionName = args.length == 3 ? args[2] : null;
             int shopId;
 
             try {
