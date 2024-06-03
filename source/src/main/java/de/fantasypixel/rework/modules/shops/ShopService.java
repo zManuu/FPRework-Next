@@ -45,7 +45,7 @@ public class ShopService {
     @Auto private FPLogger logger;
 
     /**
-     * Creates a shop.
+     * Creates a shop & spawns the NPC.
      * @param jsonPosition the position of the shop
      * @param name the name of the shop (can be null)
      * @return the id of the created shop
@@ -74,8 +74,13 @@ public class ShopService {
                 Collections.emptySet()
         );
 
-        if (this.shops.create(shop))
-            return Objects.requireNonNull(shop.getId());
+        if (this.shops.create(shop)) {
+            var shopId = Objects.requireNonNull(shop.getId());
+
+            this.createShopNPC(shop);
+
+            return shopId;
+        }
         else
             throw new NullPointerException("Couldn't create shop!");
     }
@@ -271,29 +276,35 @@ public class ShopService {
     }
 
     /**
+     * Creates a single shop-npc.
+     */
+    public void createShopNPC(Shop shop) {
+        this.logger.debug("Creating Shop-NPC of shop {0}.", shop.getId());
+
+        var npcHologram = new ArrayList<String>();
+        var shopName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
+
+        if (this.hasShopDiscount(shop))
+            npcHologram.add("DISCOUNT !!!");
+
+        var npc = new Villager(
+                shopName,
+                true,
+                shop.getVillagerProfession(),
+                npcHologram,
+                new ShopNpcMetaData(shop.getId())
+        );
+
+        this.npcService.createNpc(npc, shop.getPosition().toLocation());
+        this.logger.debug("Created Shop-NPC of shop {0}.", shop.getId());
+    }
+
+    /**
      * Creates all NPCs for the shops.
      */
     public void createShopNPCs() {
         this.logger.debug("Creating all shop NPCs...");
-
-        for (Shop shop : this.shops.getEntries()) {
-            var npcHologram = new ArrayList<String>();
-            var shopName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
-
-            if (this.hasShopDiscount(shop))
-                npcHologram.add("DISCOUNT !!!");
-
-            var npc = new Villager(
-                    shopName,
-                    true,
-                    shop.getVillagerProfession(),
-                    npcHologram,
-                    new ShopNpcMetaData(shop.getId())
-            );
-
-            this.npcService.createNpc(npc, shop.getPosition().toLocation());
-        }
-
+        this.shops.getEntries().forEach(this::createShopNPC);
         this.logger.debug("Successfully created all shop NPCs.");
     }
 
