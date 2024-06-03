@@ -254,18 +254,40 @@ public class ShopService {
     }
 
     /**
+     * Checks if the given shop currently has any discounts.
+     */
+    public boolean hasShopDiscount(@Nonnull Shop shop) {
+        for (Shop.ShopItem sellItem : shop.getSellItems()) {
+            if (Boolean.TRUE.equals(sellItem.getIsDiscount()))
+                return true;
+        }
+
+        for (Shop.ShopItem buyItem : shop.getBuyItems()) {
+            if (Boolean.TRUE.equals(buyItem.getIsDiscount()))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Creates all NPCs for the shops.
      */
     public void createShopNPCs() {
         this.logger.debug("Creating all shop NPCs...");
 
         for (Shop shop : this.shops.getEntries()) {
-            var npcName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
+            var npcHologram = new ArrayList<String>();
+            var shopName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
+
+            if (this.hasShopDiscount(shop))
+                npcHologram.add("DISCOUNT !!!");
 
             var npc = new Villager(
-                    npcName,
+                    shopName,
                     true,
                     shop.getVillagerProfession(),
+                    npcHologram,
                     new ShopNpcMetaData(shop.getId())
             );
 

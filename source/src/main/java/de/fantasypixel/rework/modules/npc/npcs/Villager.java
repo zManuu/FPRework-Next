@@ -6,6 +6,8 @@ import lombok.Getter;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager.Profession;
 
+import java.util.ArrayList;
+
 @Getter
 @AllArgsConstructor
 public class Villager extends Npc {
@@ -13,6 +15,11 @@ public class Villager extends Npc {
     private final String name;
     private final boolean passive;
     private final Profession profession;
+
+    /**
+     * The hologram lines (in addition to the name that is always at the bottom).
+     */
+    private final ArrayList<String> hologramLines;
     private final Object metaData;
 
     @Override
