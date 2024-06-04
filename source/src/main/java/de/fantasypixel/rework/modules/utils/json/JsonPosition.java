@@ -36,7 +36,7 @@ public class JsonPosition {
         return new Location(
                 Bukkit.getWorld(this.world),
                 this.x, this.y, this.z,
-                this.pitch, this.yaw
+                this.yaw, this.pitch
         );
     }
 
