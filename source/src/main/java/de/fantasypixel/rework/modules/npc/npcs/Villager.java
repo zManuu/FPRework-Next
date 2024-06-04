@@ -14,6 +14,11 @@ public class Villager extends Npc {
 
     private final String name;
     private final boolean passive;
+
+    /**
+     * The profession of the villager.
+     * @see <a href="https://minecraft.fandom.com/wiki/Villager#Professions">List of professions</a>
+     */
     private final Profession profession;
 
     /**

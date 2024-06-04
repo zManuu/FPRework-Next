@@ -91,6 +91,8 @@ public class SavePointService {
     }
 
     public void unlockSavePoint(int characterId, int savePointId) {
+        this.logger.info("Unlocking save point {0} for character {1}", savePointId, characterId);
+
         this.dataRepo.insert(
                 new UnlockedSavePoint(null, characterId, savePointId)
         );
@@ -132,6 +134,25 @@ public class SavePointService {
                             .toArray(String[]::new)
                     )
                 : "Non found.";
+    }
+
+    /**
+     * Unlocks all save-points for the given character.
+     */
+    public void unlockAllSavePoints(int characterId) {
+        this.logger.info("Unlocking all save-points for character {0}.", characterId);
+
+        var allSavePointIds = this.savePoints.getEntries()
+                .stream()
+                .map(SavePoint::getId)
+                .collect(Collectors.toSet());
+
+        allSavePointIds.forEach(savePointId -> {
+            if (!this.isSavePointUnlocked(characterId, savePointId))
+                this.unlockSavePoint(characterId, savePointId);
+            else
+                System.out.println("Already unlocked: " + savePointId);
+        });
     }
 
 }

@@ -137,6 +137,21 @@ public class SavePointController {
                 this.notificationService.sendChatMessage(NotificationType.ERROR, player, "savepoint-create-error");
             }
 
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("unlockall")) {
+
+            // unlock all
+            int playerCharacterId;
+
+            try {
+                playerCharacterId = Objects.requireNonNull(this.characterService.getPlayerCharacter(player).getId());
+            } catch (NullPointerException ex) {
+                this.notificationService.sendChatMessage(NotificationType.ERROR, player, "500");
+                return;
+            }
+
+            this.savePointService.unlockAllSavePoints(playerCharacterId);
+            this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-all-unlocked");
+
         }
 
     }

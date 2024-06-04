@@ -46,6 +46,7 @@
     "savepoint-create-success": "The save-point was created successfully.",
     "savepoint-create-error": "The save-point couldn't be created! Please contact the administrator or check the logs if possible.",
     "savepoint-distance": "Distance: {0} blocks",
+    "savepoint-all-unlocked": "You have unlocked all save-points.",
     "unknown-item-identifier": "No item was found with the identifier {0}.",
     "invalid-amount": "Your given amount is invalid (input a number!)",
     "item-given": "You have received the item.",

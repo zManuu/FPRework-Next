@@ -46,6 +46,7 @@
     "savepoint-create-success": "Der Save-Point wurde erfolgreich erstellt.",
     "savepoint-create-error": "Der Save-Point konnte nicht erstellt werden! Bitte wende dich an den Support oder überprüfe die Logs.",
     "savepoint-distance": "Distanz: {0} Blöcke",
+    "savepoint-all-unlocked": "Du hast alle Save-Points freigeschaltet.",
     "unknown-item-identifier": "Es wurde kein Item mit dem identifier {0} gefunden.",
     "invalid-amount": "Der eingegebene Wert ist ungültig (es muss eine Zahl sein!)",
     "item-given": "Du hast das Item erhalten.",
