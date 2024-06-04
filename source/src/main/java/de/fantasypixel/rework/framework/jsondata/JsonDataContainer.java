@@ -29,7 +29,6 @@ public abstract class JsonDataContainer <T> {
 
     /**
      * Modifies an entry.
-     * <br><b>Note: The method is not implemented yet!</b>
      * @param entry the entry to modify
      * @return whether the entry could be modified
      */

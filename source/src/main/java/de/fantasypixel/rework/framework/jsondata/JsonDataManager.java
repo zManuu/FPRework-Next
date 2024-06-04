@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -273,8 +272,61 @@ public class JsonDataManager {
 
             @Override
             public boolean modify(T entry) {
-                plugin.getFpLogger().error(CLASS_NAME, "modify", "NOT IMPLEMENTED YET!");
-                return false;
+                int entryId;
+
+                try {
+                    var idField = clazz.getDeclaredField("id");
+                    idField.setAccessible(true);
+                    entryId = (Integer) idField.get(entry);
+                } catch (NoSuchFieldException | IllegalAccessException | ClassCastException ex) {
+                    plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->modify", ex);
+                    return false;
+                }
+
+                var fileAndData = findFileAndData(directory, clazz, entryId);
+
+                if (fileAndData == null)
+                    return false;
+
+                if (fileAndData.entries() != null) {
+
+                    // remove then add from file
+                    fileAndData.entries().removeIf(e -> {
+                        try {
+                            var idField = clazz.getDeclaredField("id");
+                            idField.setAccessible(true);
+                            return Objects.equals(idField.get(e), entryId);
+                        } catch (IllegalAccessException | NoSuchFieldException ex) {
+                            plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->modify", ex);
+                            return false;
+                        }
+                    });
+                    fileAndData.entries().add(entry);
+
+                    var newFileJson = plugin.getGson().toJson(fileAndData.entries());
+                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file()))) {
+                        writer.write(newFileJson);
+                        plugin.getFpLogger().debug("Update json-data entry {0} in file {1}.", entryId, fileAndData.file().getPath());
+                        return true;
+                    } catch (IOException ex) {
+                        plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->modify(multiple-file)", ex);
+                        return false;
+                    }
+
+                } else {
+
+                    // update file as singular
+                    var newFileJson = plugin.getGson().toJson(entry);
+                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file()))) {
+                        writer.write(newFileJson);
+                        plugin.getFpLogger().debug("Update json-data entry {0} in file {1}.", entryId, fileAndData.file().getPath());
+                        return true;
+                    } catch (IOException ex) {
+                        plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->modify(single-file)", ex);
+                        return false;
+                    }
+
+                }
             }
 
             @Override
