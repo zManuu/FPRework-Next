@@ -14,7 +14,6 @@ import java.util.Map;
 
 /**
  * A service that manages all notifications send to players like chat-messages, boos-titles or action-bar.
- * Note: This service is the only one that communicates with a {@link org.bukkit.entity.Player} object.
  * <br><br>
  * <b>Color-Codes:</b>
  * <table>

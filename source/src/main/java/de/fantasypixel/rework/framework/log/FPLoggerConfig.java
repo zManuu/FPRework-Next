@@ -9,6 +9,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class FPLoggerConfig {
 
+    private FPLogger.LogLevel logLevel;
     private int sectionIndentation;
     private boolean allGroups;
     private Map<String, Boolean> groups;

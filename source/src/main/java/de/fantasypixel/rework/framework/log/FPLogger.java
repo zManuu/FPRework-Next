@@ -1,9 +1,9 @@
 package de.fantasypixel.rework.framework.log;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
-import de.fantasypixel.rework.FPRework;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
@@ -15,15 +15,28 @@ import java.util.Collections;
 /**
  * A logger that supports more log levels than the spigot logger.
  * Under the hood, everything is logged to the INFO level.
- * The formats are hardcoded because the config also relies on the logger.
  */
 // todo: as there is a logging.json now, the formats should also be configurable.
 public class FPLogger {
 
-    public enum LogLevel { ERROR, WARNING, INFO, ENTERING, EXITING, DEBUG }
+    @Getter
+    @AllArgsConstructor
+    public enum LogLevel {
+
+        ERROR(400),
+        WARNING(300),
+        INFO(200),
+        DEBUG(100),
+        ENTERING(50),
+        EXITING(50),
+        TRACE(10);
+
+        private final int value;
+
+    }
 
     private final PrintStream printStream;
-    private FPLoggerConfig config = new FPLoggerConfig(25, false, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
+    private FPLoggerConfig config = new FPLoggerConfig(LogLevel.DEBUG, 25, false, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
 
     /**
      * Constructs a logger. Gson is used to load the configuration from plugins/FP-Next/config/logging.json (if a plugin is passed).
@@ -37,10 +50,11 @@ public class FPLogger {
             try (
                     var configResource = new FileInputStream(configFile)
             ) {
-
                 var configReader = new InputStreamReader(configResource);
                 this.config = gson.fromJson(configReader, FPLoggerConfig.class);
                 configReader.close();
+
+                this.info("Initialized FPLogger with level {0}.", this.config.getLogLevel().name());
             } catch (FileNotFoundException ex) {
                 this.warning("Couldn't load logging.json (doesn't exist). Using fallback configuration.");
             } catch (JsonParseException | IOException ex) {
@@ -50,6 +64,13 @@ public class FPLogger {
             this.info("Using fallback configuration for logger (test environment).");
         }
 
+    }
+
+    /**
+     * Checks if the specified log level is active based on {@link LogLevel#value}.
+     */
+    private boolean isLogLevelActive(LogLevel logLevel) {
+        return logLevel.getValue() >= this.config.getLogLevel().getValue();
     }
 
     private boolean isGroupActive(String group) {
@@ -192,6 +213,9 @@ public class FPLogger {
     }
 
     private void resolve(@Nonnull LogLevel level, @Nonnull String message) {
+        if (!this.isLogLevelActive(level))
+            return;
+
         this.printStream.println(
                 "LEVEL | MESSAGE"
                     .replace("LEVEL", level.name())
