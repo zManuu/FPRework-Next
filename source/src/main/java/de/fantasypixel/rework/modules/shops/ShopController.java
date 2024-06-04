@@ -38,7 +38,7 @@ public class ShopController implements Listener {
 
             // create shop
             JsonPosition jsonPosition = new JsonPosition(player.getLocation());
-            String shopName = args.length == 2 ? args[1] : null;
+            String shopName = args[1];
             String professionName = args.length == 3 ? args[2] : null;
             int shopId;
 
