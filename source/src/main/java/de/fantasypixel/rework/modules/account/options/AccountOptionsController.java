@@ -6,6 +6,8 @@ import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.modules.account.AccountService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
 import org.bukkit.entity.Player;
 
 @Controller
@@ -14,6 +16,7 @@ public class AccountOptionsController {
     @Service private AccountOptionsService accountOptionsService;
     @Service private AccountService accountService;
     @Service private NotificationService notificationService;
+    @Service private SoundService soundService;
 
     @Command(name = "options", aliases = {"settings", "account"})
     public void optionsCommand(Player player, String[] args) {
@@ -34,22 +37,28 @@ public class AccountOptionsController {
 
                 if (!updateSuccess) {
                     this.notificationService.sendChatMessage(NotificationType.ERROR, player, "options-update-error");
+                    this.soundService.playSound(player, Sound.ERROR);
                     throw new IllegalArgumentException("Options couldn't be updated properly.");
-                } else
+                } else {
                     this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "options-update-success");
+                    this.soundService.playSound(player, Sound.SUCCESS);
+                }
 
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage() == null) {
                     // invalid option
                     this.notificationService.sendChatMessage(NotificationType.WARNING, player, "options-invalid-option", this.accountOptionsService.getOptionDefinitionsText());
+                    this.soundService.playSound(player, Sound.WARNING);
                 } else {
                     // invalid value
                     this.notificationService.sendChatMessage(NotificationType.WARNING, player, "options-invalid-value", ex.getMessage());
+                    this.soundService.playSound(player, Sound.WARNING);
                 }
             }
 
         } else {
             this.notificationService.sendChatMessage(NotificationType.WARNING, player, "options-invalid-syntax");
+            this.soundService.playSound(player, Sound.WARNING);
         }
     }
 

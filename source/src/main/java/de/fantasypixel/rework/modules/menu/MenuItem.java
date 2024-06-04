@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.menu;
 
+import de.fantasypixel.rework.modules.sound.Sound;
 import lombok.*;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -26,6 +27,11 @@ public class MenuItem {
     private Runnable onSelect;
     @Nullable private ItemStack importedItemStack;
     private boolean disposable;
+
+    /**
+     * The sound to be played when the item is clicked.
+     */
+    @Nullable private Sound clickSound;
 
     /**
      * A menu that is opened by clicking this item. For example, back-buttons, page, ... or real sub-menus

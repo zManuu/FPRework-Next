@@ -21,6 +21,8 @@ import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.npc.NpcService;
 import de.fantasypixel.rework.modules.npc.npcs.Villager;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -42,6 +44,7 @@ public class ShopService {
     @Service private NotificationService notificationService;
     @Service private AccountService accountService;
     @Service private NpcService npcService;
+    @Service private SoundService soundService;
     @Auto private FPLogger logger;
 
     /**
@@ -232,6 +235,7 @@ public class ShopService {
             var hasSellItems = this.itemService.hasItemAmount(player, itemIdentifier, 1);
             if (!hasSellItems) {
                 this.notificationService.sendChatMessage(NotificationType.WARNING, player, "shop-insufficient-funds");
+                this.soundService.playSound(player, Sound.DENIED);
                 return;
             }
 
@@ -241,6 +245,7 @@ public class ShopService {
                         this.itemService.giveItem(player, currencyItem, null, itemPrice);
                         this.itemService.removeItem(player, itemIdentifier, 1);
                         this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "shop-item-sold", Map.of("AMOUNT", 1, "ITEM", translatedItemName, "PRICE", itemPrice));
+                        this.soundService.playSound(player, Sound.SHOP_SELL);
                     },
                     () -> this.logger.error(CLASS_NAME, "tryBuyItem->sell", "Couldn't determine currency-item!!")
             );
@@ -248,6 +253,7 @@ public class ShopService {
             var hasFunds = this.itemService.hasItemAmount(player, Currency1.IDENTIFIER, itemPrice);
             if (!hasFunds) {
                 this.notificationService.sendChatMessage(NotificationType.WARNING, player, "shop-insufficient-funds");
+                this.soundService.playSound(player, Sound.DENIED);
                 return;
             }
 
@@ -255,6 +261,7 @@ public class ShopService {
             this.itemService.giveItem(player, item, null, 1);
             this.itemService.removeItem(player, Currency1.IDENTIFIER, itemPrice);
             this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "shop-item-bought", Map.of("AMOUNT", 1, "ITEM", translatedItemName, "PRICE", itemPrice));
+            this.soundService.playSound(player, Sound.SHOP_BUY);
         }
     }
 

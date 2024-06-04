@@ -7,6 +7,8 @@ import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
 import de.fantasypixel.rework.modules.utils.ServerUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -23,6 +25,7 @@ public class MenuService {
     @Service private ServerUtils serverUtils;
     @Service private LanguageService languageService;
     @Service private NotificationService notificationService;
+    @Service private SoundService soundService;
     private final Map<Player, Menu> openedMenus;
     private final Map<Player, Boolean> menuClosedManually;
 
@@ -108,7 +111,10 @@ public class MenuService {
 
             } else {
 
-                // close-menu and on-select are not available for items with a registered sub-menu
+                // click-sound, close-menu and on-select are not available for items with a registered sub-menu
+                if (item.getClickSound() != null)
+                    this.soundService.playSound(player, item.getClickSound());
+
                 if (item.isClosesMenu())
                     this.closeMenu(player);
 
@@ -126,6 +132,7 @@ public class MenuService {
             this.menuClosedManually.remove(player);
 
             this.notificationService.sendChatMessage(NotificationType.WARNING, player, "menu-not-closable");
+            this.soundService.playSound(player, Sound.DENIED);
 
             this.serverUtils.runTaskLater(() -> player.openInventory(menu.toInventory(this.languageService, player)), 1);
             return;

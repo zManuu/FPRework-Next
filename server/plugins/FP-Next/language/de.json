@@ -77,6 +77,8 @@
     "menu-previous-page": "Vorherige Seite",
     "menu-next-page": "Nächste Seite",
     "admin-reload-start": "Der server-reload wurde gestartet.",
-    "admin-reload-end": "Der server-reload wurde beended. "
+    "admin-reload-end": "Der server-reload wurde beended.",
+    "admin-sound": "Der Sound wird wiedergegeben.",
+    "admin-sound-invalid": "Der Sound name / category wurde nicht gefunden."
   }
 }

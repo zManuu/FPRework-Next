@@ -12,6 +12,8 @@ import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,6 +32,7 @@ public class ItemsController implements Listener {
     @Service private ItemService itemService;
     @Service private PlayerCharacterService playerCharacterService;
     @Service private NotificationService notificationService;
+    @Service private SoundService soundService;
     @Auto private FPLogger logger;
 
     @EventHandler
@@ -137,6 +140,7 @@ public class ItemsController implements Listener {
 
             this.itemService.giveItem(player, item, null, itemAmount);
             this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "item-given");
+            this.soundService.playSound(player, Sound.SUCCESS);
         }
     }
 

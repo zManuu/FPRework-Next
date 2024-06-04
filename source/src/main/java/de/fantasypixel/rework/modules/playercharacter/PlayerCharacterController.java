@@ -15,6 +15,8 @@ import de.fantasypixel.rework.modules.menu.design.MenuDesign;
 import de.fantasypixel.rework.modules.menu.design.SimpleMenuDesign;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +34,7 @@ public class PlayerCharacterController implements Listener {
     @Service private PlayerCharacterService playerCharacterService;
     @Service private MenuService menuService;
     @Service private NotificationService notificationService;
+    @Service private SoundService soundService;
 
     @EventHandler
     public void onAccountLogin(AccountLoginEvent event) {
@@ -91,6 +94,7 @@ public class PlayerCharacterController implements Listener {
         player.teleport(playerCharacter.getLocation());
         player.setFoodLevel(playerCharacter.getFoodLevel());
         this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "login-success");
+        this.soundService.playSound(player, Sound.SUCCESS);
     }
 
     @Timer(interval = 100, type = TimerManager.TimerType.ASYNC)

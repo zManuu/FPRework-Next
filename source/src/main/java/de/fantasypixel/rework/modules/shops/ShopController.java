@@ -13,6 +13,8 @@ import de.fantasypixel.rework.modules.npc.Npc;
 import de.fantasypixel.rework.modules.npc.NpcService;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacterService;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -31,6 +33,7 @@ public class ShopController implements Listener {
     @Service private PlayerCharacterService playerCharacterService;
     @Service private NpcService npcService;
     @Service private MenuService menuService;
+    @Service private SoundService soundService;
 
     @Command(name = "shop")
     public void onShopCommand(Player player, String[] args) {
@@ -46,13 +49,16 @@ public class ShopController implements Listener {
                 shopId = this.shopService.createShop(jsonPosition, shopName, professionName);
             } catch (IllegalArgumentException ex) {
                 this.notificationService.sendChatMessage(NotificationType.WARNING, player, "unknown-shop-type");
+                this.soundService.playSound(player, Sound.WARNING);
                 return;
             } catch (NullPointerException ex) {
                 this.notificationService.sendChatMessage(NotificationType.ERROR, player, "shop-create-error");
+                this.soundService.playSound(player, Sound.ERROR);
                 return;
             }
 
             this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "shop-create-success", Map.of("SHOP_ID", shopId));
+            this.soundService.playSound(player, Sound.SUCCESS);
 
         } else if (args.length == 2 && args[0].equalsIgnoreCase("open")) {
 
@@ -67,9 +73,11 @@ public class ShopController implements Listener {
                 shop = this.shopService.getById(shopId);
             } catch (NumberFormatException ex) {
                 this.notificationService.sendChatMessage(NotificationType.WARNING, player, "invalid-amount");
+                this.soundService.playSound(player, Sound.WARNING);
                 return;
             } catch (IllegalArgumentException ex) {
                 this.notificationService.sendChatMessage(NotificationType.WARNING, player, "unknown-shop");
+                this.soundService.playSound(player, Sound.WARNING);
                 return;
             }
 
@@ -102,6 +110,7 @@ public class ShopController implements Listener {
             playerCharacter = this.playerCharacterService.getPlayerCharacter(player);
         } catch (IllegalArgumentException | NullPointerException ex) {
             this.notificationService.sendChatMessage(player, "500");
+            this.soundService.playSound(player, Sound.ERROR);
             throw new IllegalStateException(ex);
         }
 

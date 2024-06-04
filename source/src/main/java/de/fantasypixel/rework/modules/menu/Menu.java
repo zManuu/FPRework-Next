@@ -2,6 +2,7 @@ package de.fantasypixel.rework.modules.menu;
 
 import de.fantasypixel.rework.modules.language.LanguageService;
 import de.fantasypixel.rework.modules.menu.design.*;
+import de.fantasypixel.rework.modules.sound.Sound;
 import lombok.Builder;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -110,7 +111,7 @@ public class Menu {
             );
 
         // pass item-counts to design
-        if (this.design instanceof SimpleMenuDesign simpleMenuDesign) {
+        if (this.getDesign() instanceof SimpleMenuDesign simpleMenuDesign) {
             var itemCount = this.items.size();
             var specialItemCount = this.specialItems.size();
 
@@ -139,6 +140,7 @@ public class Menu {
                                 .material(Material.ARROW)
                                 .displayName("§8" + languageService.getTranslation(player, "menu-previous-page") + " (" + (previousPageIndex + 1) + ")")
                                 .disposable(true)
+                                .clickSound(Sound.PAGE)
                                 .build()
                 );
             } else {
@@ -147,6 +149,7 @@ public class Menu {
                                 .material(Material.ARROW)
                                 .displayName("§8§m" + languageService.getTranslation(player, "menu-previous-page"))
                                 .disposable(true)
+                                .clickSound(Sound.DENIED)
                                 .build()
                 );
             }
@@ -159,6 +162,7 @@ public class Menu {
                                 .material(Material.ARROW)
                                 .displayName("§8" + languageService.getTranslation(player, "menu-next-page") + " (" + (nextPageIndex + 1) + ")")
                                 .disposable(true)
+                                .clickSound(Sound.PAGE)
                                 .build()
                 );
             } else {
@@ -167,6 +171,7 @@ public class Menu {
                                 .material(Material.ARROW)
                                 .displayName("§8§m" + languageService.getTranslation(player, "menu-next-page"))
                                 .disposable(true)
+                                .clickSound(Sound.DENIED)
                                 .build()
                 );
             }
