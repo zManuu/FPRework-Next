@@ -150,9 +150,50 @@ public class SavePointService {
         allSavePointIds.forEach(savePointId -> {
             if (!this.isSavePointUnlocked(characterId, savePointId))
                 this.unlockSavePoint(characterId, savePointId);
-            else
-                System.out.println("Already unlocked: " + savePointId);
+            // else
+            //     System.out.println("Already unlocked: " + savePointId);
         });
+    }
+
+    /**
+     * Repositions a save-point.
+     * @param savePointId the save point to be moved
+     * @param location the new location of the save point
+     * @return whether the update was successful
+     * @throws IllegalArgumentException if no savepoint was found with the given ID
+     */
+    public boolean repositionSavePoint(int savePointId, @Nonnull Location location) throws IllegalArgumentException {
+        var newPosition = new JsonPosition(location);
+        var savePoint = this.savePoints.getEntries()
+                .stream()
+                .filter(e -> Objects.equals(e.getId(), savePointId))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+
+        this.logger.info("Repositioning save-point {0} to {1}.", savePoint.getName(), location);
+
+        savePoint.setPosition(newPosition);
+        return this.savePoints.modify(savePoint);
+    }
+
+    /**
+     * Renames a save-point.
+     * @param savePointId the save point to be renamed
+     * @param name the new name of the save point
+     * @return whether the update was successful
+     * @throws IllegalArgumentException if no save point was found with the given ID
+     */
+    public boolean renameSavePoint(int savePointId, @Nonnull String name) throws IllegalArgumentException {
+        var savePoint = this.savePoints.getEntries()
+                .stream()
+                .filter(e -> Objects.equals(e.getId(), savePointId))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+
+        this.logger.info("Renaming save-point {0} to \"{1}\".", savePointId, name);
+
+        savePoint.setName(name);
+        return this.savePoints.modify(savePoint);
     }
 
 }

@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
  */
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class JsonPosition {

@@ -71,8 +71,8 @@ public class SavePointController {
                     unlockedSavePoints.stream()
                             .map(savePoint -> MenuItem.builder()
                                     .closesMenu(true)
-                                    .displayName(savePoint.getName())
-                                    .lore(List.of(this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
+                                    .displayName("§b§l" + savePoint.getName())
+                                    .lore(List.of("§8➥ §7" + this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
                                     .material(Material.getMaterial(savePoint.getIconMaterial()))
                                     .onSelect(() -> player.teleport(savePoint.getPosition().toLocation()))
                                     .build())
@@ -83,8 +83,8 @@ public class SavePointController {
                     lockedSavePoints.stream()
                             .map(savePoint -> MenuItem.builder()
                                     .closesMenu(false)
-                                    .displayName(savePoint.getName())
-                                    .lore(List.of(this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
+                                    .displayName("§b§m" + savePoint.getName())
+                                    .lore(List.of("§8➥ §7" + this.languageService.getTranslation(account.getId(), "savepoint-distance", Math.round(savePoint.getPosition().toLocation().distance(player.getLocation())))))
                                     .material(Material.GRAY_DYE)
                                     .build())
                             .collect(Collectors.toSet())
@@ -106,7 +106,7 @@ public class SavePointController {
             try {
                 savePointId = Integer.parseInt(args[1]);
             } catch (NumberFormatException ex) {
-                this.notificationService.sendChatMessage(NotificationType.WARNING, player, "savepoint-delete-expected-number");
+                this.notificationService.sendChatMessage(NotificationType.WARNING, player, "expected-number");
                 return;
             }
             if (this.savePointService.deleteSavePoint(savePointId)) {
@@ -151,6 +151,47 @@ public class SavePointController {
 
             this.savePointService.unlockAllSavePoints(playerCharacterId);
             this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-all-unlocked");
+
+        } else if ((args.length == 3 || args.length == 4) && args[0].equalsIgnoreCase("edit")) {
+
+            int savePointId;
+
+            try {
+                savePointId = Integer.parseInt(args[1]);
+            } catch (NullPointerException ex) {
+                this.notificationService.sendChatMessage(NotificationType.WARNING, player, "expected-number");
+                return;
+            }
+
+            if (args[2].equalsIgnoreCase("position")) {
+
+                // reposition the save-point
+                try {
+                    var success = this.savePointService.repositionSavePoint(savePointId, player.getLocation());
+
+                    if (success)
+                        this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-repositioned");
+                    else
+                        this.notificationService.sendChatMessage(NotificationType.ERROR, player, "500");
+                } catch (IllegalArgumentException ex) {
+                    this.notificationService.sendChatMessage(NotificationType.WARNING, player, "savepoint-unknown");
+                }
+
+            } else if (args.length == 4 && args[2].equalsIgnoreCase("name")) {
+
+                // rename the save-point
+                try {
+                    var success = this.savePointService.renameSavePoint(savePointId, args[3].replaceAll("_", " "));
+
+                    if (success)
+                        this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-renamed");
+                    else
+                        this.notificationService.sendChatMessage(NotificationType.ERROR, player, "500");
+                } catch (IllegalArgumentException ex) {
+                    this.notificationService.sendChatMessage(NotificationType.WARNING, player, "savepoint-unknown");
+                }
+
+            }
 
         }
 
