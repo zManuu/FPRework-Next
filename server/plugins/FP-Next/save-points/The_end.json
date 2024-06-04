@@ -1,12 +1,13 @@
 {
   "id": 809991,
-  "name": "The end",
+  "name": "The End",
   "iconMaterial": "BEACON",
   "position": {
     "world": "Ephesus",
     "x": 345.4840320194414,
     "y": 86.5,
     "z": 1507.5454134677686,
-    "pitch": 90.0
+    "pitch": 7.200012,
+    "yaw": 86.24995
   }
 }
