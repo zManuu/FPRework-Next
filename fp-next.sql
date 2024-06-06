@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 05. Mai 2024 um 21:27
+-- Erstellungszeit: 06. Jun 2024 um 19:44
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -30,7 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `account-options` (
   `id` int(11) NOT NULL,
   `accountId` int(11) NOT NULL,
-  `languageKey` varchar(3) NOT NULL
+  `languageKey` varchar(3) NOT NULL,
+  `buildMode` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
@@ -64,6 +65,7 @@ CREATE TABLE `characters` (
   `locYaw` float NOT NULL,
   `locPitch` float NOT NULL,
   `active` tinyint(1) NOT NULL,
+  `foodLevel` int(11) NOT NULL DEFAULT 0,
   `characterClassIdentifier` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
