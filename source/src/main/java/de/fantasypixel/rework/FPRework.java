@@ -14,7 +14,12 @@ public class FPRework extends JavaPlugin {
 
     private final static String CLASS_NAME = FPRework.class.getSimpleName();
 
+    /**
+     * The gson instance.
+     * Note: Be sure to use UTF-8 Encoding on readers when using special characters.
+     */
     private Gson gson;
+
     private FPUtils fpUtils;
     private ProviderManager providerManager;
     private FPLogger fpLogger;

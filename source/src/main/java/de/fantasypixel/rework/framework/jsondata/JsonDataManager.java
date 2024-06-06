@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class JsonDataManager {
                 }
 
                 // load file
-                try (var reader = new FileReader(childrenFile)) {
+                try (var reader = new FileReader(childrenFile, StandardCharsets.UTF_8)) {
                     if (isMultiple) {
 
                         // multiple entries in file
@@ -131,7 +132,7 @@ public class JsonDataManager {
                 }
 
                 // load file
-                try (var reader = new FileReader(childrenFile)) {
+                try (var reader = new FileReader(childrenFile, StandardCharsets.UTF_8)) {
                     if (isMultiple) {
 
                         // multiple entries in file
@@ -258,7 +259,7 @@ public class JsonDataManager {
                     plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->create", ex);
                     return false;
                 }
-                try (var writer = new BufferedWriter(new FileWriter(file))) {
+                try (var writer = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
                     writer.write(entryJson);
                 } catch (IOException ex) {
                     plugin.getFpLogger().error(CLASS_NAME, "convertEntriesToJsonDataContainer->create", ex);
@@ -304,7 +305,7 @@ public class JsonDataManager {
                     fileAndData.entries().add(entry);
 
                     var newFileJson = plugin.getGson().toJson(fileAndData.entries());
-                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file()))) {
+                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file(), StandardCharsets.UTF_8))) {
                         writer.write(newFileJson);
                         plugin.getFpLogger().debug("Update json-data entry {0} in file {1}.", entryId, fileAndData.file().getPath());
                         return true;
@@ -317,7 +318,7 @@ public class JsonDataManager {
 
                     // update file as singular
                     var newFileJson = plugin.getGson().toJson(entry);
-                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file()))) {
+                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file(), StandardCharsets.UTF_8))) {
                         writer.write(newFileJson);
                         plugin.getFpLogger().debug("Update json-data entry {0} in file {1}.", entryId, fileAndData.file().getPath());
                         return true;
@@ -359,7 +360,7 @@ public class JsonDataManager {
                     // not the last entry -> remove from file
                     fileAndData.entries().remove(fileAndData.entry());
                     var newFileJson = plugin.getGson().toJson(fileAndData.entries());
-                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file()))) {
+                    try (var writer = new BufferedWriter(new FileWriter(fileAndData.file(), StandardCharsets.UTF_8))) {
                         writer.write(newFileJson);
                         plugin.getFpLogger().debug("Removed json-data entry {0} from file {1}.", entryId, fileAndData.file().getPath());
                         return true;

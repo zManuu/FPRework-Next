@@ -27,6 +27,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -359,7 +360,7 @@ public class ProviderManager {
             );
 
             var configFile = new File(this.plugin.getDataFolder(), configFilePath);
-            try (var reader = new FileReader(configFile)) {
+            try (var reader = new FileReader(configFile, StandardCharsets.UTF_8)) {
                 var config = this.plugin.getGson().fromJson(reader, configProvider);
                 this.configs.put(configProvider, config);
             } catch (IOException ex) {
