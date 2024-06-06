@@ -11,8 +11,6 @@ import de.fantasypixel.rework.modules.utils.ServerUtils;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
-import net.citizensnpcs.api.trait.TraitInfo;
-import net.citizensnpcs.trait.HologramTrait;
 import net.citizensnpcs.trait.VillagerProfession;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -64,27 +62,6 @@ public class NpcService {
             var citizensNpc = this.npcRegistry.createNPC(npc.getType(), npc.getName());
             citizensNpc.setProtected(npc.isPassive());
             citizensNpc.setUseMinecraftAI(false);
-
-            // hologram
-            var citizensNpcHologramTraitInfo = TraitInfo.create(HologramTrait.class);
-            var npcHologramLines = npc.getHologramLines();
-            if (npcHologramLines != null) {
-                var citizensNpcHologramTrait = citizensNpcHologramTraitInfo
-                        .withSupplier(() -> {
-                            var hologramTrait = new HologramTrait();
-
-                            System.out.println("npcHologramLines.getClass().getSimpleName() = " + npcHologramLines.getClass().getSimpleName());
-                            System.out.println("npcHologramLines = " + npcHologramLines);
-
-                            int npcHologramLineIndex = 0;
-                            for (String npcHologramLine : npcHologramLines)
-                                hologramTrait.setLine(npcHologramLineIndex++, npcHologramLine);
-                            return hologramTrait;
-                        })
-                        .tryCreateInstance();
-
-                citizensNpc.addTrait(citizensNpcHologramTrait);
-            }
 
             // villager
             if (npc instanceof Villager villager)

@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.shops;
 
+import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.log.FPLogger;
@@ -24,6 +25,7 @@ import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 import de.fantasypixel.rework.modules.sound.Sound;
 import de.fantasypixel.rework.modules.sound.SoundService;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
@@ -46,6 +48,7 @@ public class ShopService {
     @Service private NpcService npcService;
     @Service private SoundService soundService;
     @Auto private FPLogger logger;
+    @Config private ShopConfig shopConfig;
 
     /**
      * Creates a shop & spawns the NPC.
@@ -285,20 +288,24 @@ public class ShopService {
     /**
      * Creates a single shop-npc.
      */
-    public void createShopNPC(Shop shop) {
+    public void createShopNPC(@Nonnull Shop shop) {
         this.logger.debug("Creating Shop-NPC of shop {0}.", shop.getId());
 
-        var npcHologram = new ArrayList<String>();
-        var shopName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
+        String shopName = "§3§l" + (shop.getName() != null ? shop.getName() : "Shop");
 
+        // discount
         if (this.hasShopDiscount(shop))
-            npcHologram.add("DISCOUNT !!!");
+            shopName = ChatColor.translateAlternateColorCodes(
+                    '&',
+                    this.shopConfig
+                            .getShopDiscountNameFormat()
+                            .replaceAll("%SHOP_NAME%", shopName)
+            );
 
         var npc = new Villager(
                 shopName,
                 true,
                 shop.getVillagerProfession(),
-                npcHologram,
                 new ShopNpcMetaData(shop.getId())
         );
 
