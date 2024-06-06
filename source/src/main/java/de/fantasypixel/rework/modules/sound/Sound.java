@@ -18,6 +18,9 @@ public enum Sound {
 
     // Shops
     SHOP_BUY,
-    SHOP_SELL
+    SHOP_SELL,
+
+    // Misc
+    BUILD_MODE
 
 }

@@ -82,7 +82,6 @@ public class ItemsController implements Listener {
             Objects.requireNonNull(itemStack);
             item = this.itemService.getItemOf(itemStack);
         } catch (NullPointerException ex) {
-            event.setCancelled(true);
             return;
         }
 

@@ -33,7 +33,7 @@ public class AccountOptionsController {
             var optionValue = args[2];
 
             try {
-                var updateSuccess = this.accountOptionsService.updateOptions(accountId, optionKey, optionValue);
+                var updateSuccess = this.accountOptionsService.updateOptions(player, accountId, optionKey, optionValue);
 
                 if (!updateSuccess) {
                     this.notificationService.sendChatMessage(NotificationType.ERROR, player, "options-update-error");

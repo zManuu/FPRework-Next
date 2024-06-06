@@ -1,0 +1,49 @@
+{
+  "- List of MC sounds": "http://localhost:63342/FPRework-Next/spigot-api-1.19.4-R0.1-SNAPSHOT-javadoc.jar/org/bukkit/Sound.html",
+  "soundMappings": [
+    {
+      "identifier": "SUCCESS",
+      "sound": "BLOCK_AMETHYST_BLOCK_STEP"
+    },
+    {
+      "identifier": "WARNING",
+      "sound": "BLOCK_METAL_BREAK"
+    },
+    {
+      "identifier": "ERROR",
+      "sound": "BLOCK_ANVIL_LAND"
+    },
+    {
+      "identifier": "DENIED",
+      "sound": "ENTITY_VILLAGER_NO"
+    },
+    {
+      "identifier": "INFO",
+      "sound": "ENTITY_CAMEL_DASH_READY"
+    },
+    {
+      "identifier": "PAGE",
+      "sound": "ITEM_BOOK_PAGE_TURN"
+    },
+    {
+      "identifier": "SAVEPOINT_UNLOCKED",
+      "sound": "ENTITY_EXPERIENCE_ORB_PICKUP"
+    },
+    {
+      "identifier": "SAVEPOINT_TELEPORT",
+      "sound": "ENTITY_ENDERMAN_TELEPORT"
+    },
+    {
+      "identifier": "SHOP_BUY",
+      "sound": "ENTITY_VILLAGER_TRADE"
+    },
+    {
+      "identifier": "SHOP_SELL",
+      "sound": "ENTITY_VILLAGER_TRADE"
+    },
+    {
+      "identifier": "BUILD_MODE",
+      "sound": "BLOCK_END_PORTAL_FRAME_FILL"
+    }
+  ]
+}

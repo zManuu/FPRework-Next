@@ -16,5 +16,6 @@ public class AccountOptions {
     @Nullable private Integer id;
     private int accountId;
     private String languageKey;
+    private boolean buildMode;
 
 }

@@ -7,7 +7,13 @@ import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
 import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
+import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.notification.NotificationService;
+import de.fantasypixel.rework.modules.notification.NotificationType;
+import de.fantasypixel.rework.modules.sound.Sound;
+import de.fantasypixel.rework.modules.sound.SoundService;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 
@@ -20,6 +26,8 @@ public class AccountOptionsService {
     @Auto private Gson gson;
     @DataRepo private DataRepoProvider<AccountOptions> dataRepo;
     @Config private AccountOptionsConfig config;
+    @Service private NotificationService notificationService;
+    @Service private SoundService soundService;
 
     /**
      * Creates a new account options entry in the database that uses the default options.
@@ -69,14 +77,34 @@ public class AccountOptionsService {
      * @throws IllegalArgumentException if an option hasn't been found (-> no message) or if the given value was invalid (with message)
      * @return weather the update was successful
      */
-    public boolean updateOptions(int accountId, @Nonnull String option, @Nonnull String value) throws IllegalArgumentException {
+    public boolean updateOptions(@Nonnull Player player, int accountId, @Nonnull String option, @Nonnull String value) throws IllegalArgumentException {
         var options = this.getOptions(accountId);
 
         if (option.equalsIgnoreCase("language") || option.equalsIgnoreCase("lang")) {
+
+            // change language
             if (!value.equalsIgnoreCase("de") && !value.equalsIgnoreCase("en"))
                 throw new IllegalArgumentException("de, en");
 
             options.setLanguageKey(value);
+            this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "options-language-updated", value);
+
+        } else if (option.equalsIgnoreCase("build")) {
+
+            // change build-mode
+            if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))
+                throw new IllegalArgumentException("true, false");
+
+            var boolValue = value.equalsIgnoreCase("true");
+            options.setBuildMode(boolValue);
+            this.notificationService.sendChatMessage(
+                    NotificationType.SUCCESS,
+                    player,
+                    boolValue ? "options-build-activated" : "options-build-deactivated",
+                    value
+            );
+            this.soundService.playSound(player, Sound.BUILD_MODE);
+
         } else {
             // no matching option
             throw new IllegalArgumentException();
@@ -93,7 +121,8 @@ public class AccountOptionsService {
     public String[] getOptionsText(int accountId) {
         var options = this.getOptions(accountId);
         return new String[] {
-                options.getLanguageKey()
+                options.getLanguageKey(),
+                String.valueOf(options.isBuildMode())
         };
     }
 
@@ -103,7 +132,8 @@ public class AccountOptionsService {
     @Nonnull
     public String getOptionDefinitionsText() {
         return String.join("\n", new String[] {
-                "language - de, en"
+                "language - de / en",
+                "build - true / false"
         });
     }
 
