@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.framework.provider;
 
 import de.fantasypixel.rework.framework.log.FPLogger;
+import de.fantasypixel.rework.framework.discord.FPDiscordClient;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,7 +16,8 @@ import java.lang.annotation.Target;
  * - {@link FPLogger}<br>
  * - {@link org.bukkit.Server}<br>
  * - {@link org.bukkit.plugin.Plugin}<br>
- * - {@link ReloadManager}
+ * - {@link ReloadManager}<br>
+ * - {@link FPDiscordClient}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

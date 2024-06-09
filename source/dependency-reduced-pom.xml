@@ -50,6 +50,16 @@
               </manifestEntries>
             </transformer>
           </transformers>
+          <relocations>
+            <relocation>
+              <pattern>io.netty</pattern>
+              <shadedPattern>com.discord4j.shaded.io.netty</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>com.fasterxml</pattern>
+              <shadedPattern>com.discord4j.shaded.com.fasterxml</shadedPattern>
+            </relocation>
+          </relocations>
         </configuration>
       </plugin>
     </plugins>

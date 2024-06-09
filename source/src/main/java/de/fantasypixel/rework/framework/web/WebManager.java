@@ -6,7 +6,6 @@ import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.UtilClasses;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.ProviderManager;
-import de.fantasypixel.rework.modules.config.WebConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

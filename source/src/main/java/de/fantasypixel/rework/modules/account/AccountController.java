@@ -1,7 +1,9 @@
 package de.fantasypixel.rework.modules.account;
 
+import de.fantasypixel.rework.framework.discord.FPDiscordChannel;
 import de.fantasypixel.rework.framework.provider.Controller;
 import de.fantasypixel.rework.framework.provider.Service;
+import de.fantasypixel.rework.modules.discord.DiscordService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,6 +16,7 @@ public class AccountController implements Listener {
 
     @Service private AccountService accountService;
     @Service private NotificationService notificationService;
+    @Service private DiscordService discordService;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -22,7 +25,8 @@ public class AccountController implements Listener {
         String playerUuid = player.getUniqueId().toString();
         Account account;
 
-        event.setJoinMessage("[+] " + playerName);
+        event.setJoinMessage("§7[§a+§7] " + playerName);
+        this.discordService.sendMessage(FPDiscordChannel.SERVER_CHAT, "[+] {0}", playerName);
 
         if (!this.accountService.hasAccount(playerUuid)) {
             // first join -> setup account
@@ -37,7 +41,10 @@ public class AccountController implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        event.setQuitMessage("[-] " + event.getPlayer().getName());
+        var playerName = event.getPlayer().getName();
+
+        event.setQuitMessage("§7[§c-§7] " + playerName);
+        this.discordService.sendMessage(FPDiscordChannel.SERVER_CHAT, "[-] {0}", playerName);
     }
 
 }

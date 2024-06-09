@@ -310,7 +310,7 @@ public class ShopService {
         );
 
         this.npcService.createNpc(npc, shop.getPosition().toLocation());
-        this.logger.debug("Created Shop-NPC of shop {0}.", shop.getId());
+        this.logger.debug("Created Shop-NPC of shop {0}.", String.valueOf(shop.getId()));
     }
 
     /**

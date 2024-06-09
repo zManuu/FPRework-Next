@@ -1,7 +1,6 @@
 package de.fantasypixel.rework.framework.database;
 
 import de.fantasypixel.rework.FPRework;
-import de.fantasypixel.rework.modules.config.DatabaseConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -1,4 +1,4 @@
-package de.fantasypixel.rework.modules.config;
+package de.fantasypixel.rework.framework.database;
 
 import de.fantasypixel.rework.framework.config.ConfigProvider;
 import lombok.Getter;

@@ -4,6 +4,8 @@ import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.command.CommandManager;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.discord.DiscordConfig;
+import de.fantasypixel.rework.framework.discord.DiscordManager;
 import de.fantasypixel.rework.framework.events.AfterReload;
 import de.fantasypixel.rework.framework.events.BeforeReload;
 import de.fantasypixel.rework.framework.events.OnDisable;
@@ -14,10 +16,10 @@ import de.fantasypixel.rework.framework.jsondata.JsonDataProvider;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.*;
-import de.fantasypixel.rework.modules.config.DatabaseConfig;
+import de.fantasypixel.rework.framework.database.DatabaseConfig;
 import de.fantasypixel.rework.framework.config.*;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
-import de.fantasypixel.rework.modules.config.WebConfig;
+import de.fantasypixel.rework.framework.web.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 
@@ -53,9 +55,11 @@ public class ProviderManager {
     private Map<Method, Object> beforeReloadHooks;
     private Map<Method, Object> afterReloadHooks;
     private final CitizensManager citizensManager;
+    private DiscordManager discordManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
+        var logger = plugin.getFpLogger();
 
         // managers with no access to config
         this.timerManager = new TimerManager(plugin);
@@ -63,59 +67,65 @@ public class ProviderManager {
         this.jsonDataManager = new JsonDataManager(plugin);
 
         // controllers & services
-        this.plugin.getFpLogger().sectionStart("Controllers & Services");
+        logger.sectionStart("Controllers & Services");
         this.initServiceProviders();
         this.initServiceToServiceHooks();
         this.initControllers();
         this.initControllerToServiceHooks();
-        this.plugin.getFpLogger().sectionEnd("Controllers & Services");
+        logger.sectionEnd("Controllers & Services");
 
         // config
-        this.plugin.getFpLogger().sectionStart("Config");
+        logger.sectionStart("Config");
         this.loadConfigs();
         this.hookConfigs();
-        this.plugin.getFpLogger().sectionEnd("Config");
+        logger.sectionEnd("Config");
 
         // json-data
-        this.plugin.getFpLogger().sectionStart("Json-Data");
+        logger.sectionStart("Json-Data");
         this.loadJsonData();
         this.hookJsonData();
-        this.plugin.getFpLogger().sectionEnd("Json-Data");
+        logger.sectionEnd("Json-Data");
 
         // web
-        this.plugin.getFpLogger().sectionStart("Web");
+        logger.sectionStart("Web");
         this.webManager = new WebManager(plugin, this.getConfig(WebConfig.class));
         this.initWebHandlers(WebManager.HttpMethod.GET, WebGet.class);
         this.initWebHandlers(WebManager.HttpMethod.POST, WebPost.class);
         this.initWebHandlers(WebManager.HttpMethod.PUT, WebPut.class);
         this.initWebHandlers(WebManager.HttpMethod.DELETE, WebDelete.class);
-        this.plugin.getFpLogger().sectionEnd("Web");
+        logger.sectionEnd("Web");
 
         // reload
-        this.plugin.getFpLogger().sectionStart("Reload-Manager");
+        logger.sectionStart("Reload-Manager");
         this.initReloadManager();
         this.initReloadHooks();
-        this.plugin.getFpLogger().sectionEnd("Reload-Manager");
+        logger.sectionEnd("Reload-Manager");
 
         // citizens
-        this.citizensManager = new CitizensManager(false, this.plugin.getFpLogger());
+        this.citizensManager = new CitizensManager(false, logger);
         Bukkit.getPluginManager().registerEvents(this.citizensManager, this.plugin);
 
+        // discord
+        logger.sectionStart("Discord");
+        this.discordManager = new DiscordManager(this.plugin, this.getConfig(DiscordConfig.class));
+        logger.sectionEnd("Discord");
+
         // auto rigging
-        this.plugin.getFpLogger().sectionStart("Auto-Rigging");
+        logger.sectionStart("Auto-Rigging");
         this.initAutoRigging(Set.of(
-                this.plugin.getFpLogger(),
+                logger,
                 this.plugin.getGson(),
                 this.plugin.getServer(),
                 this.plugin,
-                this.reloadManager
+                this.reloadManager,
+                this.discordManager.getFpDiscordClient()
         ));
-        this.plugin.getFpLogger().sectionEnd("Auto-Rigging");
+        logger.sectionEnd("Auto-Rigging");
 
         // database
-        this.plugin.getFpLogger().sectionStart("Database");
+        logger.sectionStart("Database");
         this.createDataRepos();
-        this.plugin.getFpLogger().sectionEnd("Database");
+        logger.sectionEnd("Database");
 
         // controllers (delayed)
         Bukkit.getScheduler().runTaskLaterAsynchronously(
@@ -540,6 +550,7 @@ public class ProviderManager {
                     this.plugin.getFpLogger().debug("Calling OnEnable of {0}.", controllerClass.getSimpleName());
                     onEnableFunc.invoke(controller);
                 } catch (IllegalAccessException | InvocationTargetException ex) {
+                    this.plugin.getFpLogger().warning("There was an error in the onEnable method of controller {0}.", controllerClass.getSimpleName());
                     this.plugin.getFpLogger().error(CLASS_NAME, "enableControllers", ex);
                 }
             });
@@ -560,7 +571,7 @@ public class ProviderManager {
     }
 
     /**
-     * Calls onDisable on all controllers, stops the timers and the webserver.
+     * Calls onDisable on all controllers, stops the timers, webserver & discord-bot.
      */
     public void onDisable() {
         this.controllers.forEach(controller -> {
@@ -575,5 +586,6 @@ public class ProviderManager {
 
         this.timerManager.stopTimers();
         this.webManager.stop();
+        this.discordManager.stop();
     }
 }
