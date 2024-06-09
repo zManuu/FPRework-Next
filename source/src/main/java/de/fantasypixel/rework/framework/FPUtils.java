@@ -132,4 +132,20 @@ public class FPUtils {
         }
     }
 
+    /**
+     * Gets an environment variable.
+     */
+    @Nonnull
+    public Optional<String> getEnvironmentVar(@Nonnull String key) {
+        return Optional.ofNullable(System.getenv(key));
+    }
+
+    /**
+     * Gets an environment variable. If not found, the specified default value is returned.
+     */
+    @Nonnull
+    public String getEnvironmentVar(@Nonnull String key, @Nonnull String defaultValue) {
+        return this.getEnvironmentVar(key).orElse(defaultValue);
+    }
+
 }
