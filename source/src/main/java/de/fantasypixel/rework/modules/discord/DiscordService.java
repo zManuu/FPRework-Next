@@ -4,6 +4,7 @@ import de.fantasypixel.rework.framework.discord.FPDiscordChannel;
 import de.fantasypixel.rework.framework.discord.FPDiscordClient;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import discord4j.core.spec.EmbedCreateSpec;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,6 +23,10 @@ public class DiscordService {
 
     public void sendMessage(@Nonnull FPDiscordChannel channel, @Nonnull String pattern, @Nullable Object... args) {
         this.discordClient.sendMessage(channel, pattern, args);
+    }
+
+    public void sendEmbed(@Nonnull FPDiscordChannel channel, @Nonnull EmbedCreateSpec embedCreateSpec) {
+        this.discordClient.sendEmbed(channel, embedCreateSpec);
     }
 
 }

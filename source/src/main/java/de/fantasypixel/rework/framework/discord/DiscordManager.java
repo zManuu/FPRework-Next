@@ -7,6 +7,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.gateway.intent.Intent;
 import discord4j.gateway.intent.IntentSet;
 import lombok.Getter;
@@ -59,16 +60,33 @@ public class DiscordManager {
                     return;
                 }
 
-                // send message to channel
                 discordClient.getChannelById(Snowflake.of(channelId))
                         .ofType(MessageChannel.class)
                         .flatMap(messageChannel -> messageChannel.createMessage(message))
                         .subscribe();
-
             }
             @Override
             public void sendMessage(@Nonnull FPDiscordChannel channel, @Nonnull String pattern, @Nullable Object... args) {
                 this.sendMessage(channel, MessageFormat.format(pattern, args));
+            }
+            @Override
+            public void sendEmbed(@Nonnull FPDiscordChannel channel, @Nonnull EmbedCreateSpec embedCreateSpec) {
+                var channelId = discordConfig.getChannelMap().get(channel);
+
+                if (channelId == null) {
+                    plugin.getFpLogger().warning("Tried to send discord-embed to channel {0}, but the channel wasn't properly configured in the discord.json!", channel);
+                    return;
+                }
+
+                if (discordClient == null) {
+                    plugin.getFpLogger().warning("Tried to send discord-embed, but the discord-client was not setup yet!");
+                    return;
+                }
+
+                discordClient.getChannelById(Snowflake.of(channelId))
+                        .ofType(MessageChannel.class)
+                        .flatMap(messageChannel -> messageChannel.createMessage(embedCreateSpec))
+                        .subscribe();
             }
         };
 
