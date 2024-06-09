@@ -1,10 +1,13 @@
 package de.fantasypixel.rework.framework.database;
 
-import de.fantasypixel.rework.framework.config.ConfigProvider;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * The db-config. Note: This config is read from environment variables, no gson file!
+ */
 @Getter
-@ConfigProvider(path = "config/database")
+@AllArgsConstructor
 public class DatabaseConfig {
 
     String host;

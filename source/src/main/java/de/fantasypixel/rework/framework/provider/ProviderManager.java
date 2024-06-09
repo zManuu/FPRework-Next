@@ -475,10 +475,18 @@ public class ProviderManager {
      * Creates all data-repository instances.
      */
     private void createDataRepos() {
-        var databaseConfig = this.getConfig(DatabaseConfig.class);
-
-        if (databaseConfig == null) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", "Database configuration missing!");
+        DatabaseConfig databaseConfig;
+        try {
+            databaseConfig = new DatabaseConfig(
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_HOST").orElseThrow(),
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_USER").orElseThrow(),
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PASSWORD", ""),
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PORT").orElseThrow(),
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_NAME").orElseThrow()
+            );
+        } catch (NoSuchElementException ex) {
+            this.plugin.getFpLogger().warning("Tried to connect to database, at least one environment variable is missing! Please set FP_NEXT_DATABASE_HOST, FP_NEXT_DATABASE_USER, FP_NEXT_DATABASE_PASSWORD?, FP_NEXT_DATABASE_PORT, FP_NEXT_DATABASE_NAME.");
+            this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", ex);
             return;
         }
 
