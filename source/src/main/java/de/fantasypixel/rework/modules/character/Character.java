@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 
-abstract public class Character {
+public abstract class Character {
 
     public static final int DEFAULT_XP_PER_LEVEL = 100;
     public static final int DEFAULT_MAX_LEVEL = 30;

@@ -2,7 +2,8 @@ package de.fantasypixel.rework.framework.discord;
 
 public enum FPDiscordChannel {
 
-    SERVER_STATUS,
-    SERVER_CHAT
+    LOGS_USER,
+    LOGS_ADMIN,
+    LOGS_SERVER,
 
 }

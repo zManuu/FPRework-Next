@@ -71,7 +71,7 @@ public class PlayerCharacterController implements Listener {
                             .material(character.getIconMaterial())
                             .displayName(character.getName())
                             .closesMenu(true)
-                            .onSelect(() -> this.login(player, this.playerCharacterService.createPlayerCharacter(finalAccountId, String.valueOf(accountId), character, firstCharacter)))
+                            .onSelect(() -> this.login(player, this.playerCharacterService.createPlayerCharacter(player, finalAccountId, String.valueOf(accountId), character, firstCharacter)))
                             .build()
             );
         }

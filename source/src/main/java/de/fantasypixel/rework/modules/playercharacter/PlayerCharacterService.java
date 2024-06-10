@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.playercharacter;
 
+import de.fantasypixel.rework.framework.discord.FPDiscordChannel;
 import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
@@ -12,6 +13,8 @@ import de.fantasypixel.rework.modules.account.AccountService;
 import de.fantasypixel.rework.modules.character.Character;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
 import de.fantasypixel.rework.modules.config.PositionsConfig;
+import de.fantasypixel.rework.modules.discord.DiscordService;
+import discord4j.rest.util.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -29,6 +32,7 @@ public class PlayerCharacterService {
     @DataRepo private DataRepoProvider<PlayerCharacter> playerCharacterRepo;
     @Config private PositionsConfig positionsConfig;
     @Service private AccountService accountService;
+    @Service private DiscordService discordService;
 
     /**
      * Gets the active player-character directly for the player.
@@ -69,7 +73,7 @@ public class PlayerCharacterService {
     }
 
     @Nullable
-    public PlayerCharacter createPlayerCharacter(int accountId, @Nonnull String name, @Nonnull Character characterClass, boolean autoActive) {
+    public PlayerCharacter createPlayerCharacter(@Nonnull Player player, int accountId, @Nonnull String name, @Nonnull Character characterClass, boolean autoActive) {
         PlayerCharacter playerCharacter = PlayerCharacter.builder()
                 .accountId(accountId)
                 .name(name)
@@ -86,6 +90,19 @@ public class PlayerCharacterService {
             this.logger.error(CLASS_NAME, "createPlayerCharacter", "Couldn't insert player-character into the database.");
             return null;
         }
+
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_USER,
+                Color.GREEN,
+                "Character create",
+                "Player \"{0}\" (account {1}) created a new character {2} ({3}) of type {4}.",
+                player.getName(),
+                accountId,
+                name,
+                playerCharacter.getId(),
+                characterClass.getIdentifier()
+        );
+
         return playerCharacter;
     }
 

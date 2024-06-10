@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.savepoints;
 
+import de.fantasypixel.rework.framework.discord.FPDiscordChannel;
 import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
@@ -8,10 +9,14 @@ import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.provider.Auto;
+import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.discord.DiscordService;
 import de.fantasypixel.rework.modules.utils.json.JsonPosition;
+import discord4j.rest.util.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +30,7 @@ public class SavePointService {
     @DataRepo private DataRepoProvider<UnlockedSavePoint> dataRepo;
     @Config private SavePointConfig config;
     @Auto private FPLogger logger;
+    @Service private DiscordService discordService;
 
     @Nullable
     private SavePoint getSavePoint(@Nullable UnlockedSavePoint unlockedSavePoint) {
@@ -100,24 +106,47 @@ public class SavePointService {
 
     // ADMIN
 
-    public boolean createSavePoint(@Nonnull JsonPosition position, @Nonnull String name, @Nonnull Optional<String> iconMaterial) {
+    public boolean createSavePoint(@Nonnull Player player, @Nonnull JsonPosition position, @Nonnull String name, @Nonnull Optional<String> iconMaterial) {
         if (iconMaterial.isPresent() && Material.getMaterial(iconMaterial.get()) == null) {
             this.logger.warning("Someone tried to create a save-point with the non-existing material {0}.", iconMaterial.get());
             return false;
         }
 
-        return this.savePoints.create(
-                new SavePoint(
-                        null,
-                        name,
-                        iconMaterial.orElse(this.config.getDefaultIconMaterial()),
-                        position
-                )
+        SavePoint savePoint = new SavePoint(
+                null,
+                name,
+                iconMaterial.orElse(this.config.getDefaultIconMaterial()),
+                position
         );
+
+        if (!this.savePoints.create(savePoint))
+            return false;
+
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_ADMIN,
+                Color.GREEN,
+                "Save-point create",
+                "Player \"{0}\" created the save-point \"{1}\" ({2}).",
+                player.getName(),
+                name,
+                savePoint.getId()
+        );
+        return true;
     }
 
-    public boolean deleteSavePoint(int savePointId) {
-        return this.savePoints.delete(savePointId);
+    public boolean deleteSavePoint(@Nonnull Player player, int savePointId) {
+        if (!this.savePoints.delete(savePointId))
+            return false;
+
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_ADMIN,
+                Color.RED,
+                "Save-point delete",
+                "Player \"{0}\" deleted the save-point {1}.",
+                player.getName(),
+                savePointId
+        );
+        return true;
     }
 
     /**
@@ -142,6 +171,14 @@ public class SavePointService {
     public void unlockAllSavePoints(int characterId) {
         this.logger.info("Unlocking all save-points for character {0}.", characterId);
 
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_ADMIN,
+                Color.GREEN,
+                "Save-point unlock all",
+                "Player-character {0} is unlocking all save-points.",
+                characterId
+        );
+
         var allSavePointIds = this.savePoints.getEntries()
                 .stream()
                 .map(SavePoint::getId)
@@ -150,8 +187,6 @@ public class SavePointService {
         allSavePointIds.forEach(savePointId -> {
             if (!this.isSavePointUnlocked(characterId, savePointId))
                 this.unlockSavePoint(characterId, savePointId);
-            // else
-            //     System.out.println("Already unlocked: " + savePointId);
         });
     }
 
@@ -162,7 +197,7 @@ public class SavePointService {
      * @return whether the update was successful
      * @throws IllegalArgumentException if no savepoint was found with the given ID
      */
-    public boolean repositionSavePoint(int savePointId, @Nonnull Location location) throws IllegalArgumentException {
+    public boolean repositionSavePoint(@Nonnull Player player, int savePointId, @Nonnull Location location) throws IllegalArgumentException {
         var newPosition = new JsonPosition(location);
         var savePoint = this.savePoints.getEntries()
                 .stream()
@@ -173,7 +208,19 @@ public class SavePointService {
         this.logger.info("Repositioning save-point {0} to {1}.", savePoint.getName(), location);
 
         savePoint.setPosition(newPosition);
-        return this.savePoints.modify(savePoint);
+        if (!this.savePoints.modify(savePoint))
+            return false;
+
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_ADMIN,
+                Color.GREEN,
+                "Save-point reposition",
+                "Player \"{0}\" repositioned the save-point {1}.",
+                player.getName(),
+                savePointId
+        );
+
+        return true;
     }
 
     /**
@@ -183,7 +230,7 @@ public class SavePointService {
      * @return whether the update was successful
      * @throws IllegalArgumentException if no save point was found with the given ID
      */
-    public boolean renameSavePoint(int savePointId, @Nonnull String name) throws IllegalArgumentException {
+    public boolean renameSavePoint(@Nonnull Player player, int savePointId, @Nonnull String name) throws IllegalArgumentException {
         var savePoint = this.savePoints.getEntries()
                 .stream()
                 .filter(e -> Objects.equals(e.getId(), savePointId))
@@ -193,7 +240,21 @@ public class SavePointService {
         this.logger.info("Renaming save-point {0} to \"{1}\".", savePointId, name);
 
         savePoint.setName(name);
-        return this.savePoints.modify(savePoint);
+
+        if (!this.savePoints.modify(savePoint))
+            return false;
+
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_ADMIN,
+                Color.GREEN,
+                "Save-point rename",
+                "Player \"{0}\" renamed the save-point {1} to \"{2}\".",
+                player.getName(),
+                savePointId,
+                name
+        );
+
+        return true;
     }
 
 }

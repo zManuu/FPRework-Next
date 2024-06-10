@@ -1,5 +1,6 @@
 package de.fantasypixel.rework.modules.account;
 
+import de.fantasypixel.rework.framework.discord.FPDiscordChannel;
 import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
@@ -7,9 +8,11 @@ import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.discord.DiscordService;
 import de.fantasypixel.rework.modules.events.AccountLoginEvent;
 import de.fantasypixel.rework.modules.utils.DateUtils;
 import de.fantasypixel.rework.modules.utils.ServerUtils;
+import discord4j.rest.util.Color;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
@@ -25,6 +28,7 @@ public class AccountService {
     @DataRepo private DataRepoProvider<Account> accountRepo;
     @Service private DateUtils dateUtils;
     @Service private ServerUtils serverUtils;
+    @Service private DiscordService discordService;
 
     public boolean hasAccount(@Nonnull String playerUuid) {
         return this.accountRepo.exists(new Query("playerUuid", playerUuid));
@@ -40,6 +44,13 @@ public class AccountService {
         return this.getAccount(uuid.toString());
     }
 
+    /**
+     * Creates a new account.
+     * @param playerUuid the associated player's uuid
+     * @param name the associated player's name
+     * @param password the password
+     * @return the created account or null if an error occurred
+     */
     @Nullable
     public Account createAccount(@Nonnull String playerUuid, @Nonnull String name, @Nullable String password) {
         Account account = new Account(null, playerUuid, name, password, null);
@@ -47,6 +58,8 @@ public class AccountService {
             this.logger.error(CLASS_NAME, "createAccount", "Couldn't insert account into the database.");
             return null;
         }
+
+        this.discordService.sendEmbed(FPDiscordChannel.LOGS_USER, Color.GREEN, "Account create", "The account {0} was created for player \"{1}\".", account.getId(), name);
         return account;
     }
 

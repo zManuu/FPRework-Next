@@ -33,7 +33,7 @@ public class AccountController implements Listener {
 
         event.setJoinMessage("§7[§a+§7] " + playerName);
         this.discordService.sendEmbed(
-                FPDiscordChannel.SERVER_CHAT,
+                FPDiscordChannel.LOGS_USER,
                 EmbedCreateSpec.builder()
                         .color(Color.GREEN)
                         .title("Server status")
@@ -58,7 +58,7 @@ public class AccountController implements Listener {
 
         event.setQuitMessage("§7[§c-§7] " + playerName);
         this.discordService.sendEmbed(
-                FPDiscordChannel.SERVER_CHAT,
+                FPDiscordChannel.LOGS_USER,
                 EmbedCreateSpec.builder()
                         .color(Color.RED)
                         .title("Server status")

@@ -116,7 +116,7 @@ public class SavePointController {
                 this.soundService.playSound(player, Sound.WARNING);
                 return;
             }
-            if (this.savePointService.deleteSavePoint(savePointId)) {
+            if (this.savePointService.deleteSavePoint(player, savePointId)) {
                 this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-delete-success", Map.of("ID", savePointId));
                 this.soundService.playSound(player, Sound.SUCCESS);
             } else {
@@ -135,6 +135,7 @@ public class SavePointController {
             Optional<String> iconMaterial = args.length == 3 ? Optional.of(args[2]) : Optional.empty();
             String name = args[1].replaceAll("_", " ");
             var success = this.savePointService.createSavePoint(
+                    player,
                     new JsonPosition(player.getLocation()),
                     name,
                     iconMaterial
@@ -182,7 +183,7 @@ public class SavePointController {
 
                 // reposition the save-point
                 try {
-                    var success = this.savePointService.repositionSavePoint(savePointId, player.getLocation());
+                    var success = this.savePointService.repositionSavePoint(player, savePointId, player.getLocation());
 
                     if (success) {
                         this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-repositioned");
@@ -200,7 +201,7 @@ public class SavePointController {
 
                 // rename the save-point
                 try {
-                    var success = this.savePointService.renameSavePoint(savePointId, args[3].replaceAll("_", " "));
+                    var success = this.savePointService.renameSavePoint(player, savePointId, args[3].replaceAll("_", " "));
 
                     if (success) {
                         this.notificationService.sendChatMessage(NotificationType.SUCCESS, player, "savepoint-renamed");

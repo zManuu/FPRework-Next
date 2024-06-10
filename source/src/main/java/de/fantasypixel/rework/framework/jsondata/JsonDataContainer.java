@@ -21,7 +21,7 @@ public abstract class JsonDataContainer <T> {
     @Nonnull public abstract Set<T> getEntries();
 
     /**
-     * Creates an entry. The json file will be named after the entries name field or the generated id
+     * Creates an entry. The json file will be named after the entries name field or the generated id. The id field will also be set.
      * @param entry the entry to create
      * @return whether the entry could be created
      */

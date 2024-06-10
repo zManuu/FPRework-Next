@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.modules.account.options;
 
 import com.google.gson.Gson;
+import de.fantasypixel.rework.framework.discord.FPDiscordChannel;
 import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.config.Config;
 import de.fantasypixel.rework.framework.database.DataRepo;
@@ -9,13 +10,16 @@ import de.fantasypixel.rework.framework.database.Query;
 import de.fantasypixel.rework.framework.provider.Auto;
 import de.fantasypixel.rework.framework.provider.Service;
 import de.fantasypixel.rework.framework.provider.ServiceProvider;
+import de.fantasypixel.rework.modules.discord.DiscordService;
 import de.fantasypixel.rework.modules.notification.NotificationService;
 import de.fantasypixel.rework.modules.notification.NotificationType;
 import de.fantasypixel.rework.modules.sound.Sound;
 import de.fantasypixel.rework.modules.sound.SoundService;
+import discord4j.rest.util.Color;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
+import java.util.Locale;
 
 @ServiceProvider
 public class AccountOptionsService {
@@ -28,6 +32,7 @@ public class AccountOptionsService {
     @Config private AccountOptionsConfig config;
     @Service private NotificationService notificationService;
     @Service private SoundService soundService;
+    @Service private DiscordService discordService;
 
     /**
      * Creates a new account options entry in the database that uses the default options.
@@ -109,6 +114,17 @@ public class AccountOptionsService {
             // no matching option
             throw new IllegalArgumentException();
         }
+
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_USER,
+                Color.GREEN,
+                "Account options update",
+                "Player \"{0}\" (account {1}) changed the account-option \"{2}\" to \"{3}\"",
+                player.getName(),
+                accountId,
+                option,
+                value
+        );
 
         return this.dataRepo.update(options);
     }

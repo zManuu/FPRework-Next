@@ -20,7 +20,7 @@ public class DiscordController {
     @OnEnable
     public void onEnable() {
         this.discordService.sendEmbed(
-                FPDiscordChannel.SERVER_STATUS,
+                FPDiscordChannel.LOGS_SERVER,
                 EmbedCreateSpec.builder()
                         .color(Color.GREEN)
                         .title("Server status")
@@ -32,7 +32,7 @@ public class DiscordController {
     @OnDisable
     public void onDisable() {
         this.discordService.sendEmbed(
-                FPDiscordChannel.SERVER_STATUS,
+                FPDiscordChannel.LOGS_SERVER,
                 EmbedCreateSpec.builder()
                         .color(Color.RED)
                         .title("Server status")
