@@ -13,32 +13,32 @@ import java.util.Set;
  * <br>
  * If there is a name field, it will be used as the filename for creation.
  */
-public abstract class JsonDataContainer <T> {
+public interface JsonDataContainer <T> {
 
     /**
      * @return all entries currently loaded
      */
-    @Nonnull public abstract Set<T> getEntries();
+    @Nonnull Set<T> getEntries();
 
     /**
      * Creates an entry. The json file will be named after the entries name field or the generated id. The id field will also be set.
      * @param entry the entry to create
      * @return whether the entry could be created
      */
-    public abstract boolean create(@Nullable T entry);
+    boolean create(@Nullable T entry);
 
     /**
      * Modifies an entry.
      * @param entry the entry to modify
      * @return whether the entry could be modified
      */
-    public abstract boolean modify(@Nullable T entry);
+    boolean modify(@Nullable T entry);
 
     /**
      * Deletes an entry.
      * @param entryId the entry's unique identifier
      * @return whether the entry was deleted
      */
-    public abstract boolean delete(int entryId);
+    boolean delete(int entryId);
 
 }
