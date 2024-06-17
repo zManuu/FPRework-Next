@@ -26,9 +26,7 @@ import org.bukkit.event.Listener;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
@@ -121,6 +119,11 @@ public class ProviderManager {
                 this.discordManager.getFpDiscordClient()
         ));
         logger.sectionEnd("Auto-Rigging");
+
+        // extending
+        logger.sectionStart("Extending class singletons");
+        this.initExtendingClassSingletons();
+        logger.sectionEnd("Extending class singletons");
 
         // database
         logger.sectionStart("Database");
@@ -349,6 +352,56 @@ public class ProviderManager {
                 }
             });
         });
+    }
+
+    /**
+     * Finds fields annotated with {@link Extending} and populates them with an instance of all classes extending T (has to be a Set of T).
+     */
+    private void initExtendingClassSingletons() {
+        var extendingHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Extending.class);
+
+        this.plugin.getFpLogger().debug("Hooking singletons for extending {0} extending classes.", extendingHooks.size());
+
+        for (Field extendingHook : extendingHooks) {
+            var extendingHookType = extendingHook.getGenericType();
+            var extendingHookTypeParam = (ParameterizedType) extendingHookType;
+            var extendingHookTypeArguments = extendingHookTypeParam.getActualTypeArguments();
+
+            if (extendingHookTypeArguments.length != 1) {
+                this.plugin.getFpLogger().warning("Tried to initialize extending-class-set {0} in {1}, but there wasn't exactly one type parameter. Be sure to use Set! Skipping this set.");
+                continue;
+            }
+
+            var extendingType = extendingHookTypeArguments[0];
+            Set<?> classesExtending;
+            Set<Object> singletonSet = new HashSet<>();
+
+            if (extendingType instanceof Class<?> extendingClass) {
+                classesExtending = this.plugin.getFpUtils().getClassesExtending(extendingClass);
+            } else {
+                throw new IllegalArgumentException("extendingType is not a Class");
+            }
+
+            for (Object type : classesExtending) {
+                try {
+                    var typeInstance = type.getClass()
+                            .getConstructor()
+                            .newInstance();
+
+                    singletonSet.add(typeInstance);
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
+                    this.plugin.getFpLogger().warning("Tried to instantiate extending-type {0}, didn't work! Is there an empty constructor present?", type.getClass().getSimpleName());
+                }
+            }
+
+            try {
+                extendingHook.set(null, singletonSet);
+
+                this.plugin.getFpLogger().debug("Created {0} extending-class-singletons for {1}.", singletonSet.size(), extendingType.getTypeName());
+            } catch (IllegalAccessException ex) {
+                this.plugin.getFpLogger().error(CLASS_NAME, "initExtendingClassSingletons", ex);
+            }
+        }
     }
 
     /**

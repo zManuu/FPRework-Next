@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class Items {
 
-    // todo: automatically load (implementation in framework)
+    // @Extending
     public static Set<Item> ITEMS = Set.of(
             new StoneAxe(),
             new IronAxe(),

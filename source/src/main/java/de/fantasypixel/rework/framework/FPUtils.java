@@ -2,6 +2,8 @@ package de.fantasypixel.rework.framework;
 
 import de.fantasypixel.rework.FPRework;
 import org.reflections.Reflections;
+import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.Scanners;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,14 +16,18 @@ import java.util.stream.Collectors;
 
 /**
  * Holds utility methods for the framework. Mainly focused on reflections but can also be used for misc purposes.
+ * <br>
+ * Note: When adding new reflection methods, make sure to add the corresponding {@link Scanners} in the constructor.
  */
 public class FPUtils {
 
     private final String CLASS_NAME = FPUtils.class.getSimpleName();
     private final FPRework plugin;
+    private final Reflections reflections;
 
     public FPUtils(@Nonnull FPRework plugin) {
         this.plugin = plugin;
+        this.reflections = new Reflections("de.fantasypixel.rework", Scanners.TypesAnnotated, Scanners.FieldsAnnotated, Scanners.SubTypes);
     }
 
     /**
@@ -42,8 +48,7 @@ public class FPUtils {
      */
     @Nonnull
     public Set<Class<?>> getClassesAnnotatedWith(@Nonnull Class<? extends Annotation> annotationClass) {
-        var reflections = new Reflections("de.fantasypixel.rework");
-        return reflections.getTypesAnnotatedWith(annotationClass);
+        return this.reflections.getTypesAnnotatedWith(annotationClass);
     }
 
     /**
@@ -58,6 +63,23 @@ public class FPUtils {
                 .peek(field -> field.setAccessible(true))
                 .filter(field -> field.isAnnotationPresent(annotationClass))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * @param annotationClass the annotation class to be searched for
+     * @return the found fields having the annotation
+     */
+    @Nonnull
+    public Set<Field> getFieldsAnnotatedWith(@Nonnull Class<? extends Annotation> annotationClass) {
+        return this.reflections.getFieldsAnnotatedWith(annotationClass)
+                .stream()
+                .filter(e -> !e.isSynthetic())
+                .peek(field -> field.setAccessible(true))
+                .collect(Collectors.toSet());
+    }
+
+    public <T> Set<Class<? extends T>> getClassesExtending(@Nonnull Class<T> superClass) {
+        return this.reflections.getSubTypesOf(superClass);
     }
 
     /**

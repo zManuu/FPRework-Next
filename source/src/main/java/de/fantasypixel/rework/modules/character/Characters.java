@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public class Characters {
 
+    // @Extending
     public static Set<Character> CHARACTERS = new LinkedHashSet<>(Set.of(
             new CharacterWarrior(),
             new CharacterArcher()
