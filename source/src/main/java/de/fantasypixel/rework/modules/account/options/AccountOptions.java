@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(tableName = "account-options")
+@Entity(tableName = "account_options")
 public class AccountOptions {
 
     @Nullable private Integer id;

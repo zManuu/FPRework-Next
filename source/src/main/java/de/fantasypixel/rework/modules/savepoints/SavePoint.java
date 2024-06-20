@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 @Getter
 @Setter
-@JsonDataProvider(path = "save-points")
+@JsonDataProvider(path = "save_points")
 @AllArgsConstructor
 public class SavePoint {
 

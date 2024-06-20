@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 06. Jun 2024 um 19:44
+-- Erstellungszeit: 20. Jun 2024 um 13:17
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -24,19 +24,6 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `account-options`
---
-
-CREATE TABLE `account-options` (
-  `id` int(11) NOT NULL,
-  `accountId` int(11) NOT NULL,
-  `languageKey` varchar(3) NOT NULL,
-  `buildMode` tinyint(1) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- --------------------------------------------------------
-
---
 -- Tabellenstruktur für Tabelle `accounts`
 --
 
@@ -46,6 +33,19 @@ CREATE TABLE `accounts` (
   `name` varchar(50) NOT NULL,
   `password` varchar(200) DEFAULT NULL,
   `lastLogin` varchar(19) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `account_options`
+--
+
+CREATE TABLE `account_options` (
+  `id` int(11) NOT NULL,
+  `accountId` int(11) NOT NULL,
+  `languageKey` varchar(3) NOT NULL,
+  `buildMode` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
@@ -72,10 +72,10 @@ CREATE TABLE `characters` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `save-points`
+-- Tabellenstruktur für Tabelle `save_points`
 --
 
-CREATE TABLE `save-points` (
+CREATE TABLE `save_points` (
   `id` int(11) NOT NULL,
   `characterId` int(11) NOT NULL,
   `savePointId` int(11) NOT NULL
@@ -86,15 +86,15 @@ CREATE TABLE `save-points` (
 --
 
 --
--- Indizes für die Tabelle `account-options`
---
-ALTER TABLE `account-options`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indizes für die Tabelle `accounts`
 --
 ALTER TABLE `accounts`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `account_options`
+--
+ALTER TABLE `account_options`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -104,9 +104,9 @@ ALTER TABLE `characters`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indizes für die Tabelle `save-points`
+-- Indizes für die Tabelle `save_points`
 --
-ALTER TABLE `save-points`
+ALTER TABLE `save_points`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -114,15 +114,15 @@ ALTER TABLE `save-points`
 --
 
 --
--- AUTO_INCREMENT für Tabelle `account-options`
---
-ALTER TABLE `account-options`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT für Tabelle `accounts`
 --
 ALTER TABLE `accounts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT für Tabelle `account_options`
+--
+ALTER TABLE `account_options`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -132,9 +132,9 @@ ALTER TABLE `characters`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT für Tabelle `save-points`
+-- AUTO_INCREMENT für Tabelle `save_points`
 --
-ALTER TABLE `save-points`
+ALTER TABLE `save_points`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
