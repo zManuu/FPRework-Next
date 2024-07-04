@@ -54,6 +54,7 @@ public class PlayerCharacterService {
     }
 
     @Nonnull
+    @Deprecated
     public Set<PlayerCharacter> getPlayerCharacters(@Nonnull Account account) {
         return this.playerCharacterRepo.getMultiple(new Query("accountId", account.getId()));
     }

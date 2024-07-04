@@ -38,29 +38,60 @@ public class DataRepoProvider<E> {
             this.tableName = entityAnnotation.tableName();
         else {
             this.tableName = "ERROR";
-            this.plugin.getFpLogger().warning("Data-provider couldn't be setup correctly with typeParameterClass " + typeParameterClass.getName() + " as the passed class doesn't have Entity annotated. The server will shutdown.");
+            this.plugin.getFpLogger().warning(
+                    "Data-provider couldn't be setup correctly with typeParameterClass {0} as the passed class doesn't have Entity annotated. The server will shutdown.",
+                    typeParameterClass.getName()
+            );
             this.plugin.getServer().shutdown();
         }
     }
 
     /**
-     * Tests the database-connection to the given configuration. If errors occur, the server will shut down.
+     * Loads the sql-driver of specified db-type.
+     * @return whether the driver was loaded successfully or not
      */
-    public static void testDatabaseConnection(@Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
-        try (
-                var conn = DriverManager.getConnection(String.format("jdbc:mysql://%s:%s/%s", config.getHost(), config.getPort(), config.getName()), config.getUser(), config.getPassword());
-                var stmt = conn.prepareStatement("SELECT VERSION()");
-                var rs = stmt.executeQuery();
-        ) {
-            if (!rs.next()) {
-                plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in plugins/FP-Next/config/database.json. Server will continue operating as normal.");
-                return;
+    public static boolean loadSqlDriver(@Nonnull FPRework plugin, @Nonnull DatabaseType databaseType) {
+        try {
+            switch (databaseType) {
+                case MYSQL:
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                case POSTGRESQL:
+                    Class.forName("org.postgresql.Driver");
+                case SQLITE:
+                    Class.forName("org.sqlite.JDBC");
             }
 
-            plugin.getFpLogger().debug("The database connection was established. Database-Version: {0}", rs.getString(1));
+            plugin.getFpLogger().debug("Successfully loaded the sql-driver for {0}.", databaseType);
+            return true;
+        } catch (ClassNotFoundException | ExceptionInInitializerError ex) {
+            plugin.getFpLogger().error(CLASS_NAME, "loadMysqlDriver", ex);
+            return false;
+        }
+    }
+
+    /**
+     * Tests the database-connection to the given configuration. If errors occur, the server will shut down.
+     * @return whether a connection to the database could be established
+     */
+    public static boolean testDatabaseConnection(@Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
+        String versionStatement = config.getType() == DatabaseType.SQLITE
+                ? "SELECT SQLITE_VERSION()"
+                : "SELECT VERSION();";
+
+        try (
+                var conn = DataRepoProvider.getConnection(plugin, config);
+                var stmt = conn.prepareStatement(versionStatement);
+                var rs = stmt.executeQuery();
+        ) {
+            if (!rs.next())
+                plugin.getFpLogger().warning("The database connection could be established but couldn't return a version. The connection-values can be edited in the environment variables (see wiki). Server will continue operating as normal.");
+            else
+                plugin.getFpLogger().debug("The database connection was established. Database-Version: {0}", rs.getString(1));
+
+            return true;
         } catch (Exception ex) {
-            plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in plugins/FP-Next/config/database.json. Server will shutdown.");
-            plugin.getServer().shutdown();
+            plugin.getFpLogger().warning("Couldn't connect to the database. The connection-values can be edited in the environment variables (see wiki).");
+            return false;
         }
     }
 
@@ -85,24 +116,29 @@ public class DataRepoProvider<E> {
     }
 
     /**
+     * Establishes a database connection.
+     */
+    @Nonnull
+    private static Connection getConnection(@Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
+        try {
+            return switch (config.getType()) {
+                case MYSQL, POSTGRESQL -> DriverManager.getConnection(String.format("jdbc:%s://%s:%s/%s", config.getType().name().toLowerCase(), config.getHost(), config.getPort(), config.getName()), config.getUser(), config.getPassword());
+                case SQLITE -> DriverManager.getConnection(String.format("jdbc:sqlite:%s", config.getName()));
+            };
+        } catch (Exception ex) {
+            plugin.getFpLogger().warning("Could not establish db-connection!");
+            plugin.getFpLogger().error(CLASS_NAME, "getConnection", ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
      * Establishes a connection to the database that can be used for queries.
+     * @see DataRepoProvider#getConnection(FPRework, DatabaseConfig)
      */
     @Nonnull
     private Connection getConnection() {
-        try {
-            return DriverManager.getConnection(
-                String.format(
-                        "jdbc:mysql://%s:%s/%s",
-                        this.config.getHost(),
-                        this.config.getPort(),
-                        this.config.getName()
-                ),
-                    this.config.getUser(),
-                    this.config.getPassword()
-            );
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return DataRepoProvider.getConnection(this.plugin, this.config);
     }
 
     // todo: javadoc
@@ -147,7 +183,7 @@ public class DataRepoProvider<E> {
             return true;
         }
 
-        var statementStr = MessageFormat.format(query.toSelectQuery("id"), this.tableName);
+        var statementStr = MessageFormat.format(query.toSelectQuery("id", this.config.getType()), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
 
@@ -184,7 +220,7 @@ public class DataRepoProvider<E> {
             return cached.stream().findFirst().orElse(null);
         }
 
-        var statementStr = MessageFormat.format(query.toSelectQuery("*"), this.tableName);
+        var statementStr = MessageFormat.format(query.toSelectQuery("*", this.config.getType()), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
 
@@ -208,6 +244,25 @@ public class DataRepoProvider<E> {
                 var fieldValue = rs.getObject(i);
                 var field = entityInstance.getClass().getDeclaredField(fieldName);
                 field.setAccessible(true);
+
+                // System.out.println("DataRepoProvider::get (before transform)");
+                // System.out.println("field.getType() = " + field.getType());
+                // System.out.println("fieldName = " + fieldName);
+                // System.out.println("fieldValue = " + fieldValue);
+                // System.out.println("fieldValue?.getClass() = " + (fieldValue != null ? fieldValue.getClass() : "null"));
+
+                if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(float.class) && fieldValue instanceof Double doubleValue)
+                    fieldValue = doubleValue.floatValue();
+
+                if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(boolean.class) && fieldValue instanceof Integer integerValue)
+                    fieldValue = integerValue == 1;
+
+                // System.out.println("DataRepoProvider::get (after transform)");
+                // System.out.println("field.getType() = " + field.getType());
+                // System.out.println("fieldName = " + fieldName);
+                // System.out.println("fieldValue = " + fieldValue);
+                // System.out.println("fieldValue?.getClass() = " + (fieldValue != null ? fieldValue.getClass() : "null"));
+
                 field.set(entityInstance, fieldValue);
             }
 
@@ -234,7 +289,7 @@ public class DataRepoProvider<E> {
             return cached;
         }
 
-        var statementStr = MessageFormat.format(query.toSelectQuery("*"), this.tableName);
+        var statementStr = MessageFormat.format(query.toSelectQuery("*", this.config.getType()), this.tableName);
         var whereValues = query.getWhereValues();
         logSqlStatement(statementStr, whereValues);
 
@@ -258,6 +313,25 @@ public class DataRepoProvider<E> {
                     var fieldValue = rs.getObject(i);
                     var field = entityInstance.getClass().getDeclaredField(fieldName);
                     field.setAccessible(true);
+
+                    // System.out.println("DataRepoProvider::getMultiple (before transform)");
+                    // System.out.println("field.getType() = " + field.getType());
+                    // System.out.println("fieldName = " + fieldName);
+                    // System.out.println("fieldValue = " + fieldValue);
+                    // System.out.println("fieldValue?.getClass() = " + (fieldValue != null ? fieldValue.getClass() : "null"));
+
+                    if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(float.class) && fieldValue instanceof Double doubleValue)
+                        fieldValue = doubleValue.floatValue();
+
+                    if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(boolean.class) && fieldValue instanceof Integer integerValue)
+                        fieldValue = integerValue == 1;
+
+                    // System.out.println("DataRepoProvider::getMultiple (after transform)");
+                    // System.out.println("field.getType() = " + field.getType());
+                    // System.out.println("fieldName = " + fieldName);
+                    // System.out.println("fieldValue = " + fieldValue);
+                    // System.out.println("fieldValue?.getClass() = " + (fieldValue != null ? fieldValue.getClass() : "null"));
+
                     field.set(entityInstance, fieldValue);
                 }
 
@@ -295,7 +369,7 @@ public class DataRepoProvider<E> {
          }
         */
 
-        var statementStr = MessageFormat.format("DELETE FROM `{0}` WHERE `id` = ?", this.tableName);
+        var statementStr = MessageFormat.format("DELETE FROM {0} WHERE id = ?", this.tableName);
         logSqlStatement(statementStr, entityId);
 
         try (
@@ -334,14 +408,21 @@ public class DataRepoProvider<E> {
         var fields = Arrays.stream(this.typeParameterClass.getDeclaredFields())
                 .peek(e -> e.setAccessible(true))
                 .filter(e -> !e.isAnnotationPresent(Ignore.class))
+                .filter(e -> !e.getName().equals("id"))
                 .toList();
 
+        var fieldQuotation = this.config.getType() == DatabaseType.POSTGRESQL
+                ? '"'
+                : '`';
+
         var statementStr = MessageFormat.format(
-                "UPDATE `{0}` SET {1} WHERE `id` = ?",
+                this.config.getType() == DatabaseType.POSTGRESQL
+                    ? "UPDATE {0} SET id = DEFAULT, {1} WHERE id = ?"
+                    : "UPDATE {0} SET id = " + entityId + ", {1} WHERE id = ?",
                 this.tableName,
                 fields.stream()
                         .map(Field::getName)
-                        .map(name -> "`" + name + "` = ?")
+                        .map(name -> fieldQuotation + name + fieldQuotation + " = ?")
                         .collect(Collectors.joining(", "))
         );
 
@@ -387,10 +468,13 @@ public class DataRepoProvider<E> {
         var fields = Arrays.stream(this.typeParameterClass.getDeclaredFields())
                 .peek(e -> e.setAccessible(true))
                 .filter(e -> !e.isAnnotationPresent(Ignore.class))
+                .filter(e -> !e.getName().equalsIgnoreCase("id"))
                 .toList();
 
         var statementStr = String.format(
-                "INSERT INTO `%s` VALUES (%s)",
+                this.config.getType() != DatabaseType.SQLITE
+                    ? "INSERT INTO %s VALUES (DEFAULT, %s)"
+                    : "INSERT INTO %s VALUES (NULL, %s)",
                 this.tableName,
                 fields.stream()
                         .map(e -> "?")
@@ -409,11 +493,14 @@ public class DataRepoProvider<E> {
             int index = 1;
             for (var field : fields) {
                 var val = this.plugin.getFpUtils().getFieldValueSafe(field, entity);
-                if (val != null) {
+
+                if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(boolean.class) && val instanceof Boolean booleanValue)
+                    val = booleanValue ? 1 : 0;
+
+                if (val != null)
                     statement.setObject(index++, val);
-                } else {
+                else
                     statement.setNull(index++, Types.NULL);
-                }
             }
 
             statement.execute();
@@ -432,8 +519,8 @@ public class DataRepoProvider<E> {
             this.cache.add(entity);
 
             return true;
-        } catch (Exception e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "insert", e);
+        } catch (Exception ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "insert", ex);
             return false;
         }
     }

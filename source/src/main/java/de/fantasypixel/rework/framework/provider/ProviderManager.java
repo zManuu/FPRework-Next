@@ -4,6 +4,7 @@ import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.command.CommandManager;
 import de.fantasypixel.rework.framework.database.DataRepo;
 import de.fantasypixel.rework.framework.database.DataRepoProvider;
+import de.fantasypixel.rework.framework.database.DatabaseType;
 import de.fantasypixel.rework.framework.discord.DiscordConfig;
 import de.fantasypixel.rework.framework.discord.DiscordManager;
 import de.fantasypixel.rework.framework.events.AfterReload;
@@ -531,6 +532,7 @@ public class ProviderManager {
         DatabaseConfig databaseConfig;
         try {
             databaseConfig = new DatabaseConfig(
+                    DatabaseType.valueOf(this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_TYPE").orElseThrow()),
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_HOST").orElseThrow(),
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_USER").orElseThrow(),
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PASSWORD", ""),
@@ -538,13 +540,24 @@ public class ProviderManager {
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_NAME").orElseThrow()
             );
         } catch (NoSuchElementException ex) {
-            this.plugin.getFpLogger().warning("Tried to connect to database, at least one environment variable is missing! Please set FP_NEXT_DATABASE_HOST, FP_NEXT_DATABASE_USER, FP_NEXT_DATABASE_PASSWORD?, FP_NEXT_DATABASE_PORT, FP_NEXT_DATABASE_NAME.");
+            this.plugin.getFpLogger().warning("Tried to connect to database, at least one environment variable is missing! Please set FP_NEXT_DATABASE_TYPE, FP_NEXT_DATABASE_HOST, FP_NEXT_DATABASE_USER, FP_NEXT_DATABASE_PASSWORD?, FP_NEXT_DATABASE_PORT, FP_NEXT_DATABASE_NAME.");
+            this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", ex);
+            return;
+        } catch (IllegalArgumentException ex) {
+            this.plugin.getFpLogger().warning("Tried to connect to database, but the type in the environment variables isn't MYSQL, POSTGRESQL, SQLITE!");
             this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", ex);
             return;
         }
 
-        this.plugin.getFpUtils().loadMysqlDriver();
-        DataRepoProvider.testDatabaseConnection(this.plugin, databaseConfig);
+        if (!DataRepoProvider.loadSqlDriver(this.plugin, databaseConfig.getType())) {
+            this.plugin.getFpLogger().warning("Tried to connect to database, but the sql-driver could not be loaded! Server will shutdown...");
+            this.plugin.getServer().shutdown();
+        }
+
+        if (!DataRepoProvider.testDatabaseConnection(this.plugin, databaseConfig)) {
+            this.plugin.getFpLogger().warning("Tried to connect to database, but was unsuccessfully! Server will shutdown...");
+            this.plugin.getServer().shutdown();
+        }
 
         this.dataProviders = new HashMap<>();
 

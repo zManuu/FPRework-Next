@@ -51,33 +51,39 @@ public class Query {
 
     /**
      * Constructs a string representation of the where mapping.
-     * For instance: {@code accountId = ? AND active = ?}
+     * For instance: {@code accountId = ? AND active = ?} or {@code "accountId" = ? AND "active" = ?} for {@link DatabaseType#POSTGRESQL}.
      * <br><br>
      * Note that the values aren't inputted here but in the {@link DataRepoProvider}.
      */
     @Nonnull
-    private String getWhereString() {
+    private String getWhereString(@Nonnull DatabaseType databaseType) {
         var whereStrings = new ArrayList<String>();
-        this.where.keySet().forEach((key) -> whereStrings.add(String.format("%s = ?", key)));
+        this.where
+                .keySet()
+                .forEach((key) -> whereStrings.add(String.format(
+                                databaseType == DatabaseType.POSTGRESQL
+                                    ? "\"%s\" = ?"
+                                    : "%s = ?",
+                                key)));
         return String.join(" AND ", whereStrings);
     }
 
     /**
      * Constructs a select-query with the where mappings.
-     * For instance: {@code SELECT * FROM `{0}` WHERE accountId = ? AND active = ?}
+     * For instance: {@code SELECT * FROM {0} WHERE accountId = ? AND active = ?} or {@code SELECT * FROM {0} WHERE "accountId" = ? AND "active" = ?} for {@link DatabaseType#POSTGRESQL}.
      * <br><br>
      * Note that the table-name and values aren't inputted here but in the {@link DataRepoProvider}.
-     * @param select to colum to select (should be {@code *} or {@code id})
-     * @throws QueryException if the select parameter wasn't * or id
+     * @param select to colum to select (must be {@code *} or {@code id})
+     * @throws QueryException if the select parameter wasn't {@code *} or {@code id}
      */
     @Nonnull
-    public String toSelectQuery(String select) throws QueryException {
+    public String toSelectQuery(@Nonnull String select, @Nonnull DatabaseType databaseType) throws QueryException {
         if (!select.equals("*") && !select.equals("id"))
             throw new QueryException("Invalid select: {0}! It should be * or id!", select);
 
-        var whereString = this.getWhereString();
+        String whereString = this.getWhereString(databaseType);
         return String.format(
-                "SELECT %s FROM `{0}` WHERE %s",
+                "SELECT %s FROM {0} WHERE %s",
                 select,
                 whereString
         );
@@ -98,14 +104,14 @@ public class Query {
 
     /**
      * Checks if another object is equal to this one.
-     * If it is a Query, the comparison is based on the {@link #getWhereString()}.
+     * If it is a Query, the comparison is based on the {@link #getWhereString(DatabaseType)} with {@link DatabaseType#MYSQL}.
      */
     @Override
     public boolean equals(@Nullable Object other) {
         if (!(other instanceof Query otherQuery))
             return false;
 
-        return this.getWhereString().equals(otherQuery.getWhereString());
+        return this.getWhereString(DatabaseType.MYSQL).equals(otherQuery.getWhereString(DatabaseType.MYSQL));
     }
 
 }

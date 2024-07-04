@@ -10,6 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class DatabaseConfig {
 
+    DatabaseType type;
     String host;
     String user;
     String password;

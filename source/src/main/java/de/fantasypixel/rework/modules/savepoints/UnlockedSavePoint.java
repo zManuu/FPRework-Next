@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(tableName = "save-points")
+@Entity(tableName = "save_points")
 public class UnlockedSavePoint {
 
     @Nullable private Integer id;

@@ -2,7 +2,6 @@ package de.fantasypixel.rework.framework;
 
 import de.fantasypixel.rework.FPRework;
 import org.reflections.Reflections;
-import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.Scanners;
 
 import javax.annotation.Nonnull;
@@ -28,18 +27,6 @@ public class FPUtils {
     public FPUtils(@Nonnull FPRework plugin) {
         this.plugin = plugin;
         this.reflections = new Reflections("de.fantasypixel.rework", Scanners.TypesAnnotated, Scanners.FieldsAnnotated, Scanners.SubTypes);
-    }
-
-    /**
-     * Loads the mysql-driver.
-     */
-    public void loadMysqlDriver() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            this.plugin.getFpLogger().debug("Successfully loaded the mysql-driver.");
-        } catch (ClassNotFoundException e) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "loadMysqlDriver", e);
-        }
     }
 
     /**
