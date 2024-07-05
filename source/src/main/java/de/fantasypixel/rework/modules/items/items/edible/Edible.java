@@ -1,7 +1,9 @@
 package de.fantasypixel.rework.modules.items.items.edible;
 
+import de.fantasypixel.rework.framework.provider.ExtendingIgnore;
 import de.fantasypixel.rework.modules.items.Item;
 
+@ExtendingIgnore
 public abstract class Edible extends Item {
 
     /**

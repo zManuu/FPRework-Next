@@ -383,15 +383,25 @@ public class ProviderManager {
                 throw new IllegalArgumentException("extendingType is not a Class");
             }
 
-            for (Object type : classesExtending) {
-                try {
-                    var typeInstance = type.getClass()
-                            .getConstructor()
-                            .newInstance();
+            for (Object typeObj : classesExtending) {
 
+                if (!(typeObj instanceof Class<?> clazz)) {
+                    this.plugin.getFpLogger().error(CLASS_NAME, "initExtendingClassSingletons", "A typeObj isn't of type Class!");
+                    return;
+                }
+
+                if (clazz.isAnnotationPresent(ExtendingIgnore.class)) {
+                    this.plugin.getFpLogger().debug("Skipping extending-class {0}.", clazz.getSimpleName());
+                    continue;
+                }
+
+                try {
+                    var typeInstance = clazz.getConstructor().newInstance();
                     singletonSet.add(typeInstance);
+
+                    this.plugin.getFpLogger().debug("Instantiated extending-class {0}.", clazz.getSimpleName());
                 } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
-                    this.plugin.getFpLogger().warning("Tried to instantiate extending-type {0}, didn't work! Is there an empty constructor present?", type.getClass().getSimpleName());
+                    this.plugin.getFpLogger().warning("Tried to instantiate extending-type {0}, didn't work! Is there an empty constructor present?", clazz.getSimpleName());
                 }
             }
 

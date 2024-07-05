@@ -26,7 +26,12 @@ public class FPUtils {
 
     public FPUtils(@Nonnull FPRework plugin) {
         this.plugin = plugin;
-        this.reflections = new Reflections("de.fantasypixel.rework", Scanners.TypesAnnotated, Scanners.FieldsAnnotated, Scanners.SubTypes);
+        this.reflections = new Reflections(
+                "de.fantasypixel.rework",
+                Scanners.TypesAnnotated,
+                Scanners.FieldsAnnotated,
+                Scanners.SubTypes.filterResultsBy(s -> true)
+        );
     }
 
     /**

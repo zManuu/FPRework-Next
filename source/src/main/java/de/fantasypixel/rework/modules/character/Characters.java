@@ -1,13 +1,10 @@
 package de.fantasypixel.rework.modules.character;
 
-import de.fantasypixel.rework.modules.character.characters.CharacterArcher;
-import de.fantasypixel.rework.modules.character.characters.CharacterWarrior;
+import de.fantasypixel.rework.framework.provider.Extending;
 import de.fantasypixel.rework.modules.playercharacter.PlayerCharacter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,11 +13,8 @@ import java.util.Set;
  */
 public class Characters {
 
-    // @Extending
-    public static Set<Character> CHARACTERS = new LinkedHashSet<>(Set.of(
-            new CharacterWarrior(),
-            new CharacterArcher()
-    ));
+    @Extending
+    public static Set<Character> CHARACTERS;
 
     /**
      * Returns an optional. For a Nonnull result, use {@link PlayerCharacter#getCharacter()}
