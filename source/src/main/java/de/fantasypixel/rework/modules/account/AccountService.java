@@ -17,7 +17,9 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ServiceProvider
 public class AccountService {
@@ -40,8 +42,43 @@ public class AccountService {
     }
 
     @Nullable
+    public Account getAccountByName(@Nonnull String name) {
+        return this.accountRepo.get(new Query("name", name));
+    }
+
+    @Nullable
     public Account getAccount(@Nonnull UUID uuid) {
         return this.getAccount(uuid.toString());
+    }
+
+    @Nullable
+    public Account getAccount(int accountId) {
+        return this.accountRepo.get(new Query("id", accountId));
+    }
+
+    @Nullable
+    public Player getPlayer(int accountId) {
+        for (Player onlinePlayer : this.serverUtils.getOnlinePlayers()) {
+            var onlinePlayerAccount = this.getAccount(onlinePlayer.getUniqueId());
+
+            if (Objects.equals(onlinePlayerAccount.getId(), accountId))
+                return onlinePlayer;
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if the given account is online.
+     */
+    public boolean isAccountOnline(int accountId) {
+        var onlinePlayers = this.serverUtils.getOnlinePlayers();
+        var onlineAccounts = onlinePlayers.stream()
+                .map(player -> this.getAccount(player.getUniqueId()))
+                .collect(Collectors.toSet());
+
+        return onlineAccounts.stream()
+                .anyMatch(account -> Objects.equals(account.getId(), accountId));
     }
 
     /**

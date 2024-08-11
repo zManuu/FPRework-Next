@@ -33,3 +33,15 @@ CREATE TABLE save_points (
   characterId INTEGER NOT NULL,
   savePointId INTEGER NOT NULL
 );
+
+CREATE TABLE friends (
+  id INTEGER PRIMARY KEY,
+  accountId1 INTEGER NOT NULL,
+  accountId2 INTEGER NOT NULL
+);
+
+CREATE TABLE friend_requests (
+  id INTEGER PRIMARY KEY,
+  requestingAccountId INTEGER NOT NULL,
+  receivingAccountId INTEGER NOT NULL
+);

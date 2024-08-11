@@ -38,4 +38,16 @@ CREATE TABLE `save_points` (
   `savePointId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE `friends` (
+  `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `accountId1` int(11) NOT NULL,
+  `accountId2` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE TABLE `friend_requests` (
+  `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `requestingAccountId` int(11) NOT NULL,
+  `receivingAccountId` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 COMMIT;

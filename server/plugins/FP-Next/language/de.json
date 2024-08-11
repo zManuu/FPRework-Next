@@ -84,6 +84,21 @@
     "admin-reload-start": "Der server-reload wurde gestartet.",
     "admin-reload-end": "Der server-reload wurde beended.",
     "admin-sound": "Der Sound wird wiedergegeben.",
-    "admin-sound-invalid": "Der Sound name / category wurde nicht gefunden."
+    "admin-sound-invalid": "Der Sound name / category wurde nicht gefunden.",
+
+    "unknown-account-name": "Es wurde kein Account mit diesem Namen gefunden.",
+
+    "friend-list": "Deine Freunde (%COUNT%): %ONLINE% %OFFLINE%",
+    "friend-join": "Dein Freund %FRIEND_NAME% ist jetzt online!",
+    "friend-quit": "Dein Freund %FRIEND_NAME% ist jetzt offline!",
+    "friend-requests": "Du hast noch %COUNT% offene Freundschafts Anfragen (%NAMES%).",
+    "friend-already": "Du bist bereits mit {0} befreundet.",
+    "friend-request-already": "Du hast {0} schon eine Freundschafts Anfrage geschickt.",
+    "friend-request-received": "Du hast eine Freundschafts Anfrage von %PLAYER_NAME% erhalten.",
+    "friend-request-accepted": "Du bist jetzt mit %PLAYER_NAME% befreundet.",
+    "friend-request-to-self": "Du kannst nicht mit dir selbst befreundet sein.",
+    "friend-request-sent": "Du hast {0} eine Freundschafts Anfrage geschickt.",
+    "friend-removed": "Du hast {0} als deinen Freund entfernt.",
+    "friend-not": "Du bist momentan nicht mit {0} befreundet."
   }
 }

@@ -36,4 +36,17 @@ CREATE TABLE save_points (
   "savePointId" int NOT NULL
 );
 
+CREATE TABLE friends (
+  "id" int NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  "accountId1" int NOT NULL,
+  "accountId2" int NOT NULL
+);
+
+CREATE TABLE `friend_requests` (
+  "id" int NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  "requestingAccountId" int NOT NULL,
+  "receivingAccountId" int NOT NULL
+);
+
+
 COMMIT;

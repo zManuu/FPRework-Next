@@ -84,6 +84,21 @@
     "admin-reload-start": "The server-reload has started.",
     "admin-reload-end": "The server-reload was finished.",
     "admin-sound": "The sound should is played.",
-    "admin-sound-invalid": "The given sound name / category is not valid."
+    "admin-sound-invalid": "The given sound name / category is not valid.",
+
+    "unknown-account-name": "No account was found with this name.",
+
+    "friend-list": "Your friends (%COUNT%): %ONLINE% %OFFLINE%",
+    "friend-join": "Your friend %FRIEND_NAME% is now online!",
+    "friend-quit": "Your friend %FRIEND_NAME% is now offline!",
+    "friend-requests": "You have %COUNT% open friend requests (%NAMES%).",
+    "friend-already": "You are already friends with {0}.",
+    "friend-request-already": "You have already sent {0} a friend-request.",
+    "friend-request-received": "You have received a friend-request from %PLAYER_NAME%.",
+    "friend-request-accepted": "You are now friends with %PLAYER_NAME%.",
+    "friend-request-to-self": "You can't be friends with yourself.",
+    "friend-request-sent": "You have sent {0} a friend-request.",
+    "friend-removed": "You have removed {0} as your friend.",
+    "friend-not": "You aren't currently friends with {0}."
   }
 }
