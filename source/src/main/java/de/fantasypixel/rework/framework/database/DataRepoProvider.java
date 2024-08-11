@@ -34,8 +34,11 @@ public class DataRepoProvider<E> {
         this.config = config;
 
         var entityAnnotation = typeParameterClass.getAnnotation(Entity.class);
-        if (entityAnnotation != null)
+        if (entityAnnotation != null) {
             this.tableName = entityAnnotation.tableName();
+            if (this.config.isPreload())
+                this.preload();
+        }
         else {
             this.tableName = "ERROR";
             this.plugin.getFpLogger().warning(
@@ -171,6 +174,89 @@ public class DataRepoProvider<E> {
         }
 
         return results;
+    }
+
+    /**
+     * Clears the cache and then loads all records in the db-table into the {@link #cache} (with a limit specified in the {@link #config}).
+     */
+    private void preload() {
+        this.plugin.getFpLogger().debug("Preloading data for repository {0} with a limit of {1}...", this.typeParameterClass.getSimpleName(), this.config.getPreloadLimit());
+
+        this.clearCache();
+
+        String statementStr = String.format(
+                "SELECT * FROM %s LIMIT %d;",
+                this.tableName,
+                this.config.getPreloadLimit()
+        );
+
+        try (
+                var conn = this.getConnection();
+                var statement = conn.prepareStatement(statementStr);
+        ) {
+            var rs = statement.executeQuery();
+
+            while (rs.next()) {
+                var columnCount = rs.getMetaData().getColumnCount();
+                var entityInstance = this.plugin.getFpUtils().instantiate(this.typeParameterClass);
+
+                // populate entity
+                for (var i=1; i<columnCount+1; i++) {
+                    var fieldName = rs.getMetaData().getColumnName(i);
+                    var fieldValue = rs.getObject(i);
+                    var field = entityInstance.getClass().getDeclaredField(fieldName);
+                    field.setAccessible(true);
+
+                    // System.out.println("DataRepoProvider::getMultiple (before transform)");
+                    // System.out.println("field.getType() = " + field.getType());
+                    // System.out.println("fieldName = " + fieldName);
+                    // System.out.println("fieldValue = " + fieldValue);
+                    // System.out.println("fieldValue?.getClass() = " + (fieldValue != null ? fieldValue.getClass() : "null"));
+
+                    if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(float.class) && fieldValue instanceof Double doubleValue)
+                        fieldValue = doubleValue.floatValue();
+
+                    if (this.config.getType() == DatabaseType.SQLITE && field.getType().equals(boolean.class) && fieldValue instanceof Integer integerValue)
+                        fieldValue = integerValue == 1;
+
+                    // System.out.println("DataRepoProvider::getMultiple (after transform)");
+                    // System.out.println("field.getType() = " + field.getType());
+                    // System.out.println("fieldName = " + fieldName);
+                    // System.out.println("fieldValue = " + fieldValue);
+                    // System.out.println("fieldValue?.getClass() = " + (fieldValue != null ? fieldValue.getClass() : "null"));
+
+                    field.set(entityInstance, fieldValue);
+                }
+
+                this.cache.add(entityInstance);
+            }
+        } catch (Exception ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "preload", ex);
+            return;
+        }
+
+        this.plugin.getFpLogger().debug("Preloaded {0} data-records from table {1}.", this.cache.size(), this.tableName);
+    }
+
+    /**
+     * @return the count of all entries in the table or -1, if an error occurs
+     */
+    public int getEntryCount() {
+        String statementStr = String.format("SELECT COUNT(id) FROM %s;", this.tableName);
+        logSqlStatement(statementStr);
+
+        try (
+                var conn = this.getConnection();
+                var statement = conn.prepareStatement(statementStr);
+        ) {
+
+            var resultSet = statement.executeQuery();
+            return resultSet.getInt(1);
+
+        } catch (Exception ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "exists", ex);
+            return -1;
+        }
     }
 
     /**

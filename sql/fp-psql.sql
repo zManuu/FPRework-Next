@@ -42,7 +42,7 @@ CREATE TABLE friends (
   "accountId2" int NOT NULL
 );
 
-CREATE TABLE `friend_requests` (
+CREATE TABLE friend_requests (
   "id" int NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "requestingAccountId" int NOT NULL,
   "receivingAccountId" int NOT NULL

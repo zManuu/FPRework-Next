@@ -16,5 +16,7 @@ public class DatabaseConfig {
     String password;
     String port;
     String name;
+    boolean preload;
+    int preloadLimit;
 
 }

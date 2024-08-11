@@ -548,11 +548,16 @@ public class ProviderManager {
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_USER").orElseThrow(),
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PASSWORD", ""),
                     this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PORT").orElseThrow(),
-                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_NAME").orElseThrow()
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_NAME").orElseThrow(),
+                    this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PRELOAD", "false").equalsIgnoreCase("true"),
+                    Integer.parseInt(this.plugin.getFpUtils().getEnvironmentVar("FP_NEXT_DATABASE_PRELOAD_LIMIT", "0"))
             );
         } catch (NoSuchElementException ex) {
             this.plugin.getFpLogger().warning("Tried to connect to database, at least one environment variable is missing! Please set FP_NEXT_DATABASE_TYPE, FP_NEXT_DATABASE_HOST, FP_NEXT_DATABASE_USER, FP_NEXT_DATABASE_PASSWORD?, FP_NEXT_DATABASE_PORT, FP_NEXT_DATABASE_NAME.");
             this.plugin.getFpLogger().error(CLASS_NAME, "createDataRepos", ex);
+            return;
+        } catch (NumberFormatException ex) {
+            this.plugin.getFpLogger().warning("Tried to connect to database, but FP_NEXT_DATABASE_PRELOAD_LIMIT isn't a number!");
             return;
         } catch (IllegalArgumentException ex) {
             this.plugin.getFpLogger().warning("Tried to connect to database, but the type in the environment variables isn't MYSQL, POSTGRESQL, SQLITE!");
@@ -662,11 +667,18 @@ public class ProviderManager {
      * Ends the initialization-process by logging a few stats.
      */
     private void endInitialization() {
+        int totalDatabaseEntryCount = this.dataProviders
+                .values()
+                .stream()
+                .map(DataRepoProvider::getEntryCount)
+                .reduce(0, Integer::sum);
+
         this.plugin.getFpLogger().line(FPLogger.LogLevel.INFO);
         this.plugin.getFpLogger().info("The Server-Startup was finished.");
         this.plugin.getFpLogger().info("Services: {0}", this.serviceProviderClasses.size());
         this.plugin.getFpLogger().info("Controllers: {0}", this.controllers.size());
         this.plugin.getFpLogger().info("Database-Repositories: {0}", this.dataProviders.size());
+        this.plugin.getFpLogger().info("Database-Entries: {0}", totalDatabaseEntryCount);
         this.plugin.getFpLogger().line(FPLogger.LogLevel.INFO);
     }
 
