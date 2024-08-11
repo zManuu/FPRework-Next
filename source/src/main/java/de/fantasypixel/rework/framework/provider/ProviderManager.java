@@ -14,6 +14,7 @@ import de.fantasypixel.rework.framework.events.OnEnable;
 import de.fantasypixel.rework.framework.jsondata.JsonDataContainer;
 import de.fantasypixel.rework.framework.jsondata.JsonDataManager;
 import de.fantasypixel.rework.framework.jsondata.JsonDataProvider;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.*;
@@ -50,11 +51,11 @@ public class ProviderManager {
     private final CommandManager commandManager;
     private final WebManager webManager;
     private final JsonDataManager jsonDataManager;
+    private final CitizensManager citizensManager;
+    private final DiscordManager discordManager;
     private ReloadManager reloadManager;
     private Map<Method, Object> beforeReloadHooks;
     private Map<Method, Object> afterReloadHooks;
-    private final CitizensManager citizensManager;
-    private DiscordManager discordManager;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -617,6 +618,7 @@ public class ProviderManager {
     /**
      * Calls onEnable on all controllers, registers listeners & commands and starts the timers.
      * <b>Note:</b> This method waits for the {@link net.citizensnpcs.api.event.CitizensEnableEvent} so that NPCs are available.
+     * This method calls {@link #endInitialization()}.
      */
     private void enableControllers() {
         this.plugin.getFpLogger().debug("Enabling controllers, waiting for CitizensEnableEvent if necessary.");
@@ -652,6 +654,20 @@ public class ProviderManager {
                     .getMethodsAnnotatedWith(Timer.class, controller.getClass())
                     .forEach((timerFunc) -> this.timerManager.startTimer(timerFunc, controller));
         });
+
+        this.endInitialization();
+    }
+
+    /**
+     * Ends the initialization-process by logging a few stats.
+     */
+    private void endInitialization() {
+        this.plugin.getFpLogger().line(FPLogger.LogLevel.INFO);
+        this.plugin.getFpLogger().info("The Server-Startup was finished.");
+        this.plugin.getFpLogger().info("Services: {0}", this.serviceProviderClasses.size());
+        this.plugin.getFpLogger().info("Controllers: {0}", this.controllers.size());
+        this.plugin.getFpLogger().info("Database-Repositories: {0}", this.dataProviders.size());
+        this.plugin.getFpLogger().line(FPLogger.LogLevel.INFO);
     }
 
     /**

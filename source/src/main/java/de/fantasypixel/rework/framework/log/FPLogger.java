@@ -115,8 +115,9 @@ public class FPLogger {
         this.error(fromClass, fromMethod, new Exception(MessageFormat.format(pattern, args)));
     }
 
-    public void sectionStart(@Nonnull String section) {
-        this.printStream.println(
+    public void sectionStart(@Nonnull LogLevel level, @Nonnull String section) {
+        this.resolve(
+                level,
                 MessageFormat.format(
                         "{0}[ Start of {1} ]{0}",
                         "-".repeat(this.config.getSectionIndentation()),
@@ -125,14 +126,29 @@ public class FPLogger {
         );
     }
 
-    public void sectionEnd(@Nonnull String section) {
-        this.printStream.println(
+    /**
+     * Uses {@link LogLevel#DEBUG}.
+     */
+    public void sectionStart(@Nonnull String section) {
+        this.sectionStart(LogLevel.DEBUG, section);
+    }
+
+    public void sectionEnd(@Nonnull LogLevel level, @Nonnull String section) {
+        this.resolve(
+                level,
                 MessageFormat.format(
                         "{0}[ End of {1} ]{0}",
                         "-".repeat(this.config.getSectionIndentation() + 1),
                         section
                 )
         );
+    }
+
+    /**
+     * Uses {@link LogLevel#DEBUG}.
+     */
+    public void sectionEnd(@Nonnull String section) {
+        this.sectionEnd(LogLevel.DEBUG, section);
     }
 
     public void warning(@Nonnull String message) {
@@ -210,6 +226,10 @@ public class FPLogger {
                 LogLevel.EXITING,
                 fromClass + "::" + fromMethod
         );
+    }
+
+    public void line(@Nonnull LogLevel level) {
+        this.resolve(level, "-".repeat(this.config.getSectionIndentation() * 2));
     }
 
     private void resolve(@Nonnull LogLevel level, @Nonnull String message) {
