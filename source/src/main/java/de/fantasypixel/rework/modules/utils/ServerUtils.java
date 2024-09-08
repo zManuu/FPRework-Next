@@ -7,9 +7,9 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 /**
@@ -27,7 +27,7 @@ public class ServerUtils {
     /**
      * @return a collection of all players connected to the server
      */
-    @NonNull
+    @Nonnull
     public Collection<? extends Player> getOnlinePlayers() {
         return this.server.getOnlinePlayers();
     }
@@ -68,6 +68,14 @@ public class ServerUtils {
             this.logger.warning("Tried to call event of type {0}, failed. Error following...", event.getEventName());
             this.logger.error(CLASS_NAME, "callEvent", ex);
         }
+    }
+
+    /**
+     * Kicks all players from the server.
+     */
+    public void kickAllPlayers(@Nullable String kickMessage) {
+        this.logger.info("Kicking all players...");
+        this.server.getOnlinePlayers().forEach(player -> player.kickPlayer(kickMessage));
     }
 
 }

@@ -48,5 +48,4 @@ CREATE TABLE friend_requests (
   "receivingAccountId" int NOT NULL
 );
 
-
 COMMIT;

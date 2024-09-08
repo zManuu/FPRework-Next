@@ -2,9 +2,7 @@ package de.fantasypixel.rework.framework.provider;
 
 import de.fantasypixel.rework.FPRework;
 import de.fantasypixel.rework.framework.command.CommandManager;
-import de.fantasypixel.rework.framework.database.DataRepo;
-import de.fantasypixel.rework.framework.database.DataRepoProvider;
-import de.fantasypixel.rework.framework.database.DatabaseType;
+import de.fantasypixel.rework.framework.database.*;
 import de.fantasypixel.rework.framework.discord.DiscordConfig;
 import de.fantasypixel.rework.framework.discord.DiscordManager;
 import de.fantasypixel.rework.framework.events.AfterReload;
@@ -18,7 +16,6 @@ import de.fantasypixel.rework.framework.log.FPLogger;
 import de.fantasypixel.rework.framework.timer.Timer;
 import de.fantasypixel.rework.framework.timer.TimerManager;
 import de.fantasypixel.rework.framework.web.*;
-import de.fantasypixel.rework.framework.database.DatabaseConfig;
 import de.fantasypixel.rework.framework.config.*;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.web.WebConfig;
@@ -53,6 +50,7 @@ public class ProviderManager {
     private final JsonDataManager jsonDataManager;
     private final CitizensManager citizensManager;
     private final DiscordManager discordManager;
+    private DatabaseManager databaseManager;
     private ReloadManager reloadManager;
     private Map<Method, Object> beforeReloadHooks;
     private Map<Method, Object> afterReloadHooks;
@@ -110,6 +108,9 @@ public class ProviderManager {
         this.discordManager = new DiscordManager(this.plugin, this.getConfig(DiscordConfig.class));
         logger.sectionEnd("Discord");
 
+        // database manager
+        this.initDatabaseManager();
+
         // auto rigging
         logger.sectionStart("Auto-Rigging");
         this.initAutoRigging(Set.of(
@@ -118,7 +119,8 @@ public class ProviderManager {
                 this.plugin.getServer(),
                 this.plugin,
                 this.reloadManager,
-                this.discordManager.getFpDiscordClient()
+                this.discordManager.getFpDiscordClient(),
+                this.databaseManager
         ));
         logger.sectionEnd("Auto-Rigging");
 
@@ -322,6 +324,13 @@ public class ProviderManager {
         });
 
         this.plugin.getFpLogger().debug("Initialized {0} before- and {1} after-reload hooks.", this.beforeReloadHooks.size(), this.afterReloadHooks.size());
+    }
+
+    /**
+     * Creates the {@link #databaseManager}.
+     */
+    private void initDatabaseManager() {
+        this.databaseManager = () -> dataProviders.values().forEach(DataRepoProvider::clear);
     }
 
     /**
@@ -628,7 +637,9 @@ public class ProviderManager {
     private void enableControllers() {
         this.plugin.getFpLogger().debug("Enabling controllers, waiting for CitizensEnableEvent if necessary.");
 
-        while (!this.citizensManager.isEnabled()) {}
+        while (!this.citizensManager.isEnabled()) {
+            Thread.yield();
+        }
 
         this.controllers.forEach(controller -> {
             var controllerClass = controller.getClass();

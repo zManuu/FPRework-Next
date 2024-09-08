@@ -81,10 +81,12 @@
     "menu-not-closable": "Du kannst dieses Menü nicht schließen.",
     "menu-previous-page": "Vorherige Seite",
     "menu-next-page": "Nächste Seite",
+
     "admin-reload-start": "Der server-reload wurde gestartet.",
     "admin-reload-end": "Der server-reload wurde beended.",
     "admin-sound": "Der Sound wird wiedergegeben.",
     "admin-sound-invalid": "Der Sound name / category wurde nicht gefunden.",
+    "admin-cleardb-start": "Der database-clear wurde gestartet.",
 
     "unknown-account-name": "Es wurde kein Account mit diesem Namen gefunden.",
 

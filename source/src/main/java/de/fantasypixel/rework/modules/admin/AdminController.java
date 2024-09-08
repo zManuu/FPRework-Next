@@ -45,6 +45,11 @@ public class AdminController {
             this.notificationService.sendChatMessage(NotificationType.UNKNOWN, player, "admin-sound");
             player.playSound(player, sound, soundCategory, 1, 1);
 
+        } else if ((args.length == 1) && args[0].equalsIgnoreCase("cleardb")) {
+
+            // clear database
+            this.adminService.clearDatabase(player);
+
         }
 
 

@@ -73,7 +73,7 @@ public class DataRepoProvider<E> {
     }
 
     /**
-     * Tests the database-connection to the given configuration. If errors occur, the server will shut down.
+     * Tests the database-connection to the given configuration.
      * @return whether a connection to the database could be established
      */
     public static boolean testDatabaseConnection(@Nonnull FPRework plugin, @Nonnull DatabaseConfig config) {
@@ -619,7 +619,32 @@ public class DataRepoProvider<E> {
         this.cache.clear();
     }
 
+    /**
+     * Clears the SQL table and cache. There is no safeguard here, should be called with care.
+     */
+    public void clear() {
+        this.plugin.getFpLogger().info("Clearing database-table {0}...", this.tableName);
 
+        String statementStr = String.format("DELETE FROM %s;", this.tableName);
+        logSqlStatement(statementStr);
+
+        try (
+                var conn = this.getConnection();
+                var statement = conn.prepareStatement(statementStr)
+        ) {
+            statement.executeUpdate();
+            this.clearCache();
+        } catch (Exception ex) {
+            this.plugin.getFpLogger().error(CLASS_NAME, "clear", ex);
+        }
+    }
+
+
+    /**
+     * Logs a sql statement.
+     * @param statementStr the sql-statement. placeholder: ?
+     * @param args the arguments to replace in the statement
+     */
     private void logSqlStatement(@Nonnull String statementStr, @Nonnull Object... args) {
         for (var arg : args)
             statementStr = statementStr.replaceFirst("\\?", arg == null ? "NULL" : arg.toString());
