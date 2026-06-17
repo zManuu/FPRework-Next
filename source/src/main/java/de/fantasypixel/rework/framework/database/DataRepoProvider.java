@@ -251,6 +251,7 @@ public class DataRepoProvider<E> {
         ) {
 
             var resultSet = statement.executeQuery();
+            resultSet.next();
             return resultSet.getInt(1);
 
         } catch (Exception ex) {
