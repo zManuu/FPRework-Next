@@ -29,6 +29,20 @@ public class AdminService {
     @Service private ServerUtils serverUtils;
 
     /**
+     * Performs a reload (without user interaction).
+     */
+    public void doReload() {
+        this.discordService.sendEmbed(
+                FPDiscordChannel.LOGS_ADMIN,
+                Color.RED,
+                "Reload",
+                "A reload was issued."
+        );
+
+        this.reloadManager.doReload();
+    }
+
+    /**
      * Performs a reload and keeps the player up-to-date on the status.
      */
     public void doReload(@Nonnull Player fromPlayer) {

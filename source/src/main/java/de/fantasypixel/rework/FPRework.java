@@ -33,7 +33,7 @@ public class FPRework extends JavaPlugin {
 
         this.fpLogger = new FPLogger(System.out, this.gson, this);
 
-        this.fpUtils = new FPUtils(this);
+        this.fpUtils = new FPUtils(this.fpLogger);
         this.providerManager = new ProviderManager(this);
     }
 

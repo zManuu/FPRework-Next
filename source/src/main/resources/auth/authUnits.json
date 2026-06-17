@@ -1,0 +1,20 @@
+[
+  {
+    "name": "web"
+  },
+  {
+    "name": "Account-Service",
+    "pathSpec": "/account",
+    "parentUnit": "web"
+  },
+  {
+    "name": "Admin-Service",
+    "pathSpec": "/admin",
+    "parentUnit": "web"
+  },
+  {
+    "name": "Admin-Reload",
+    "pathSpec": "/admin/reload",
+    "parentUnit": "Admin-Service"
+  }
+]

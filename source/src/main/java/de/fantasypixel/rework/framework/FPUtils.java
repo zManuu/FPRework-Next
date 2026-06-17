@@ -1,6 +1,8 @@
 package de.fantasypixel.rework.framework;
 
+import com.google.gson.Gson;
 import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.log.FPLogger;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
@@ -21,11 +23,11 @@ import java.util.stream.Collectors;
 public class FPUtils {
 
     private final String CLASS_NAME = FPUtils.class.getSimpleName();
-    private final FPRework plugin;
+    private final FPLogger logger;
     private final Reflections reflections;
 
-    public FPUtils(@Nonnull FPRework plugin) {
-        this.plugin = plugin;
+    public FPUtils(@Nonnull FPLogger logger) {
+        this.logger = logger;
         this.reflections = new Reflections(
                 "de.fantasypixel.rework",
                 Scanners.TypesAnnotated,
@@ -102,8 +104,8 @@ public class FPUtils {
             return constructor.newInstance(args);
 
         } catch (Exception ex) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "instantiate", "There was an issue while instantiating {0} with args [{1}]", clazz.getSimpleName(), this.plugin.getGson().toJson(args));
-            this.plugin.getFpLogger().error(CLASS_NAME, "instantiate", ex);
+            this.logger.error(CLASS_NAME, "instantiate", "There was an issue while instantiating {0} with args [{1}]", clazz.getSimpleName(), Arrays.toString(args));
+            this.logger.error(CLASS_NAME, "instantiate", ex);
             return null;
         }
     }
@@ -125,7 +127,7 @@ public class FPUtils {
                 method.invoke(target, args);
 
         } catch (IllegalAccessException | InvocationTargetException ex) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "invoke", ex);
+            this.logger.error(CLASS_NAME, "invoke", ex);
         }
     }
 
@@ -141,7 +143,7 @@ public class FPUtils {
             field.setAccessible(true);
             return field.get(object);
         } catch (IllegalAccessException ex) {
-            this.plugin.getFpLogger().error(CLASS_NAME, "getFieldValueSafe", ex);
+            this.logger.error(CLASS_NAME, "getFieldValueSafe", ex);
             return null;
         }
     }

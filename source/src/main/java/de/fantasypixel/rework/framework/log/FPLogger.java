@@ -36,16 +36,25 @@ public class FPLogger {
     }
 
     private final PrintStream printStream;
-    private FPLoggerConfig config = new FPLoggerConfig(LogLevel.DEBUG, 25, false, Collections.emptyMap()); // has to be initialized here because the loading might produce logs.
+    // has to be initialized here because the loading might produce logs and tools.
+    private FPLoggerConfig config = new FPLoggerConfig(LogLevel.DEBUG, 25, false, Collections.emptyMap());
+
+    public FPLogger() {
+        this(System.out);
+    }
+
+    public FPLogger(@Nonnull PrintStream printStream) {
+        this(printStream, null, null);
+    }
 
     /**
      * Constructs a logger. Gson is used to load the configuration from plugins/FP-Next/config/logging.json (if a plugin is passed).
      */
-    public FPLogger(@Nonnull PrintStream printStream, @Nonnull Gson gson, @Nullable JavaPlugin plugin) {
+    public FPLogger(@Nonnull PrintStream printStream, @Nullable Gson gson, @Nullable JavaPlugin plugin) {
         this.printStream = printStream;
 
         // load config
-        if (plugin != null) {
+        if (plugin != null && gson != null) {
             var configFile = new File(plugin.getDataFolder(), "config/logging.json");
             try (
                     var configResource = new FileInputStream(configFile)

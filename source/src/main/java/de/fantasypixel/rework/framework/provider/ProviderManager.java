@@ -1,6 +1,7 @@
 package de.fantasypixel.rework.framework.provider;
 
 import de.fantasypixel.rework.FPRework;
+import de.fantasypixel.rework.framework.auth.*;
 import de.fantasypixel.rework.framework.command.CommandManager;
 import de.fantasypixel.rework.framework.database.*;
 import de.fantasypixel.rework.framework.discord.DiscordConfig;
@@ -19,12 +20,12 @@ import de.fantasypixel.rework.framework.web.*;
 import de.fantasypixel.rework.framework.config.*;
 import de.fantasypixel.rework.framework.jsondata.JsonData;
 import de.fantasypixel.rework.framework.web.WebConfig;
+import jakarta.servlet.http.HttpServlet;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
@@ -35,6 +36,7 @@ import java.util.*;
  */
 public class ProviderManager {
 
+    public static final String RES_AUTH_UNITS_JSON = "/auth/authUnits.json";
     private final String CLASS_NAME = ProviderManager.class.getSimpleName();
 
     private final FPRework plugin;
@@ -46,7 +48,7 @@ public class ProviderManager {
     private Map<Class<?>, DataRepoProvider<?>> dataProviders;
     private final TimerManager timerManager;
     private final CommandManager commandManager;
-    private final WebManager webManager;
+    private WebServer webServer;
     private final JsonDataManager jsonDataManager;
     private final CitizensManager citizensManager;
     private final DiscordManager discordManager;
@@ -54,6 +56,7 @@ public class ProviderManager {
     private ReloadManager reloadManager;
     private Map<Method, Object> beforeReloadHooks;
     private Map<Method, Object> afterReloadHooks;
+    private AuthService authService;
 
     public ProviderManager(FPRework plugin) {
         this.plugin = plugin;
@@ -84,14 +87,15 @@ public class ProviderManager {
         this.hookJsonData();
         logger.sectionEnd("Json-Data");
 
-        // web
-        logger.sectionStart("Web");
-        this.webManager = new WebManager(plugin, this.getConfig(WebConfig.class));
-        this.initWebHandlers(WebManager.HttpMethod.GET, WebGet.class);
-        this.initWebHandlers(WebManager.HttpMethod.POST, WebPost.class);
-        this.initWebHandlers(WebManager.HttpMethod.PUT, WebPut.class);
-        this.initWebHandlers(WebManager.HttpMethod.DELETE, WebDelete.class);
-        logger.sectionEnd("Web");
+        // auth-service
+        logger.sectionStart("Auth-Service");
+        this.initAuthService();
+        logger.sectionEnd("Auth-Service");
+
+        // web-server
+        logger.sectionStart("Web-Server");
+        this.initWebServer();
+        logger.sectionEnd("Web-Server");
 
         // reload
         logger.sectionStart("Reload-Manager");
@@ -205,59 +209,13 @@ public class ProviderManager {
      * Auto riggs the specific service-provider instance from {@link #serviceProviders} to controllers requiring it.
      */
     private void initControllerToServiceHooks() {
-        this.controllers.forEach(controller -> {
-            var serviceHooks = this.plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, controller.getClass());
-
-            serviceHooks.forEach(serviceHook -> {
-                var serviceClass = serviceHook.getType();
-                var serviceProvider = this.serviceProviders.get(serviceClass);
-
-                if (serviceProvider == null) {
-                    this.plugin.getFpLogger().warning("The controller {0} is accessing the non-existent service {1}.", controller.getClass().getName(), serviceClass.getName());
-                } else {
-                    try {
-                        serviceHook.set(controller, serviceProvider);
-                        this.plugin.getFpLogger().debug("Setup service hook for field {0} ({1}) in controller {2}.", serviceHook.getName(), serviceClass.getSimpleName(), controller.getClass().getSimpleName());
-                    } catch (IllegalAccessException ex) {
-                        this.plugin.getFpLogger().error(CLASS_NAME, "initServiceHooks", ex);
-                    }
-                }
-            });
-        });
-    }
-
-    /**
-     * Registers all the web annotations.
-     */
-    private void initWebHandlers(WebManager.HttpMethod httpMethod, Class<? extends Annotation> annotationClass) {
-        this.controllers.forEach(controller -> {
-            this.plugin.getFpUtils().getMethodsAnnotatedWith(annotationClass, controller.getClass()).forEach(handler -> {
-                var data = handler.getAnnotation(annotationClass);
-                // Unfortunately java doesn't support interface inheritance or dynamics so this repetitive code is needed.
-                var name = "";
-                var route = "";
-                var timeout = 0;
-                if (data instanceof WebGet getData) {
-                    name = getData.name();
-                    route = getData.route();
-                    timeout = getData.timeout();
-                } else if (data instanceof WebPost postData) {
-                    name = postData.name();
-                    route = postData.route();
-                    timeout = postData.timeout();
-                } else if (data instanceof WebPut putData) {
-                    name = putData.name();
-                    route = putData.route();
-                    timeout = putData.timeout();
-                } else if (data instanceof WebDelete deleteData) {
-                    name = deleteData.name();
-                    route = deleteData.route();
-                    timeout = deleteData.timeout();
-                }
-
-                this.webManager.registerRoute(name, route, httpMethod, timeout, handler, controller);
-            });
-        });
+        for (Object controller : this.controllers) {
+            try {
+                injectServices(controller);
+            } catch (IllegalAccessException | IllegalArgumentException e) {
+                plugin.getFpLogger().error(CLASS_NAME, "initControllerToServiceHooks", e);
+            }
+        }
     }
 
     /**
@@ -545,6 +503,58 @@ public class ProviderManager {
         });
     }
 
+    private void initAuthService() {
+        AuthServiceLoader loader = new AuthServiceLoader(plugin.getGson());
+        MemoryAuthService authService;
+        try {
+            authService = (MemoryAuthService) loader.load(
+                    Objects.requireNonNull(getClass().getResource(RES_AUTH_UNITS_JSON))
+            );
+        } catch (IOException | NullPointerException e) {
+            throw new RuntimeException("Could not load auth-service.", e);
+        }
+        // TODO: accounts need passwords.
+        // TODO: load accounts.
+        authService.addCaller(new AuthCaller("zmanuu", "123"));
+        authService.addGrant(new AuthGrant("zmanuu", "Account-Service", AuthLevel.MODIFY));
+        authService.addGrant(new AuthGrant("zmanuu", "Admin-Reload", AuthLevel.MODIFY));
+        this.authService = authService;
+    }
+
+    private void initWebServer() {
+        WebConfig webConfig = getConfig(WebConfig.class);
+        Map<HttpServlet, String> servlets = new HashMap<>();
+        Set<Class<?>> servletClasses = plugin.getFpUtils().getClassesAnnotatedWith(Servlet.class);
+        servletClasses.forEach((servletClass) -> {
+            Servlet servletData = servletClass.getAnnotation(Servlet.class);
+            try {
+                HttpServlet servlet = (HttpServlet) servletClass.getConstructor().newInstance();
+                injectServices(servlet);
+                servlets.put(servlet, servletData.value());
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException | IllegalArgumentException e) {
+                plugin.getFpLogger().error(CLASS_NAME, "initWebServer", e);
+            }
+        });
+        plugin.getFpLogger().info("Found {0} web-servlets.", servlets.size());
+        webServer = new WebServer(webConfig, servlets, authService);
+        webServer.start();
+    }
+
+    /**
+     * Injects existing services from {@link #serviceProviders} into an object.
+     */
+    private void injectServices(Object object) throws IllegalAccessException, IllegalArgumentException {
+        Set<Field> serviceFields = plugin.getFpUtils().getFieldsAnnotatedWith(Service.class, object.getClass());
+        for (Field serviceField : serviceFields) {
+            Object serviceImplementation = serviceProviders.get(serviceField.getType());
+            if (serviceImplementation == null) {
+                throw new IllegalArgumentException("Missing service: " + serviceField.getType());
+            }
+            serviceField.set(object, serviceImplementation);
+        }
+    }
+
     /**
      * Creates all data-repository instances.
      */
@@ -708,7 +718,7 @@ public class ProviderManager {
         });
 
         this.timerManager.stopTimers();
-        this.webManager.stop();
+        this.webServer.stop();
         this.discordManager.stop();
     }
 }
